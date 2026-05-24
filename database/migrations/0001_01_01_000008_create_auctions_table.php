@@ -26,8 +26,8 @@ return new class extends Migration
             $table->unsignedBigInteger('deposit_amount');
             $table->unsignedBigInteger('entry_fee');
             $table->unsignedBigInteger('book_price')->default(300000);
-            $table->timestamp('start_time');
-            $table->timestamp('end_time');
+            $table->dateTime('start_time');
+            $table->dateTime('end_time');
             $table->unsignedSmallInteger('extension_trigger_seconds')->default(30);
             $table->unsignedSmallInteger('extension_duration_minutes')->default(5);
             $table->string('status', 20)->default('DRAFT');
