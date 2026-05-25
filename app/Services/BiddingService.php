@@ -3,84 +3,135 @@
 namespace App\Services;
 
 use App\Enums\AuctionStatus;
+use App\Events\AuctionExtended;
+use App\Events\BidPlaced;
 use App\Models\Auction;
 use App\Models\AuditLog;
 use App\Models\Bid;
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 class BiddingService
 {
+    public function __construct(
+        private readonly BidderAliasService $aliases,
+    ) {
+    }
+
     /**
-     * Place a bid on an auction.
+     * Place a bid atomically.
      *
-     * @throws \Exception
+     * Concurrency strategy:
+     *  - A short-lived cache lock per-auction prevents two bids hitting the DB
+     *    transaction simultaneously and racing for the row lock.
+     *  - Inside the lock we use DB row-level locking (lockForUpdate) as a
+     *    second line of defense (and for replicas).
+     *
+     * @throws RuntimeException on any business-rule violation.
      */
-    public function placeBid(Auction $auction, User $user, int $amountCentimes, ?string $ip = null, ?string $userAgent = null): Bid
-    {
-        // Rate limiting: 10 bids per minute per user per auction
-        $rateKey = "bid_rate:{$user->id}:{$auction->id}";
-        $attempts = Cache::get($rateKey, 0);
-        if ($attempts >= 10) {
-            throw new \Exception('تجاوزت الحد الأقصى للمزايدات (10 في الدقيقة).');
+    public function placeBid(
+        Auction $auction,
+        User $user,
+        int $amountCentimes,
+        ?string $ip = null,
+        ?string $userAgent = null,
+    ): Bid {
+        if ($amountCentimes <= 0) {
+            throw new RuntimeException(__('المبلغ غير صالح.'));
         }
 
-        return DB::transaction(function () use ($auction, $user, $amountCentimes, $ip, $userAgent, $rateKey, $attempts) {
-            // Lock auction row
-            $auction = Auction::lockForUpdate()->findOrFail($auction->id);
+        if (! $user->canBid()) {
+            throw new RuntimeException(__('لا تستوفي شروط المزايدة (KYC أو الحالة).'));
+        }
 
-            // Validate auction status
-            if (!in_array($auction->status, [AuctionStatus::ACTIVE, AuctionStatus::EXTENDED])) {
-                throw new \Exception('المزايدة ليست نشطة حالياً.');
-            }
+        $rateKey = "bid_rate:{$user->id}:{$auction->id}";
+        $maxPerMinute = (int) config('mazayada.bidding.max_per_minute', env('BID_MAX_PER_MINUTE', 10));
+        $attempts = (int) Cache::get($rateKey, 0);
+        if ($attempts >= $maxPerMinute) {
+            throw new RuntimeException(__('تجاوزت الحد الأقصى للمزايدات (:max في الدقيقة).', ['max' => $maxPerMinute]));
+        }
 
-            // Validate user is registered participant with deposit
-            $participant = $auction->participants()
-                ->where('user_id', $user->id)
-                ->where('deposit_paid', true)
-                ->first();
+        $lock = Cache::lock("auction:{$auction->id}:bid", 3);
 
-            if (!$participant) {
-                throw new \Exception('يجب التسجيل ودفع الكفالة أولاً.');
-            }
+        try {
+            $bid = $lock->block(2, function () use ($auction, $user, $amountCentimes, $ip, $userAgent) {
+                return DB::transaction(function () use ($auction, $user, $amountCentimes, $ip, $userAgent) {
+                    /** @var Auction $freshAuction */
+                    $freshAuction = Auction::query()->lockForUpdate()->find($auction->id);
+                    if (! $freshAuction) {
+                        throw (new ModelNotFoundException)->setModel(Auction::class, [$auction->id]);
+                    }
 
-            // Validate amount
-            $currentPrice = $auction->bids()->where('is_valid', true)->max('amount') ?? $auction->opening_price;
-            if ($amountCentimes <= $currentPrice) {
-                throw new \Exception('المبلغ يجب أن يكون أعلى من السعر الحالي (' . dzd($currentPrice) . ').');
-            }
+                    if (! in_array($freshAuction->status, [AuctionStatus::ACTIVE, AuctionStatus::EXTENDED], true)) {
+                        throw new RuntimeException(__('المزايدة ليست نشطة حالياً.'));
+                    }
 
-            // Create bid
-            $bid = Bid::create([
-                'auction_id' => $auction->id,
-                'user_id' => $user->id,
-                'amount' => $amountCentimes,
-                'bid_time' => now(),
-                'ip_address' => $ip,
-                'user_agent' => $userAgent,
-                'is_valid' => true,
-            ]);
+                    if (now()->greaterThan($freshAuction->end_time)) {
+                        throw new RuntimeException(__('انتهت مدة المزايدة.'));
+                    }
 
-            // Auto-extension: if bid in last 30 seconds, extend by 5 minutes
-            $secondsRemaining = now()->diffInSeconds($auction->end_time, false);
-            if ($secondsRemaining <= $auction->extension_trigger_seconds && $secondsRemaining > 0) {
-                $auction->update([
-                    'end_time' => $auction->end_time->addMinutes($auction->extension_duration_minutes),
-                    'status' => AuctionStatus::EXTENDED,
-                ]);
-            }
+                    $participant = $freshAuction->participants()
+                        ->where('user_id', $user->id)
+                        ->where('deposit_paid', true)
+                        ->first();
 
-            // Update rate limiter
-            Cache::put($rateKey, $attempts + 1, 60);
+                    if (! $participant) {
+                        throw new RuntimeException(__('يجب التسجيل ودفع الكفالة أولاً.'));
+                    }
 
-            // Audit log
-            AuditLog::log('BID_PLACED', 'auction', $auction->id, $user->id, $user->role->value, [
-                'amount' => $amountCentimes,
-                'bid_id' => $bid->id,
-            ], $ip);
+                    $currentPrice = (int) ($freshAuction->bids()
+                        ->where('is_valid', true)
+                        ->max('amount') ?? $freshAuction->opening_price);
 
-            return $bid;
-        });
+                    if ($amountCentimes <= $currentPrice) {
+                        throw new RuntimeException(__('المبلغ يجب أن يكون أعلى من السعر الحالي.'));
+                    }
+
+                    $bid = Bid::create([
+                        'auction_id' => $freshAuction->id,
+                        'user_id' => $user->id,
+                        'amount' => $amountCentimes,
+                        'bid_time' => now(),
+                        'ip_address' => $ip,
+                        'user_agent' => $userAgent,
+                        'is_valid' => true,
+                    ]);
+
+                    $secondsRemaining = now()->diffInSeconds($freshAuction->end_time, false);
+                    if ($secondsRemaining <= $freshAuction->extension_trigger_seconds && $secondsRemaining > 0) {
+                        $freshAuction->update([
+                            'end_time' => $freshAuction->end_time->copy()->addMinutes($freshAuction->extension_duration_minutes),
+                            'status' => AuctionStatus::EXTENDED,
+                        ]);
+                        AuctionExtended::dispatch($freshAuction->fresh());
+                    }
+
+                    AuditLog::log('BID_PLACED', 'auction', $freshAuction->id, $user->id, $user->role?->value, [
+                        'amount' => $amountCentimes,
+                        'bid_id' => $bid->id,
+                    ], $ip);
+
+                    return $bid;
+                });
+            });
+        } finally {
+            optional($lock)->release();
+        }
+
+        if (! $bid) {
+            throw new RuntimeException(__('فشل في تسجيل المزايدة، حاول مرة أخرى.'));
+        }
+
+        Cache::put($rateKey, $attempts + 1, 60);
+
+        // Invalidate cached current price for the auction.
+        Cache::forget("auction:{$auction->id}:current_price");
+
+        BidPlaced::dispatch($bid, $this->aliases->aliasFor($user->id, $auction->id));
+
+        return $bid;
     }
 }

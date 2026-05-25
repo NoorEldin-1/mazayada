@@ -32,5 +32,10 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <env name="CIBWEB_MOCK" value="true"/>
+        <env name="ALIAS_SECRET" value="testing-alias-secret-do-not-use-in-prod"/>
+        <env name="LOGIN_MAX_ATTEMPTS" value="5"/>
+        <env name="LOGIN_DECAY_MINUTES" value="1"/>
+        <env name="BID_MAX_PER_MINUTE" value="10"/>
     </php>
 </phpunit>

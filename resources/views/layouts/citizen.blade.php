@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'لوحة التحكم') &mdash; مزايدة</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -45,8 +47,8 @@
             {{-- Notifications --}}
             <button class="hd-notif">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                @if(auth()->check() && auth()->user()->unreadNotifications->count() > 0)
-                    <span class="hd-notif-badge">{{ auth()->user()->unreadNotifications->count() }}</span>
+                @if(auth()->check() && auth()->user()->unreadNotificationsCount() > 0)
+                    <span class="hd-notif-badge">{{ auth()->user()->unreadNotificationsCount() }}</span>
                 @endif
             </button>
 
@@ -106,8 +108,8 @@
             <a href="/dashboard/notifications" class="cz-side-link {{ request()->routeIs('dashboard.notifications*') ? 'on' : '' }}">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                 الإشعارات
-                @if(auth()->check() && auth()->user()->unreadNotifications->count() > 0)
-                    <span class="cz-side-badge">{{ auth()->user()->unreadNotifications->count() }}</span>
+                @if(auth()->check() && auth()->user()->unreadNotificationsCount() > 0)
+                    <span class="cz-side-badge">{{ auth()->user()->unreadNotificationsCount() }}</span>
                 @endif
             </a>
             <a href="/dashboard/profile" class="cz-side-link {{ request()->routeIs('dashboard.profile*') ? 'on' : '' }}">

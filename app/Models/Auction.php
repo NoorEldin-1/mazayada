@@ -10,10 +10,13 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Auction extends Model
 {
-    use HasUuids;
+    use HasUuids, LogsActivity;
 
     protected $fillable = [
         'entity_id', 'category_id', 'title_ar', 'title_fr', 'title_en',
@@ -42,6 +45,19 @@ class Auction extends Model
             'final_price' => 'integer',
             'requires_commerce_register' => 'boolean',
         ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'status', 'opening_price', 'deposit_amount', 'entry_fee',
+                'start_time', 'end_time', 'winner_user_id', 'final_price',
+                'requires_commerce_register',
+            ])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->useLogName('auction');
     }
 
     // Relationships
@@ -109,7 +125,11 @@ class Auction extends Model
     // Helpers
     public function currentPrice(): int
     {
-        return $this->bids()->where('is_valid', true)->max('amount') ?? $this->opening_price;
+        return Cache::remember(
+            "auction:{$this->id}:current_price",
+            now()->addSeconds(5),
+            fn () => (int) ($this->bids()->where('is_valid', true)->max('amount') ?? $this->opening_price)
+        );
     }
 
     public function bidCount(): int

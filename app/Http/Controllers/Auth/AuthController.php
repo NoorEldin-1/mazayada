@@ -13,6 +13,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
 class AuthController extends Controller
@@ -25,26 +28,40 @@ class AuthController extends Controller
     public function login(Request $request): RedirectResponse
     {
         $request->validate([
-            'nin_or_email' => ['required', 'string'],
+            'nin_or_email' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string'],
         ]);
+
+        $throttleKey = Str::lower($request->input('nin_or_email')).'|'.$request->ip();
+        $maxAttempts = (int) config('mazayada.security.login_max_attempts', 5);
+        $decayMinutes = (int) config('mazayada.security.login_decay_minutes', 15);
+
+        if (RateLimiter::tooManyAttempts($throttleKey, $maxAttempts)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+
+            return back()->withErrors([
+                'nin_or_email' => __('عدد المحاولات الفاشلة كبير. حاول مجدداً خلال :sec ثانية.', ['sec' => $seconds]),
+            ]);
+        }
 
         $field = filter_var($request->nin_or_email, FILTER_VALIDATE_EMAIL) ? 'email' : 'nin';
         $user = User::where($field, $request->nin_or_email)->first();
 
-        if ($user && $user->locked_until && $user->locked_until->isFuture()) {
+        if ($user && $user->isLocked()) {
             return back()->withErrors([
-                'nin_or_email' => 'الحساب مقفل. حاول مجدداً بعد ' . $user->locked_until->diffForHumans(),
+                'nin_or_email' => __('الحساب مقفل. حاول مجدداً بعد :time', ['time' => $user->locked_until->diffForHumans()]),
             ]);
         }
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (! $user || ! Hash::check($request->password, $user->password)) {
+            RateLimiter::hit($throttleKey, $decayMinutes * 60);
+
             if ($user) {
                 $attempts = ($user->failed_login_attempts ?? 0) + 1;
                 $update = ['failed_login_attempts' => $attempts];
 
-                if ($attempts >= 5) {
-                    $update['locked_until'] = now()->addMinutes(15);
+                if ($attempts >= $maxAttempts) {
+                    $update['locked_until'] = now()->addMinutes($decayMinutes);
                     $update['failed_login_attempts'] = 0;
                 }
 
@@ -53,21 +70,34 @@ class AuthController extends Controller
 
             AuditLog::log('LOGIN_FAILED', 'User', $user?->id ?? 'unknown', null, null, [
                 'input' => $request->nin_or_email,
+                'ip' => $request->ip(),
             ]);
 
-            return back()->withErrors(['nin_or_email' => 'بيانات الدخول غير صحيحة.']);
+            return back()->withErrors(['nin_or_email' => __('بيانات الدخول غير صحيحة.')])->onlyInput('nin_or_email');
         }
 
-        $user->update(['failed_login_attempts' => 0, 'locked_until' => null]);
-        Auth::login($user, $request->boolean('remember'));
+        if ($user->isBlacklisted()) {
+            AuditLog::log('LOGIN_BLOCKED', 'User', $user->id, $user->id, null, ['reason' => 'blacklisted']);
 
-        AuditLog::log('LOGIN_SUCCESS', 'User', $user->id);
+            return back()->withErrors(['nin_or_email' => __('تم حظر هذا الحساب.')]);
+        }
+
+        RateLimiter::clear($throttleKey);
+        $user->update(['failed_login_attempts' => 0, 'locked_until' => null]);
+
+        Auth::login($user, $request->boolean('remember'));
+        $request->session()->regenerate();
+
+        AuditLog::log('LOGIN_SUCCESS', 'User', $user->id, $user->id, $user->role?->value, [
+            'ip' => $request->ip(),
+            'ua' => substr((string) $request->userAgent(), 0, 200),
+        ]);
 
         if ($user->isAdmin()) {
-            return redirect()->route('admin.dashboard');
+            return redirect()->intended(route('admin.dashboard'));
         }
 
-        return redirect()->route('citizen.dashboard');
+        return redirect()->intended(route('citizen.dashboard'));
     }
 
     public function showRegister(): View
@@ -77,26 +107,29 @@ class AuthController extends Controller
 
     public function register(Request $request): RedirectResponse
     {
-        $request->validate([
+        $validated = $request->validate([
             'nin' => ['required', 'string', new NinValidation, 'unique:users,nin'],
             'first_name_ar' => ['required', 'string', 'max:100'],
             'last_name_ar' => ['required', 'string', 'max:100'],
             'phone' => ['required', 'string', new AlgerianPhone, 'unique:users,phone'],
-            'email' => ['required', 'email', 'unique:users,email'],
-            'birth_date' => ['required', 'date', 'before:' . now()->subYears(18)->toDateString()],
-            'password' => ['required', 'string', 'min:8', 'confirmed', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/'],
+            // RFC-only — DNS check would add 100-500ms latency and we verify via OTP anyway.
+            'email' => ['required', 'email:rfc', 'max:255', 'unique:users,email'],
+            'birth_date' => ['required', 'date', 'before:'.now()->subYears(18)->toDateString()],
+            'password' => ['required', 'string', 'confirmed', Password::defaults()],
         ]);
 
         $user = User::create([
-            'nin' => $request->nin,
-            'first_name_ar' => $request->first_name_ar,
-            'last_name_ar' => $request->last_name_ar,
-            'phone' => $request->phone,
-            'email' => $request->email,
-            'birth_date' => $request->birth_date,
-            'password' => $request->password,
+            'nin' => $validated['nin'],
+            'first_name_ar' => $validated['first_name_ar'],
+            'last_name_ar' => $validated['last_name_ar'],
+            'phone' => $validated['phone'],
+            'email' => $validated['email'],
+            'birth_date' => $validated['birth_date'],
+            'password' => $validated['password'],
             'role' => UserRole::CITIZEN,
         ]);
+
+        $user->assignRole(UserRole::CITIZEN->value);
 
         $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         Cache::put("otp_{$user->id}", $otp, now()->addMinutes(5));
@@ -176,7 +209,7 @@ class AuthController extends Controller
         $request->validate([
             'user_id' => ['required', 'exists:users,id'],
             'otp' => ['required', 'string', 'size:6'],
-            'password' => ['required', 'string', 'min:8', 'confirmed', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/'],
+            'password' => ['required', 'string', 'confirmed', Password::defaults()],
         ]);
 
         $cachedOtp = Cache::get("reset_otp_{$request->user_id}");
@@ -197,9 +230,15 @@ class AuthController extends Controller
 
     public function logout(Request $request): RedirectResponse
     {
+        $userId = optional($request->user())->id;
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        if ($userId) {
+            AuditLog::log('LOGOUT', 'User', $userId, $userId);
+        }
 
         return redirect()->route('home');
     }

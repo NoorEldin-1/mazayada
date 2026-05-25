@@ -6,16 +6,20 @@ use App\Enums\AccountStatus;
 use App\Enums\KycStatus;
 use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Fortify\TwoFactorAuthenticatable;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasUuids, Notifiable;
+    use HasRoles, HasUuids, LogsActivity, Notifiable, TwoFactorAuthenticatable;
 
     protected $fillable = [
         'nin', 'id_card_number', 'passport_number', 'license_number',
@@ -29,7 +33,13 @@ class User extends Authenticatable
         'failed_login_attempts', 'locked_until',
     ];
 
-    protected $hidden = ['password', 'remember_token', 'secret_answer'];
+    protected $hidden = [
+        'password',
+        'remember_token',
+        'secret_answer',
+        'two_factor_recovery_codes',
+        'two_factor_secret',
+    ];
 
     protected function casts(): array
     {
@@ -42,15 +52,38 @@ class User extends Authenticatable
             'phone_verified' => 'boolean',
             'email_verified' => 'boolean',
             'password' => 'hashed',
+            'secret_answer' => 'hashed',
             'kyc_status' => KycStatus::class,
             'account_status' => AccountStatus::class,
             'role' => UserRole::class,
         ];
     }
 
+    /**
+     * Audit log: only track the security-sensitive and KYC fields.
+     * Avoids logging password hashes or 2FA secrets even if accidentally fillable.
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'nin', 'email', 'phone', 'first_name_ar', 'last_name_ar',
+                'kyc_status', 'account_status', 'is_blacklisted', 'blacklist_reason',
+                'role', 'failed_login_attempts', 'locked_until',
+            ])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->useLogName('user');
+    }
+
     public function fullNameAr(): string
     {
-        return $this->first_name_ar . ' ' . $this->last_name_ar;
+        return trim($this->first_name_ar.' '.$this->last_name_ar);
+    }
+
+    public function fullNameFr(): string
+    {
+        return trim(($this->first_name_fr ?? '').' '.($this->last_name_fr ?? ''));
     }
 
     public function commune(): BelongsTo
@@ -100,7 +133,11 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return $this->role->isAdmin();
+        return $this->hasAnyRole([
+            UserRole::SUPER_ADMIN->value,
+            UserRole::ENTITY_HEAD->value,
+            UserRole::CONTENT_ADMIN->value,
+        ]);
     }
 
     public function isPremium(): bool
@@ -111,5 +148,46 @@ class User extends Authenticatable
     public function isKycComplete(): bool
     {
         return $this->kyc_status === KycStatus::COMPLETE;
+    }
+
+    public function isBlacklisted(): bool
+    {
+        return (bool) $this->is_blacklisted;
+    }
+
+    public function isLocked(): bool
+    {
+        return $this->locked_until !== null && $this->locked_until->isFuture();
+    }
+
+    public function canBid(): bool
+    {
+        return $this->isKycComplete()
+            && ! $this->isBlacklisted()
+            && ! $this->isLocked()
+            && $this->account_status === AccountStatus::ACTIVE;
+    }
+
+    /**
+     * Cached unread notifications count — used by layout in 2 places, so
+     * cache it on the instance for the request lifetime.
+     */
+    public function unreadNotificationsCount(): int
+    {
+        if (! array_key_exists('unread_notifications_count', $this->attributes)) {
+            $this->attributes['unread_notifications_count'] = $this->userNotifications()
+                ->where('is_read', false)
+                ->count();
+        }
+
+        return (int) $this->attributes['unread_notifications_count'];
+    }
+
+    /**
+     * Convenience accessor for layouts that expect $user->name.
+     */
+    public function getNameAttribute(): string
+    {
+        return $this->fullNameAr() ?: ($this->fullNameFr() ?: ($this->email ?? ''));
     }
 }

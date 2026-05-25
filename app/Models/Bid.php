@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use App\Services\BidderAliasService;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Bid extends Model
 {
-    use HasUuids;
+    use HasUuids, LogsActivity;
 
     public $timestamps = false;
 
@@ -26,6 +29,15 @@ class Bid extends Model
         ];
     }
 
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['auction_id', 'user_id', 'amount', 'is_valid'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->useLogName('bid');
+    }
+
     public function auction(): BelongsTo
     {
         return $this->belongsTo(Auction::class);
@@ -38,6 +50,6 @@ class Bid extends Model
 
     public function bidderAlias(): string
     {
-        return 'Bidder_' . substr($this->user_id, 0, 4);
+        return app(BidderAliasService::class)->aliasFor($this->user_id, $this->auction_id);
     }
 }

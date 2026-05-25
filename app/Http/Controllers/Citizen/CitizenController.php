@@ -15,17 +15,21 @@ class CitizenController extends Controller
     {
         $user = auth()->user();
 
-        $activeParticipations = $user->participations()
+        // Stat tiles — cheap COUNT(*) aggregates.
+        $activeCount = $user->participations()
             ->whereHas('auction', fn ($q) => $q->active())
             ->count();
 
-        $wonAuctions = $user->wonAuctions()->count();
-        $totalBids = $user->bids()->count();
+        $wonCount = $user->wonAuctions()->count();
+
+        $totalParticipations = $user->participations()->count();
+
         $kycStatus = $user->kyc_status;
 
-        $recentWins = $user->wonAuctions()
+        // Recent won auctions — iterated by the view, must be a Collection.
+        $wonAuctions = $user->wonAuctions()
             ->with(['category', 'wilaya'])
-            ->latest()
+            ->latest('updated_at')
             ->limit(5)
             ->get();
 
@@ -35,8 +39,8 @@ class CitizenController extends Controller
             ->get();
 
         return view('citizen.dashboard', compact(
-            'activeParticipations', 'wonAuctions', 'totalBids',
-            'kycStatus', 'recentWins', 'recentNotifications'
+            'activeCount', 'wonCount', 'totalParticipations',
+            'kycStatus', 'wonAuctions', 'recentNotifications'
         ));
     }
 

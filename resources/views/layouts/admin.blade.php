@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'لوحة الإدارة') — مزايدة</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -45,7 +47,7 @@
 <body>
 <div class="adm">
     {{-- Sidebar --}}
-    <aside class="adm-side">
+    <aside class="adm-side" id="admSide">
         <div class="logo">
             <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 17.5 3 3 3-3"/><path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg></div>
             <div><div class="txt">مزايدة</div><div class="sub">لوحة الإدارة</div></div>
@@ -90,9 +92,15 @@
         </div>
     </aside>
 
+    {{-- Mobile drawer backdrop --}}
+    <div class="adm-backdrop" id="admBackdrop" onclick="document.getElementById('admSide').classList.remove('open');this.classList.remove('on')"></div>
+
     {{-- Main --}}
     <div class="adm-main">
         <header class="adm-top">
+            <button type="button" class="adm-burger" aria-label="القائمة" onclick="const s=document.getElementById('admSide'),b=document.getElementById('admBackdrop');s.classList.toggle('open');b.classList.toggle('on')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
             <h1>@yield('page-title', 'لوحة التحكم')</h1>
             <div class="acts">
                 <form method="POST" action="{{ route('logout') }}" style="display:inline">

@@ -22,16 +22,16 @@ Route::get('/auctions/{auction}', [AuctionController::class, 'show'])->name('auc
 Route::get('/how-it-works', [PageController::class, 'howItWorks'])->name('how-it-works');
 Route::get('/about', [PageController::class, 'about'])->name('about');
 
-// Auth (guest only)
+// Auth (guest only) — throttled to prevent brute force
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
     Route::get('/verify-otp', [AuthController::class, 'showVerifyOtp'])->name('verify-otp');
-    Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
+    Route::post('/verify-otp', [AuthController::class, 'verifyOtp'])->middleware('throttle:two-factor');
     Route::get('/reset-password', [AuthController::class, 'showResetPassword'])->name('password.reset');
-    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:3,1');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
@@ -50,10 +50,10 @@ Route::middleware('auth')->prefix('dashboard')->name('citizen.')->group(function
     Route::put('/profile', [CitizenController::class, 'updateProfile'])->name('profile.update');
 });
 
-// Auction actions (authenticated)
-Route::middleware('auth')->group(function () {
+// Auction actions (authenticated) — bidding is rate-limited per user per auction.
+Route::middleware(['auth', 'kyc.verified'])->group(function () {
     Route::post('/auctions/{auction}/register', [AuctionController::class, 'registerParticipant'])->name('auctions.register');
-    Route::post('/auctions/{auction}/bid', [AuctionController::class, 'bid'])->name('auctions.bid');
+    Route::post('/auctions/{auction}/bid', [AuctionController::class, 'bid'])->middleware('throttle:bidding')->name('auctions.bid');
 });
 
 // Admin
