@@ -1,0 +1,105 @@
+name: Deploy Mazayada
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # ─────────────────────────────────────────────
+      # 1. Checkout code
+      # ─────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ─────────────────────────────────────────────
+      # 2. Setup Node.js & build Vite assets
+      # ─────────────────────────────────────────────
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install NPM dependencies
+        run: npm ci
+
+      - name: Build assets (Vite + Tailwind)
+        run: npm run build
+
+      # ─────────────────────────────────────────────
+      # 3. Setup SSH
+      # ─────────────────────────────────────────────
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+          cat >> ~/.ssh/config << EOF
+          Host production
+            HostName ${{ secrets.SSH_HOST }}
+            User ${{ secrets.SSH_USER }}
+            Port ${{ secrets.SSH_PORT }}
+            IdentityFile ~/.ssh/deploy_key
+            StrictHostKeyChecking no
+          EOF
+
+      # ─────────────────────────────────────────────
+      # 4. Deploy code via rsync
+      # ─────────────────────────────────────────────
+      - name: Deploy via rsync
+        run: |
+          rsync -azh --delete \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='node_modules/' \
+            --exclude='vendor/' \
+            --exclude='.env' \
+            --exclude='storage/logs/*' \
+            --exclude='storage/framework/sessions/*' \
+            --exclude='storage/framework/cache/data/*' \
+            --exclude='storage/app/*' \
+            --exclude='bootstrap/cache/*' \
+            --exclude='PDFs/' \
+            --exclude='.phpunit.result.cache' \
+            --exclude='upgrade_plan.md' \
+            -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }}" \
+            ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/
+
+      # ─────────────────────────────────────────────
+      # 5. Post-deploy commands on server
+      # ─────────────────────────────────────────────
+      - name: Write production .env
+        run: |
+          ssh production "cat > ${{ secrets.DEPLOY_PATH }}/.env << 'ENVEOF'
+          ${{ secrets.PRODUCTION_ENV }}
+          ENVEOF"
+
+      - name: Run post-deploy commands
+        run: |
+          ssh production "cd ${{ secrets.DEPLOY_PATH }} && bash scripts/deploy.sh"
+
+      # ─────────────────────────────────────────────
+      # 6. Verify deployment
+      # ─────────────────────────────────────────────
+      - name: Verify deployment
+        run: |
+          STATUS=$(curl -o /dev/null -s -w "%{http_code}" https://mazayada.findosystem.com/up || echo "000")
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ Deployment verified — site is up (HTTP $STATUS)"
+          else
+            echo "⚠️ Site returned HTTP $STATUS — check server logs"
+          fi
