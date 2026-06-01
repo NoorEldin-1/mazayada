@@ -6,6 +6,8 @@ use App\Models\Auction;
 use App\Models\AuctionParticipant;
 use App\Models\AuditLog;
 use App\Models\Bid;
+use App\Models\Category;
+use App\Models\Wilaya;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,29 +19,32 @@ class AuctionController extends Controller
     {
         $query = Auction::public()->with(['entity', 'category', 'wilaya']);
 
-        if ($request->filled('search')) {
-            $query->where('title_ar', 'LIKE', '%' . $request->search . '%');
+        if ($request->filled('q')) {
+            $query->where('title_ar', 'LIKE', '%' . $request->q . '%');
         }
 
-        if ($request->filled('category_id')) {
-            $query->where('category_id', $request->category_id);
+        if ($request->filled('category')) {
+            $query->where('category_id', $request->category);
         }
 
-        if ($request->filled('wilaya_id')) {
-            $query->where('wilaya_id', $request->wilaya_id);
+        if ($request->filled('wilaya')) {
+            $query->where('wilaya_id', $request->wilaya);
         }
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        if ($request->filled('auction_type')) {
-            $query->where('auction_type', $request->auction_type);
+        if ($request->filled('type')) {
+            $query->where('auction_type', $request->type);
         }
 
         $auctions = $query->latest('start_time')->paginate(12)->withQueryString();
 
-        return view('auctions.index', compact('auctions'));
+        $categories = Category::where('is_active', true)->get();
+        $wilayas = Wilaya::all();
+
+        return view('auctions.index', compact('auctions', 'categories', 'wilayas'));
     }
 
     public function show(Auction $auction): View
@@ -50,12 +55,7 @@ class AuctionController extends Controller
             ->where('is_valid', true)
             ->latest('bid_time')
             ->limit(10)
-            ->get()
-            ->map(fn (Bid $bid) => [
-                'alias' => $bid->bidderAlias(),
-                'amount' => $bid->amount,
-                'bid_time' => $bid->bid_time,
-            ]);
+            ->get();
 
         $isParticipant = false;
         if (auth()->check()) {
