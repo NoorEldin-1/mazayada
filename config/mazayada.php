@@ -13,6 +13,10 @@
 
 return [
 
+    // Secret key for generating deterministic bidder aliases (Section 6.5).
+    // Falls back to APP_KEY when not explicitly set.
+    'alias_secret' => env('ALIAS_SECRET', env('APP_KEY')),
+
     'bidding' => [
         'max_per_minute' => (int) env('BID_MAX_PER_MINUTE', 10),
 

@@ -36,7 +36,7 @@ class FortifyServiceProvider extends ServiceProvider
         RateLimiter::for('login', function (Request $request) {
             $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
 
-            return Limit::perMinute((int) env('LOGIN_MAX_ATTEMPTS', 5))->by($throttleKey);
+            return Limit::perMinute(config('mazayada.security.login_max_attempts', 5))->by($throttleKey);
         });
 
         RateLimiter::for('two-factor', function (Request $request) {
@@ -48,7 +48,7 @@ class FortifyServiceProvider extends ServiceProvider
             $userId = optional($request->user())->id ?? $request->ip();
             $auctionId = $request->route('auction')?->id ?? 'global';
 
-            return Limit::perMinute((int) env('BID_MAX_PER_MINUTE', 10))->by($userId.'|'.$auctionId);
+            return Limit::perMinute(config('mazayada.bidding.max_per_minute', 10))->by($userId.'|'.$auctionId);
         });
 
         // Identify users by their NIN (Algerian National ID) rather than email.

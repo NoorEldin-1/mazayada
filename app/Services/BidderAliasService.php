@@ -16,7 +16,7 @@ class BidderAliasService
 
     public function aliasFor(string $userId, string $auctionId): string
     {
-        $secret = (string) env('ALIAS_SECRET', config('app.key'));
+        $secret = (string) config('mazayada.alias_secret', config('app.key'));
         $hash = hash_hmac('sha256', $userId.$auctionId, $secret);
 
         $adjective = self::ADJECTIVES[hexdec(substr($hash, 0, 2)) % count(self::ADJECTIVES)];

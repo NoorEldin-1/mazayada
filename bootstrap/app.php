@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureRole;
 use App\Http\Middleware\KycVerified;
+use App\Http\Middleware\NoCacheHeaders;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->appendToGroup('web', SetLocale::class);
+        $middleware->appendToGroup('web', NoCacheHeaders::class);
 
         $middleware->alias([
             'role'         => EnsureRole::class,

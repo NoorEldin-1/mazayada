@@ -48,7 +48,7 @@ class BiddingService
         }
 
         $rateKey = "bid_rate:{$user->id}:{$auction->id}";
-        $maxPerMinute = (int) config('mazayada.bidding.max_per_minute', env('BID_MAX_PER_MINUTE', 10));
+        $maxPerMinute = (int) config('mazayada.bidding.max_per_minute', 10);
         $attempts = (int) Cache::get($rateKey, 0);
         if ($attempts >= $maxPerMinute) {
             throw new RuntimeException(__('تجاوزت الحد الأقصى للمزايدات (:max في الدقيقة).', ['max' => $maxPerMinute]));
