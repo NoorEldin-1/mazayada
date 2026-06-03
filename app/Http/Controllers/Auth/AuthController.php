@@ -25,6 +25,9 @@ class AuthController extends Controller
     /** Minutes a registration OTP stays valid. */
     private const OTP_TTL_MINUTES = 5;
 
+    /** Minutes a password-reset OTP stays valid. */
+    private const OTP_RESET_TTL_MINUTES = 10;
+
     /** Seconds the user must wait between "resend code" requests. */
     private const OTP_RESEND_COOLDOWN = 60;
 
@@ -228,20 +231,21 @@ class AuthController extends Controller
      * Generate a fresh 6-digit code, cache it for OTP_TTL_MINUTES, and email it
      * to the user (email-only — no SMS). Resets any previous attempt counter.
      */
-    private function issueOtp(User $user): void
+    private function issueOtp(User $user, string $purpose = 'register', ?int $ttlMinutes = null): void
     {
+        $ttlMinutes ??= self::OTP_TTL_MINUTES;
         $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
-        Cache::put("otp_register_{$user->id}", $otp, now()->addMinutes(self::OTP_TTL_MINUTES));
-        Cache::forget("otp_attempts_register_{$user->id}");
+        Cache::put("otp_{$purpose}_{$user->id}", $otp, now()->addMinutes($ttlMinutes));
+        Cache::forget("otp_attempts_{$purpose}_{$user->id}");
 
         // Never let a mail-transport failure (bad SMTP creds, network blip) turn
-        // into a 500 on registration — the code is cached and the user can hit
-        // "resend" once mail is configured. The failure is logged for ops.
+        // into a 500 — the code is cached and the user can hit "resend" once mail
+        // is configured. The failure is logged for ops.
         try {
-            $user->notify(new OtpVerificationNotification($otp, self::OTP_TTL_MINUTES));
+            $user->notify(new OtpVerificationNotification($otp, $ttlMinutes, $purpose));
         } catch (\Throwable $e) {
-            Log::error('OTP email failed to send', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+            Log::error('OTP email failed to send', ['user_id' => $user->id, 'purpose' => $purpose, 'error' => $e->getMessage()]);
         }
     }
 
@@ -252,8 +256,8 @@ class AuthController extends Controller
 
     public function resetPassword(Request $request): RedirectResponse
     {
-        // Step 1: Generate OTP
-        if (!$request->has('otp')) {
+        // ===== Step 1: request a reset code (NIN + email) =====
+        if ((int) $request->input('step') !== 2) {
             $request->validate([
                 'nin' => ['required', 'string'],
                 'email' => ['required', 'email'],
@@ -263,39 +267,78 @@ class AuthController extends Controller
                 ->where('email', $request->email)
                 ->first();
 
-            if (!$user) {
-                return back()->withErrors(['nin' => __('auth.account_not_found')]);
+            // Enumeration-safe: only send when the account exists, but ALWAYS
+            // advance to step 2 with the same neutral message either way, so the
+            // response never reveals whether the NIN/email pair is registered.
+            if ($user) {
+                $this->issueOtp($user, 'reset', self::OTP_RESET_TTL_MINUTES);
             }
 
-            $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-            Cache::put("reset_otp_{$user->id}", $otp, now()->addMinutes(10));
-
-            // TODO: Send OTP via SMS/Email
-
             return back()->with([
-                'step' => 2,
-                'user_id' => $user->id,
-                'message' => __('auth.otp_sent'),
+                'reset_step' => 2,
+                'reset_nin' => $request->nin,
+                'reset_email' => $request->email,
+                'status' => __('auth.reset_otp_sent'),
             ]);
         }
 
-        // Step 2: Verify OTP and reset password
+        // Step 2 — the form carries NIN + email forward; re-derive the user from
+        // them rather than trusting a client-supplied id.
+        $user = User::where('nin', $request->nin)
+            ->where('email', $request->email)
+            ->first();
+
+        // ===== Step 2 — resend branch (throttled by a cooldown) =====
+        if ($request->boolean('resend')) {
+            if ($user) {
+                $cooldownKey = "otp_resend_cooldown_reset_{$user->id}";
+                if (! Cache::has($cooldownKey)) {
+                    $this->issueOtp($user, 'reset', self::OTP_RESET_TTL_MINUTES);
+                    Cache::put($cooldownKey, true, now()->addSeconds(self::OTP_RESEND_COOLDOWN));
+                }
+            }
+
+            return back()->with([
+                'reset_step' => 2,
+                'reset_nin' => $request->nin,
+                'reset_email' => $request->email,
+                'status' => __('auth.otp_resent'),
+            ]);
+        }
+
+        // ===== Step 2 — verify code + set the new password =====
         $request->validate([
-            'user_id' => ['required', 'exists:users,id'],
+            'nin' => ['required', 'string'],
+            'email' => ['required', 'email'],
             'otp' => ['required', 'string', 'size:6'],
             'password' => ['required', 'string', 'confirmed', Password::defaults()],
         ]);
 
-        $cachedOtp = Cache::get("reset_otp_{$request->user_id}");
+        // Any failure keeps the user on step 2 with NIN/email preserved.
+        $backToStep2 = fn () => back()
+            ->withInput($request->except('password', 'password_confirmation'))
+            ->with(['reset_step' => 2, 'reset_nin' => $request->nin, 'reset_email' => $request->email]);
 
-        if (!$cachedOtp || $cachedOtp !== $request->otp) {
-            return back()->withErrors(['otp' => __('auth.otp_invalid')]);
+        $attemptsKey = $user ? "otp_attempts_reset_{$user->id}" : null;
+
+        if ($user && (int) Cache::get($attemptsKey, 0) >= self::OTP_MAX_ATTEMPTS) {
+            return $backToStep2()->withErrors(['otp' => __('auth.otp_too_many_attempts')]);
         }
 
-        $user = User::findOrFail($request->user_id);
+        $cachedOtp = $user ? Cache::get("otp_reset_{$user->id}") : null;
+
+        if (! $user || ! $cachedOtp || ! hash_equals($cachedOtp, $request->otp)) {
+            if ($user) {
+                Cache::put($attemptsKey, (int) Cache::get($attemptsKey, 0) + 1, now()->addMinutes(15));
+            }
+
+            return $backToStep2()->withErrors(['otp' => __('auth.otp_invalid')]);
+        }
+
         $user->update(['password' => $request->password]);
 
-        Cache::forget("reset_otp_{$user->id}");
+        Cache::forget("otp_reset_{$user->id}");
+        Cache::forget($attemptsKey);
 
         AuditLog::log('PASSWORD_RESET', 'User', $user->id);
 

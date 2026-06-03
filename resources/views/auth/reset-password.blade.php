@@ -5,20 +5,26 @@
 @section('content')
 <div class="auth-form">
     <h1>{{ __('auth.reset_title') }}</h1>
-    @if(session('reset_step') == 2)
+    @if(session('reset_step') == 2 || old('step') == 2)
         <p>{{ __('auth.reset_subtitle_confirm') }}</p>
     @else
         <p>{{ __('auth.reset_subtitle_request') }}</p>
     @endif
 </div>
 
-@if(session('reset_step') == 2)
+@if(session('reset_step') == 2 || old('step') == 2)
 {{-- ===== Step 2: OTP + New Password ===== --}}
 <form method="POST" action="{{ route('password.reset') }}" class="auth-form">
     @csrf
     <input type="hidden" name="step" value="2">
-    <input type="hidden" name="nin" value="{{ session('reset_nin') }}">
-    <input type="hidden" name="email" value="{{ session('reset_email') }}">
+    <input type="hidden" name="nin" value="{{ old('nin', session('reset_nin')) }}">
+    <input type="hidden" name="email" value="{{ old('email', session('reset_email')) }}">
+
+    @if(session('status'))
+        <div style="background:#E5F3EC;color:#1d6045;padding:12px 16px;border-radius:11px;font-size:13px;margin-bottom:16px">
+            {{ session('status') }}
+        </div>
+    @endif
 
     <div class="grp">
         {{-- OTP --}}
@@ -91,6 +97,13 @@
         {{ __('auth.change_password_button') }}
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
     </button>
+
+    {{-- Resend --}}
+    <div style="text-align:center;margin-top:18px">
+        <button type="submit" name="resend" value="1" formnovalidate style="color:var(--primary);font-weight:600;font-size:13px;background:none;border:none;cursor:pointer;text-decoration:underline">
+            {{ __('auth.resend') }}
+        </button>
+    </div>
 
     <div class="footer-link">
         <a href="{{ route('login') }}">{{ __('auth.back_to_login') }}</a>

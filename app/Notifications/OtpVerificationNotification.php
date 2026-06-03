@@ -21,6 +21,7 @@ class OtpVerificationNotification extends Notification
     public function __construct(
         public string $otp,
         public int $expiresInMinutes = 5,
+        public string $purpose = 'register',
     ) {}
 
     /**
@@ -33,12 +34,16 @@ class OtpVerificationNotification extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
+        // Pick the copy group by purpose: registration vs password reset.
+        $group = $this->purpose === 'reset' ? 'reset' : 'otp';
+
         return (new MailMessage)
-            ->subject(__('mail.otp.subject'))
+            ->subject(__("mail.{$group}.subject"))
             ->view('emails.otp', [
                 'user' => $notifiable,
                 'otp' => $this->otp,
                 'expiresInMinutes' => $this->expiresInMinutes,
+                'group' => $group,
             ]);
     }
 }

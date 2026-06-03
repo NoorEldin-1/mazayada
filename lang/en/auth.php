@@ -99,6 +99,7 @@ return [
     'verify_email_first' => 'You must verify your email first. We have sent you a new code.',
     'account_not_found' => 'Account not found.',
     'otp_sent' => 'Verification code sent.',
+    'reset_otp_sent' => 'If the account exists, we have sent a verification code to your email.',
     'password_changed' => 'Your password has been changed successfully.',
     'password_mismatch' => 'The provided password does not match your current password.',
 ];

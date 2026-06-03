@@ -99,6 +99,7 @@ return [
     'verify_email_first' => 'Vous devez d’abord vérifier votre e-mail. Nous vous avons envoyé un nouveau code.',
     'account_not_found' => 'Compte introuvable.',
     'otp_sent' => 'Code de vérification envoyé.',
+    'reset_otp_sent' => 'Si le compte existe, nous avons envoyé un code de vérification à votre e-mail.',
     'password_changed' => 'Votre mot de passe a été modifié avec succès.',
     'password_mismatch' => 'Le mot de passe fourni ne correspond pas à votre mot de passe actuel.',
 ];
