@@ -120,10 +120,10 @@
             <div class="foot-col">
                 <h5>{{ __('footer.legal') }}</h5>
                 <ul>
-                    <li>{{ __('footer.terms') }}</li>
-                    <li>{{ __('footer.privacy') }}</li>
-                    <li>{{ __('footer.legal_framework') }}</li>
-                    <li>{{ __('footer.legal_notes') }}</li>
+                    <li><a href="{{ route('legal.terms') }}">{{ __('footer.terms') }}</a></li>
+                    <li><a href="{{ route('legal.privacy') }}">{{ __('footer.privacy') }}</a></li>
+                    <li><a href="{{ route('legal.framework') }}">{{ __('footer.legal_framework') }}</a></li>
+                    <li><a href="{{ route('legal.notices') }}">{{ __('footer.legal_notes') }}</a></li>
                 </ul>
             </div>
             <div class="foot-col">
@@ -138,9 +138,9 @@
         <div class="foot-btm">
             <span>{{ __('footer.rights', ['year' => date('Y'), 'app' => __('common.app_name')]) }}</span>
             <span class="ml">
-                <a href="#">{{ __('footer.terms') }}</a>
-                <a href="#">{{ __('footer.privacy') }}</a>
-                <a href="#">{{ __('footer.legal_framework') }}</a>
+                <a href="{{ route('legal.terms') }}">{{ __('footer.terms') }}</a>
+                <a href="{{ route('legal.privacy') }}">{{ __('footer.privacy') }}</a>
+                <a href="{{ route('legal.framework') }}">{{ __('footer.legal_framework') }}</a>
             </span>
         </div>
     </div>

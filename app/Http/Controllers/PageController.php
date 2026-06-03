@@ -15,4 +15,24 @@ class PageController extends Controller
     {
         return view('pages.about');
     }
+
+    public function terms(): View
+    {
+        return view('pages.legal.terms');
+    }
+
+    public function privacy(): View
+    {
+        return view('pages.legal.privacy');
+    }
+
+    public function framework(): View
+    {
+        return view('pages.legal.framework');
+    }
+
+    public function notices(): View
+    {
+        return view('pages.legal.notices');
+    }
 }

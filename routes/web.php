@@ -22,6 +22,14 @@ Route::get('/auctions/{auction}', [AuctionController::class, 'show'])->name('auc
 Route::get('/how-it-works', [PageController::class, 'howItWorks'])->name('how-it-works');
 Route::get('/about', [PageController::class, 'about'])->name('about');
 
+// Legal / static policy pages — linked from the footer and the registration form.
+Route::prefix('legal')->name('legal.')->group(function () {
+    Route::get('/terms', [PageController::class, 'terms'])->name('terms');
+    Route::get('/privacy', [PageController::class, 'privacy'])->name('privacy');
+    Route::get('/framework', [PageController::class, 'framework'])->name('framework');
+    Route::get('/notices', [PageController::class, 'notices'])->name('notices');
+});
+
 // Auth (guest only) — throttled to prevent brute force
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

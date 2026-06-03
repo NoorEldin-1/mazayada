@@ -155,8 +155,8 @@
         <input type="checkbox" id="terms" name="terms" value="1" style="margin-top:4px" {{ old('terms') ? 'checked' : '' }} required>
         <label for="terms" class="legal" style="margin:0">
             {!! __('auth.terms_agree', [
-                'terms' => '<a href="#">'.e(__('auth.terms_link')).'</a>',
-                'privacy' => '<a href="#">'.e(__('auth.privacy_link')).'</a>',
+                'terms' => '<a href="'.route('legal.terms').'" target="_blank" rel="noopener">'.e(__('auth.terms_link')).'</a>',
+                'privacy' => '<a href="'.route('legal.privacy').'" target="_blank" rel="noopener">'.e(__('auth.privacy_link')).'</a>',
             ]) !!}
         </label>
     </div>
