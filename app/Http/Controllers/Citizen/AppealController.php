@@ -42,6 +42,6 @@ class AppealController extends Controller
             'subject' => $request->subject,
         ]);
 
-        return back()->with('success', 'تم تقديم الطعن بنجاح.');
+        return back()->with('success', __('appeals.flash_submitted'));
     }
 }

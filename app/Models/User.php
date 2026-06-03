@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\AccountStatus;
 use App\Enums\KycStatus;
 use App\Enums\UserRole;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -17,7 +18,7 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements HasLocalePreference
 {
     use HasRoles, HasUuids, LogsActivity, Notifiable, TwoFactorAuthenticatable;
 
@@ -29,7 +30,7 @@ class User extends Authenticatable
         'profession', 'nif', 'nis', 'rip', 'expected_income',
         'kyc_status', 'kyc_completed_at', 'is_blacklisted', 'blacklist_reason',
         'account_status', 'premium_until', 'secret_question', 'secret_answer',
-        'password', 'role', 'phone_verified', 'email_verified',
+        'password', 'role', 'locale', 'phone_verified', 'email_verified',
         'failed_login_attempts', 'locked_until',
     ];
 
@@ -189,5 +190,15 @@ class User extends Authenticatable
     public function getNameAttribute(): string
     {
         return $this->fullNameAr() ?: ($this->fullNameFr() ?: ($this->email ?? ''));
+    }
+
+    /**
+     * Preferred UI language. Laravel reads this to localize queued
+     * notifications and mailables sent to the user (HasLocalePreference).
+     * Falls back to the platform default when not set.
+     */
+    public function preferredLocale(): string
+    {
+        return $this->locale ?: config('locales.default', 'ar');
     }
 }

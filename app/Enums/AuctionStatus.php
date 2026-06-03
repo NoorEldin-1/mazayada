@@ -13,14 +13,7 @@ enum AuctionStatus: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::DRAFT => 'مسودة',
-            self::PUBLISHED => 'منشورة',
-            self::ACTIVE => 'نشطة',
-            self::EXTENDED => 'ممددة',
-            self::CLOSED => 'مغلقة',
-            self::CANCELLED => 'ملغاة',
-        };
+        return __('enums.auction_status.'.$this->value);
     }
 
     public function chipClass(): string

@@ -1,11 +1,11 @@
 @extends('layouts.auth')
 
-@section('title', 'تسجيل الدخول')
+@section('title', __('auth.login_title'))
 
 @section('content')
 <div class="auth-form">
-    <h1>تسجيل الدخول</h1>
-    <p>أدخل بياناتك للوصول إلى حسابك على منصة مزايدة.</p>
+    <h1>{{ __('auth.login_title') }}</h1>
+    <p>{{ __('auth.login_subtitle') }}</p>
 </div>
 
 <form method="POST" action="{{ route('login') }}" class="auth-form">
@@ -14,7 +14,7 @@
     <div class="grp">
         {{-- NIN or Email --}}
         <div class="field">
-            <label for="login">رقم التعريف الوطني أو البريد الإلكتروني <span class="req">*</span></label>
+            <label for="login">{{ __('auth.login_id_label') }} <span class="req">*</span></label>
             <div class="input-wrap">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 <input
@@ -23,7 +23,7 @@
                     name="nin_or_email"
                     class="input has-ic"
                     dir="ltr"
-                    placeholder="رقم التعريف أو البريد الإلكتروني"
+                    placeholder="{{ __('auth.login_id_placeholder') }}"
                     value="{{ old('nin_or_email') }}"
                     required
                     autofocus
@@ -36,7 +36,7 @@
 
         {{-- Password --}}
         <div class="field">
-            <label for="password">كلمة المرور <span class="req">*</span></label>
+            <label for="password">{{ __('auth.password_label') }} <span class="req">*</span></label>
             <div class="input-wrap">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 <input
@@ -60,7 +60,7 @@
 
     {{-- Forgot password --}}
     <div style="display:flex;justify-content:flex-end;margin-bottom:18px">
-        <a href="{{ route('password.reset') }}" style="font-size:13px;color:var(--primary);font-weight:600">نسيت كلمة المرور؟</a>
+        <a href="{{ route('password.reset') }}" style="font-size:13px;color:var(--primary);font-weight:600">{{ __('auth.forgot_password') }}</a>
     </div>
 
     {{-- General errors --}}
@@ -72,13 +72,13 @@
 
     {{-- Submit --}}
     <button type="submit" class="btn btn-primary btn-block btn-lg">
-        تسجيل الدخول
+        {{ __('auth.login_button') }}
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
     </button>
 
     {{-- Register link --}}
     <div class="footer-link">
-        ليس لديك حساب؟ <a href="{{ route('register') }}">أنشئ حسابا جديدا</a>
+        {{ __('auth.no_account') }} <a href="{{ route('register') }}">{{ __('auth.create_account_link') }}</a>
     </div>
 </form>
 

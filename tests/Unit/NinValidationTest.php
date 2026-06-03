@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use App\Rules\NinValidation;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class NinValidationTest extends TestCase
 {

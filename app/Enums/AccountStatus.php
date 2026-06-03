@@ -10,11 +10,7 @@ enum AccountStatus: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::ACTIVE => 'نشط',
-            self::SUSPENDED => 'معلّق',
-            self::BANNED => 'محظور',
-        };
+        return __('enums.account_status.'.$this->value);
     }
 
     public function chipClass(): string

@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
-@section('title', 'سجل المراجعة')
-@section('page-title', 'سجل المراجعة')
+@section('title', __('admin.nav_audit'))
+@section('page-title', __('admin.nav_audit'))
 
 @section('content')
 
@@ -9,11 +9,11 @@
     <table class="tbl">
         <thead>
             <tr>
-                <th>التوقيت</th>
-                <th>الفاعل</th>
-                <th>الدور</th>
-                <th>الإجراء</th>
-                <th>المورد</th>
+                <th>{{ __('admin.audit.th_time') }}</th>
+                <th>{{ __('admin.audit.th_actor') }}</th>
+                <th>{{ __('admin.th_role') }}</th>
+                <th>{{ __('admin.audit.th_action') }}</th>
+                <th>{{ __('admin.audit.th_resource') }}</th>
                 <th>IP</th>
             </tr>
         </thead>
@@ -36,7 +36,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" style="text-align:center;padding:2rem;color:var(--ink-muted)">لا توجد سجلات</td>
+                    <td colspan="6" style="text-align:center;padding:2rem;color:var(--ink-muted)">{{ __('admin.audit.no_logs') }}</td>
                 </tr>
             @endforelse
         </tbody>

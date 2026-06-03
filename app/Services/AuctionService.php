@@ -12,7 +12,7 @@ class AuctionService
     public function publish(Auction $auction): void
     {
         if ($auction->status !== AuctionStatus::DRAFT) {
-            throw new \Exception('يمكن نشر المسودات فقط.');
+            throw new \Exception(__('admin.flash.auction_publish_only_draft'));
         }
         $auction->update(['status' => AuctionStatus::PUBLISHED]);
         AuditLog::log('AUCTION_PUBLISHED', 'auction', $auction->id);
@@ -21,7 +21,7 @@ class AuctionService
     public function start(Auction $auction): void
     {
         if ($auction->status !== AuctionStatus::PUBLISHED) {
-            throw new \Exception('يمكن بدء المزايدات المنشورة فقط.');
+            throw new \Exception(__('admin.flash.auction_start_only_published'));
         }
         $auction->update(['status' => AuctionStatus::ACTIVE]);
         AuditLog::log('AUCTION_STARTED', 'auction', $auction->id);

@@ -10,7 +10,7 @@ class NinValidation implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (!preg_match('/^\d{18}$/', $value)) {
-            $fail('رقم التعريف الوطني يجب أن يكون 18 رقماً.');
+            $fail(__('rules.nin_length'));
             return;
         }
 
@@ -26,7 +26,7 @@ class NinValidation implements ValidationRule
         $expected = (int) substr($value, 16, 2);
 
         if ($checksum !== $expected) {
-            $fail('رقم التعريف الوطني غير صالح.');
+            $fail(__('rules.nin_invalid'));
         }
     }
 }

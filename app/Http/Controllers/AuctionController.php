@@ -74,7 +74,7 @@ class AuctionController extends Controller
             ->exists();
 
         if ($existing) {
-            return back()->with('info', 'أنت مسجل بالفعل في هذا المزاد.');
+            return back()->with('info', __('auctions.flash_already_registered'));
         }
 
         AuctionParticipant::create([
@@ -88,7 +88,7 @@ class AuctionController extends Controller
             'user_id' => auth()->id(),
         ]);
 
-        return back()->with('success', 'تم التسجيل في المزاد بنجاح.');
+        return back()->with('success', __('auctions.flash_registered'));
     }
 
     public function bid(Request $request, Auction $auction): RedirectResponse|JsonResponse
@@ -100,7 +100,7 @@ class AuctionController extends Controller
         $currentPrice = $auction->currentPrice();
 
         if ($request->amount <= $currentPrice) {
-            $error = 'يجب أن يكون المبلغ أعلى من السعر الحالي (' . $auction->formatPrice($currentPrice) . ').';
+            $error = __('auctions.bid_too_low_priced', ['price' => $auction->formatPrice($currentPrice)]);
 
             if ($request->wantsJson()) {
                 return response()->json(['error' => $error], 422);
@@ -130,6 +130,6 @@ class AuctionController extends Controller
             ]);
         }
 
-        return back()->with('success', 'تم تقديم عرضك بنجاح.');
+        return back()->with('success', __('auctions.flash_bid_placed'));
     }
 }

@@ -83,10 +83,16 @@ Route::prefix('api/v1')->group(function () {
     Route::get('/wilayas/{wilaya}/communes', [GeoController::class, 'communes']);
 });
 
-// Set language
+// Set language — works for guests (session) and authenticated users (persisted
+// to their account so the choice follows them across devices).
 Route::get('/lang/{locale}', function (string $locale) {
-    if (in_array($locale, ['ar', 'fr', 'en'])) {
+    if (in_array($locale, config('locales.supported', ['ar']), true)) {
         session(['locale' => $locale]);
+
+        if ($user = request()->user()) {
+            $user->update(['locale' => $locale]);
+        }
     }
+
     return back();
 })->name('lang.switch');

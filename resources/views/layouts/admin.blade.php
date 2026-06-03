@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="{{ locale_lang() }}" dir="{{ locale_dir() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'لوحة الإدارة') — مزايدة</title>
+    <title>@yield('title', __('admin.panel')) — {{ __('common.app_name') }}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="alternate icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,6 +39,10 @@
         .adm-top .acts{display:flex;align-items:center;gap:10px}
         .adm-top .acts a,.adm-top .acts button{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:var(--ink-2);background:var(--bg);border:1px solid var(--line)}
         .adm-top .acts a:hover,.adm-top .acts button:hover{background:#F2F4F8}
+        /* Keep the language switcher compact inside the icon-button toolbar. */
+        .adm-top .acts .lang-switch a{width:auto;height:auto;border:0;background:transparent;display:inline-flex;color:var(--muted)}
+        .adm-top .acts .lang-switch a:hover{background:transparent}
+        .adm-top .acts .lang-switch a.on{background:#fff;color:var(--primary)}
         .adm-body{padding:28px}
         @media(max-width:1100px){.adm-side{width:72px;overflow:hidden}.adm-side .logo .txt,.adm-side .logo .sub,.adm-nav span,.adm-foot .nm,.adm-foot .rl{display:none}.adm-main{margin-inline-start:72px}.adm-nav a,.adm-nav button{justify-content:center;padding:11px}}
     </style>
@@ -50,41 +54,41 @@
     <aside class="adm-side" id="admSide">
         <div class="logo">
             <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 17.5 3 3 3-3"/><path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg></div>
-            <div><div class="txt">مزايدة</div><div class="sub">لوحة الإدارة</div></div>
+            <div><div class="txt">{{ __('common.app_name') }}</div><div class="sub">{{ __('admin.panel') }}</div></div>
         </div>
         <nav class="adm-nav">
             <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'on' : '' }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-                <span>لوحة التحكم</span>
+                <span>{{ __('admin.nav_dashboard') }}</span>
             </a>
             <a href="{{ route('admin.auctions.index') }}" class="{{ request()->routeIs('admin.auctions.index','admin.auctions.edit') ? 'on' : '' }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m14.5 17.5 3 3 3-3"/><path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
-                <span>المزايدات</span>
+                <span>{{ __('admin.nav_auctions') }}</span>
             </a>
             <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'on' : '' }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                <span>المستخدمون</span>
+                <span>{{ __('admin.nav_users') }}</span>
             </a>
             <a href="{{ route('admin.kyc.index') }}" class="{{ request()->routeIs('admin.kyc.*') ? 'on' : '' }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                <span>التحقق (KYC)</span>
+                <span>{{ __('admin.nav_kyc') }}</span>
             </a>
             <a href="{{ route('admin.appeals.index') }}" class="{{ request()->routeIs('admin.appeals.*') ? 'on' : '' }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                <span>الطعون</span>
+                <span>{{ __('admin.nav_appeals') }}</span>
             </a>
             <a href="{{ route('admin.audit-logs') }}" class="{{ request()->routeIs('admin.audit-logs') ? 'on' : '' }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <span>سجل المراجعة</span>
+                <span>{{ __('admin.nav_audit') }}</span>
             </a>
             <div class="sep"></div>
             <a href="{{ route('admin.auctions.create') }}" class="create">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                <span>إنشاء مزايدة</span>
+                <span>{{ __('admin.create_auction') }}</span>
             </a>
         </nav>
         <div class="adm-foot">
-            <div class="av">{{ auth()->check() ? mb_substr(auth()->user()->first_name_ar, 0, 1) : '؟' }}</div>
+            <div class="av">{{ auth()->check() ? mb_substr(auth()->user()->first_name_ar, 0, 1) : '?' }}</div>
             <div>
                 <div class="nm">{{ auth()->check() ? auth()->user()->fullNameAr() : '' }}</div>
                 <div class="rl">{{ auth()->check() ? auth()->user()->role->label() : '' }}</div>
@@ -98,14 +102,15 @@
     {{-- Main --}}
     <div class="adm-main">
         <header class="adm-top">
-            <button type="button" class="adm-burger" aria-label="القائمة" onclick="const s=document.getElementById('admSide'),b=document.getElementById('admBackdrop');s.classList.toggle('open');b.classList.toggle('on')">
+            <button type="button" class="adm-burger" aria-label="{{ __('nav.menu') }}" onclick="const s=document.getElementById('admSide'),b=document.getElementById('admBackdrop');s.classList.toggle('open');b.classList.toggle('on')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             </button>
-            <h1>@yield('page-title', 'لوحة التحكم')</h1>
+            <h1>@yield('page-title', __('admin.page_title_default'))</h1>
             <div class="acts">
+                <x-lang-switcher />
                 <form method="POST" action="{{ route('logout') }}" style="display:inline">
                     @csrf
-                    <button type="submit" title="تسجيل الخروج">
+                    <button type="submit" title="{{ __('admin.logout') }}">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                     </button>
                 </form>

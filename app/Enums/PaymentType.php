@@ -11,11 +11,6 @@ enum PaymentType: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::DEPOSIT => 'كفالة',
-            self::ENTRY_FEE => 'رسوم دخول',
-            self::BOOK_PURCHASE => 'كراسة شروط',
-            self::FINAL_PAYMENT => 'دفع نهائي',
-        };
+        return __('enums.payment_type.'.$this->value);
     }
 }

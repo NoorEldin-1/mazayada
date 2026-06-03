@@ -1,26 +1,26 @@
 @if ($paginator->hasPages())
     <nav class="pgn" role="navigation" aria-label="Pagination">
         <div class="pgn-info">
-            عرض
+            {{ __('pagination.showing') }}
             <span class="num">{{ $paginator->firstItem() ?? 0 }}</span>
-            إلى
+            {{ __('pagination.to') }}
             <span class="num">{{ $paginator->lastItem() ?? 0 }}</span>
-            من
+            {{ __('pagination.of') }}
             <span class="num">{{ $paginator->total() }}</span>
-            نتيجة
+            {{ __('pagination.results') }}
         </div>
 
         <ul class="pgn-list">
             {{-- Previous --}}
             @if ($paginator->onFirstPage())
-                <li class="pgn-item is-disabled" aria-disabled="true" aria-label="السابق">
+                <li class="pgn-item is-disabled" aria-disabled="true" aria-label="{{ __('pagination.previous') }}">
                     <span class="pgn-link">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                     </span>
                 </li>
             @else
                 <li class="pgn-item">
-                    <a class="pgn-link" href="{{ $paginator->previousPageUrl() }}" rel="prev" aria-label="السابق">
+                    <a class="pgn-link" href="{{ $paginator->previousPageUrl() }}" rel="prev" aria-label="{{ __('pagination.previous') }}">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                     </a>
                 </li>
@@ -46,12 +46,12 @@
             {{-- Next --}}
             @if ($paginator->hasMorePages())
                 <li class="pgn-item">
-                    <a class="pgn-link" href="{{ $paginator->nextPageUrl() }}" rel="next" aria-label="التالي">
+                    <a class="pgn-link" href="{{ $paginator->nextPageUrl() }}" rel="next" aria-label="{{ __('pagination.next') }}">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                     </a>
                 </li>
             @else
-                <li class="pgn-item is-disabled" aria-disabled="true" aria-label="التالي">
+                <li class="pgn-item is-disabled" aria-disabled="true" aria-label="{{ __('pagination.next') }}">
                     <span class="pgn-link">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                     </span>

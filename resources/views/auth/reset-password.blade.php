@@ -1,17 +1,17 @@
 @extends('layouts.auth')
 
-@section('title', 'استعادة كلمة المرور')
+@section('title', __('auth.reset_title'))
 
-@section('auth-heading')
-    <h1>استعادة كلمة المرور</h1>
+@section('content')
+<div class="auth-form">
+    <h1>{{ __('auth.reset_title') }}</h1>
     @if(session('reset_step') == 2)
-        <p>أدخل رمز التحقق وكلمة المرور الجديدة.</p>
+        <p>{{ __('auth.reset_subtitle_confirm') }}</p>
     @else
-        <p>أدخل رقم التعريف الوطني والبريد الإلكتروني لاستلام رمز التحقق.</p>
+        <p>{{ __('auth.reset_subtitle_request') }}</p>
     @endif
-@endsection
+</div>
 
-@section('auth-form')
 @if(session('reset_step') == 2)
 {{-- ===== Step 2: OTP + New Password ===== --}}
 <form method="POST" action="{{ route('password.reset') }}" class="auth-form">
@@ -23,7 +23,7 @@
     <div class="grp">
         {{-- OTP --}}
         <div class="field">
-            <label for="otp">رمز التحقق <span class="req">*</span></label>
+            <label for="otp">{{ __('auth.otp_label') }} <span class="req">*</span></label>
             <div class="input-wrap">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>
                 <input
@@ -49,7 +49,7 @@
 
         {{-- New Password --}}
         <div class="field">
-            <label for="password">كلمة المرور الجديدة <span class="req">*</span></label>
+            <label for="password">{{ __('auth.new_password_label') }} <span class="req">*</span></label>
             <input
                 type="password"
                 id="password"
@@ -66,7 +66,7 @@
 
         {{-- Confirm Password --}}
         <div class="field">
-            <label for="password_confirmation">تأكيد كلمة المرور <span class="req">*</span></label>
+            <label for="password_confirmation">{{ __('auth.password_confirm_label') }} <span class="req">*</span></label>
             <input
                 type="password"
                 id="password_confirmation"
@@ -88,12 +88,12 @@
 
     {{-- Submit --}}
     <button type="submit" class="btn btn-primary btn-block btn-lg">
-        تغيير كلمة المرور
+        {{ __('auth.change_password_button') }}
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
     </button>
 
     <div class="footer-link">
-        <a href="{{ route('login') }}">العودة لتسجيل الدخول</a>
+        <a href="{{ route('login') }}">{{ __('auth.back_to_login') }}</a>
     </div>
 </form>
 
@@ -106,7 +106,7 @@
     <div class="grp">
         {{-- NIN --}}
         <div class="field">
-            <label for="nin">رقم التعريف الوطني (NIN) <span class="req">*</span></label>
+            <label for="nin">{{ __('auth.nin_label') }} <span class="req">*</span></label>
             <div class="input-wrap">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
                 <input
@@ -131,7 +131,7 @@
 
         {{-- Email --}}
         <div class="field">
-            <label for="email">البريد الإلكتروني <span class="req">*</span></label>
+            <label for="email">{{ __('auth.email_label') }} <span class="req">*</span></label>
             <div class="input-wrap">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
                 <input
@@ -167,12 +167,12 @@
 
     {{-- Submit --}}
     <button type="submit" class="btn btn-primary btn-block btn-lg">
-        إرسال رمز التحقق
+        {{ __('auth.send_otp_button') }}
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
     </button>
 
     <div class="footer-link">
-        <a href="{{ route('login') }}">العودة لتسجيل الدخول</a>
+        <a href="{{ route('login') }}">{{ __('auth.back_to_login') }}</a>
     </div>
 </form>
 @endif

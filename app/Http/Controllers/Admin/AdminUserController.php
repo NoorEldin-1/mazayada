@@ -33,6 +33,6 @@ class AdminUserController extends Controller
             'reason' => $request->reason,
         ]);
 
-        return back()->with('success', 'تم إدراج المستخدم في القائمة السوداء.');
+        return back()->with('success', __('admin.flash.user_blacklisted'));
     }
 }

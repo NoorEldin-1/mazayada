@@ -12,13 +12,7 @@ enum AppealStatus: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::SUBMITTED => 'مقدّم',
-            self::UNDER_REVIEW => 'قيد المراجعة',
-            self::RESOLVED => 'تمت التسوية',
-            self::REJECTED => 'مرفوض',
-            self::ESCALATED => 'مُصعَّد',
-        };
+        return __('enums.appeal_status.'.$this->value);
     }
 
     public function chipClass(): string

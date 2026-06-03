@@ -1,27 +1,27 @@
 @extends('layouts.citizen')
-@section('title', 'التحقق من الهوية')
+@section('title', __('dashboard.nav_identity'))
 @section('content')
 
 <div style="margin-bottom:24px">
-    <h2 style="font-size:24px;font-weight:700;margin:0 0 8px">التحقق من الهوية (KYC)</h2>
-    <p style="color:var(--muted);font-size:14px;margin:0">أكمل التحقق من هويتك للمشاركة في المزايدات</p>
+    <h2 style="font-size:24px;font-weight:700;margin:0 0 8px">{{ __('kyc.page_title') }}</h2>
+    <p style="color:var(--muted);font-size:14px;margin:0">{{ __('kyc.page_subtitle') }}</p>
 </div>
 
 {{-- Step indicator --}}
 <div class="steps-h">
     <div class="si {{ auth()->user()->biometrics && auth()->user()->biometrics->id_front_path ? 'done' : 'cur' }}">
         <div class="n">1</div>
-        <div class="tx"><div class="l">الخطوة الأولى</div><div class="t">الوثائق البيومترية</div></div>
+        <div class="tx"><div class="l">{{ __('kyc.step1_label') }}</div><div class="t">{{ __('kyc.step1_title') }}</div></div>
     </div>
     <div class="ln {{ auth()->user()->biometrics && auth()->user()->biometrics->id_front_path ? 'done' : '' }}"></div>
     <div class="si {{ auth()->user()->kyc_status->value === 'COMPLETE' ? 'done' : (auth()->user()->biometrics && auth()->user()->biometrics->id_front_path ? 'cur' : '') }}">
         <div class="n">2</div>
-        <div class="tx"><div class="l">الخطوة الثانية</div><div class="t">المعلومات الشخصية</div></div>
+        <div class="tx"><div class="l">{{ __('kyc.step2_label') }}</div><div class="t">{{ __('kyc.step2_title') }}</div></div>
     </div>
     <div class="ln"></div>
     <div class="si">
         <div class="n">3</div>
-        <div class="tx"><div class="l">الخطوة الثالثة</div><div class="t">الإرسال والمراجعة</div></div>
+        <div class="tx"><div class="l">{{ __('kyc.step3_label') }}</div><div class="t">{{ __('kyc.step3_title') }}</div></div>
     </div>
 </div>
 
@@ -40,10 +40,10 @@
 
 {{-- Step 1: Document Upload --}}
 <div class="card" style="margin-bottom:20px">
-    <div class="card-h"><h3>الوثائق البيومترية</h3></div>
+    <div class="card-h"><h3>{{ __('kyc.step1_title') }}</h3></div>
     <div class="card-pad">
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
-            @foreach(['id-front' => 'واجهة بطاقة الهوية', 'id-back' => 'خلفية بطاقة الهوية', 'selfie-with-id' => 'سيلفي مع بطاقة الهوية'] as $type => $label)
+            @foreach(['id-front' => __('kyc.doc_id_front'), 'id-back' => __('kyc.doc_id_back'), 'selfie-with-id' => __('kyc.doc_selfie')] as $type => $label)
             <div>
                 <form action="{{ route('citizen.kyc.upload', $type) }}" method="POST" enctype="multipart/form-data">
                     @csrf
@@ -61,7 +61,7 @@
                             @endif
                         </div>
                         <div class="t">{{ $label }}</div>
-                        <div class="s">{{ $uploaded ? 'تم الرفع ✓' : 'JPG أو PNG — حد أقصى 5 ميغابايت' }}</div>
+                        <div class="s">{{ $uploaded ? __('kyc.uploaded') : __('kyc.upload_hint') }}</div>
                         @if(!$uploaded)
                             <input type="file" name="file" accept="image/jpeg,image/png" style="display:none" onchange="this.form.submit()">
                         @endif
@@ -71,12 +71,12 @@
             @endforeach
         </div>
         <div style="background:#FBEFD6;border-radius:14px;padding:18px;margin-top:18px;font-size:13px;color:#8A6310">
-            <strong>متطلبات الصور:</strong>
+            <strong>{{ __('kyc.requirements_title') }}</strong>
             <ul style="margin:8px 0 0;padding-inline-start:18px;line-height:2">
-                <li>صورة واضحة بدون انعكاسات</li>
-                <li>جميع الزوايا والنصوص مقروءة</li>
-                <li>الحجم الأقصى: 5 ميغابايت لكل ملف</li>
-                <li>الصيغ المقبولة: JPG، PNG</li>
+                <li>{{ __('kyc.req_clear') }}</li>
+                <li>{{ __('kyc.req_readable') }}</li>
+                <li>{{ __('kyc.req_size') }}</li>
+                <li>{{ __('kyc.req_formats') }}</li>
             </ul>
         </div>
     </div>
@@ -84,72 +84,72 @@
 
 {{-- Step 2: Personal Info --}}
 <div class="card" style="margin-bottom:20px">
-    <div class="card-h"><h3>المعلومات الشخصية</h3></div>
+    <div class="card-h"><h3>{{ __('kyc.step2_title') }}</h3></div>
     <div class="card-pad">
         <form action="{{ route('citizen.kyc.submit') }}" method="POST">
             @csrf
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
                 <div class="field">
-                    <label>الاسم بالفرنسية <span class="req">*</span></label>
+                    <label>{{ __('kyc.f_first_name_fr') }} <span class="req">*</span></label>
                     <input class="input" name="first_name_fr" value="{{ old('first_name_fr', auth()->user()->first_name_fr) }}" dir="ltr" required>
                 </div>
                 <div class="field">
-                    <label>اللقب بالفرنسية <span class="req">*</span></label>
+                    <label>{{ __('kyc.f_last_name_fr') }} <span class="req">*</span></label>
                     <input class="input" name="last_name_fr" value="{{ old('last_name_fr', auth()->user()->last_name_fr) }}" dir="ltr" required>
                 </div>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
                 <div class="field">
-                    <label>اسم الأب</label>
+                    <label>{{ __('kyc.f_father_name') }}</label>
                     <input class="input" name="father_name" value="{{ old('father_name', auth()->user()->father_name) }}">
                 </div>
                 <div class="field">
-                    <label>اسم الأم الكامل</label>
+                    <label>{{ __('kyc.f_mother_fullname') }}</label>
                     <input class="input" name="mother_fullname" value="{{ old('mother_fullname', auth()->user()->mother_fullname) }}">
                 </div>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
                 <div class="field">
-                    <label>الولاية <span class="req">*</span></label>
+                    <label>{{ __('kyc.f_wilaya') }} <span class="req">*</span></label>
                     <select class="input" name="wilaya_id" id="wilaya-select" required>
-                        <option value="">— اختر الولاية —</option>
+                        <option value="">{{ __('kyc.choose_wilaya') }}</option>
                         @foreach(\App\Models\Wilaya::orderBy('id')->get() as $w)
-                            <option value="{{ $w->id }}">{{ $w->id }} — {{ $w->name_ar }}</option>
+                            <option value="{{ $w->id }}">{{ $w->id }} — {{ $w->name }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="field">
-                    <label>البلدية</label>
+                    <label>{{ __('kyc.f_commune') }}</label>
                     <select class="input" name="commune_id" id="commune-select">
-                        <option value="">— اختر الولاية أولاً —</option>
+                        <option value="">{{ __('kyc.choose_wilaya_first') }}</option>
                     </select>
                 </div>
             </div>
             <div class="field" style="margin-bottom:16px">
-                <label>العنوان الكامل</label>
+                <label>{{ __('kyc.f_full_address') }}</label>
                 <input class="input" name="address" value="{{ old('address', auth()->user()->address) }}">
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
                 <div class="field">
-                    <label>الرمز البريدي</label>
+                    <label>{{ __('kyc.f_postal_code') }}</label>
                     <input class="input" name="postal_code" value="{{ old('postal_code', auth()->user()->postal_code) }}" dir="ltr" maxlength="5" pattern="\d{5}">
                 </div>
                 <div class="field">
-                    <label>المهنة</label>
+                    <label>{{ __('kyc.f_profession') }}</label>
                     <input class="input" name="profession" value="{{ old('profession', auth()->user()->profession) }}">
                 </div>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
                 <div class="field">
-                    <label>الدخل السنوي المتوقع (دج)</label>
+                    <label>{{ __('kyc.f_expected_income') }}</label>
                     <input class="input" type="number" name="expected_income" value="{{ old('expected_income', auth()->user()->expected_income) }}" dir="ltr">
                 </div>
                 <div class="field">
-                    <label>رقم الحساب الجاري (RIP)</label>
+                    <label>{{ __('kyc.f_rip') }}</label>
                     <input class="input" name="rip" value="{{ old('rip', auth()->user()->rip) }}" dir="ltr">
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary btn-block btn-lg">إرسال طلب التحقق</button>
+            <button type="submit" class="btn btn-primary btn-block btn-lg">{{ __('kyc.submit') }}</button>
         </form>
     </div>
 </div>
@@ -158,13 +158,14 @@
 <script>
 document.getElementById('wilaya-select')?.addEventListener('change', async function() {
     const sel = document.getElementById('commune-select');
-    sel.innerHTML = '<option value="">جاري التحميل...</option>';
-    if (!this.value) { sel.innerHTML = '<option value="">— اختر الولاية أولاً —</option>'; return; }
+    sel.innerHTML = '<option value="">{{ __('common.loading') }}</option>';
+    if (!this.value) { sel.innerHTML = '<option value="">{{ __('kyc.choose_wilaya_first') }}</option>'; return; }
     try {
         const res = await fetch('/api/v1/wilayas/' + this.value + '/communes');
         const data = await res.json();
-        sel.innerHTML = '<option value="">— اختر البلدية —</option>' + data.map(c => `<option value="${c.id}">${c.name_ar}</option>`).join('');
-    } catch(e) { sel.innerHTML = '<option value="">خطأ في التحميل</option>'; }
+        const f = @json(app()->getLocale() === 'fr' ? 'name_fr' : 'name_ar');
+        sel.innerHTML = '<option value="">{{ __('kyc.choose_commune') }}</option>' + data.map(c => `<option value="${c.id}">${c[f] || c.name_ar}</option>`).join('');
+    } catch(e) { sel.innerHTML = '<option value="">{{ __('kyc.js_load_error') }}</option>'; }
 });
 </script>
 @endpush

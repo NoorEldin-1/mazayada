@@ -9,9 +9,6 @@ enum AuctionType: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::SALE => 'بيع',
-            self::LEASE => 'إيجار',
-        };
+        return __('enums.auction_type.'.$this->value);
     }
 }

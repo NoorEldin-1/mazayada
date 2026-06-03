@@ -94,6 +94,6 @@ class CitizenController extends Controller
             'phone', 'email', 'address', 'commune_id', 'postal_code', 'profession',
         ]));
 
-        return back()->with('success', 'تم تحديث الملف الشخصي بنجاح.');
+        return back()->with('success', __('profile.flash_updated'));
     }
 }

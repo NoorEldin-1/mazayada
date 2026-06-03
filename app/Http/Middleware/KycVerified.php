@@ -19,11 +19,11 @@ class KycVerified
 
         if ($user->kyc_status !== KycStatus::COMPLETE) {
             return redirect()->route('citizen.kyc')
-                ->with('error', __('يجب إكمال التحقق من الهوية قبل المتابعة.'));
+                ->with('error', __('kyc.complete_required'));
         }
 
         if ($user->isBlacklisted() || $user->isLocked()) {
-            abort(403, __('غير مصرح لك بهذا الإجراء.'));
+            abort(403, __('kyc.not_authorized'));
         }
 
         return $next($request);

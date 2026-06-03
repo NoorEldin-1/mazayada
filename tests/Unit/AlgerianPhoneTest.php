@@ -4,7 +4,7 @@ namespace Tests\Unit;
 
 use App\Rules\AlgerianPhone;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class AlgerianPhoneTest extends TestCase
 {

@@ -38,6 +38,6 @@ class AdminAppealController extends Controller
             'status' => $request->status,
         ]);
 
-        return back()->with('success', 'تم الرد على الطعن بنجاح.');
+        return back()->with('success', __('appeals.flash_responded'));
     }
 }

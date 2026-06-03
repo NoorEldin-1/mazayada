@@ -31,7 +31,7 @@ class AdminKycController extends Controller
 
         AuditLog::log('KYC_APPROVED', 'User', $user->id);
 
-        return back()->with('success', 'تم قبول التوثيق بنجاح.');
+        return back()->with('success', __('admin.flash.kyc_approved'));
     }
 
     public function reject(Request $request, User $user): RedirectResponse
@@ -48,6 +48,6 @@ class AdminKycController extends Controller
             'reason' => $request->reason,
         ]);
 
-        return back()->with('success', 'تم رفض التوثيق.');
+        return back()->with('success', __('admin.flash.kyc_rejected'));
     }
 }

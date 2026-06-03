@@ -8,7 +8,7 @@
     {{-- Back Link --}}
     <a href="{{ route('auctions.index') }}" style="display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;font-weight:500;margin-bottom:18px">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        العودة إلى المزايدات
+        {{ __('auctions.show.back') }}
     </a>
 
     @if(session('success'))
@@ -61,35 +61,35 @@
             <div style="display:flex;flex-wrap:wrap;gap:18px;margin-bottom:24px;font-size:13px;color:var(--muted)">
                 <span style="display:flex;align-items:center;gap:5px">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                    {{ $auction->wilaya->name_ar ?? $auction->asset_location ?? '--' }}
+                    {{ $auction->wilaya->name ?? $auction->asset_location ?? '--' }}
                 </span>
-                <span>{{ $auction->category->name_ar ?? '--' }}</span>
-                <span>{{ $auction->entity->name_ar ?? '--' }}</span>
+                <span>{{ $auction->category->name ?? '--' }}</span>
+                <span>{{ $auction->entity->name ?? '--' }}</span>
                 <span class="chip {{ $auction->auction_type === \App\Enums\AuctionType::SALE ? 'chip-info' : 'chip-violet' }}">
                     <span class="dot"></span>
                     {{ $auction->auction_type->label() }}
                 </span>
                 @if($auction->condition)
-                    <span>الحالة: {{ $auction->condition->label() }}</span>
+                    <span>{{ __('common.status') }}: {{ $auction->condition->label() }}</span>
                 @endif
             </div>
 
             {{-- Tab Strip --}}
             <div class="tab-strip" id="tabStrip">
-                <button class="on" data-tab="details">التفاصيل</button>
-                <button data-tab="specs">المواصفات</button>
-                <button data-tab="bids">سجل العروض</button>
+                <button class="on" data-tab="details">{{ __('auctions.show.tab_details') }}</button>
+                <button data-tab="specs">{{ __('auctions.show.tab_specs') }}</button>
+                <button data-tab="bids">{{ __('auctions.show.tab_bids') }}</button>
             </div>
 
             {{-- Tab: Details --}}
             <div id="tab-details">
                 <div class="card" style="margin-bottom:24px">
                     <div class="card-h">
-                        <h3>وصف المزايدة</h3>
+                        <h3>{{ __('auctions.show.desc_title') }}</h3>
                     </div>
                     <div class="card-pad">
                         <p style="margin:0;font-size:14px;line-height:1.8;color:var(--ink-2)">
-                            {{ $auction->description_ar ?? 'لا يوجد وصف متاح لهذه المزايدة.' }}
+                            {{ $auction->description_ar ?? __('auctions.show.no_desc') }}
                         </p>
                     </div>
                 </div>
@@ -99,35 +99,35 @@
             <div id="tab-specs" style="display:none">
                 <div class="facts" style="margin-bottom:24px">
                     <div>
-                        <div class="l">سعر الافتتاح</div>
+                        <div class="l">{{ __('auctions.show.spec_opening') }}</div>
                         <div class="v">{{ dzd($auction->opening_price) }}</div>
                     </div>
                     <div>
-                        <div class="l">التأمين</div>
+                        <div class="l">{{ __('auctions.show.spec_deposit') }}</div>
                         <div class="v">{{ $auction->deposit_amount ? dzd($auction->deposit_amount) : '--' }}</div>
                     </div>
                     <div>
-                        <div class="l">رسوم الدخول</div>
+                        <div class="l">{{ __('auctions.show.spec_entry') }}</div>
                         <div class="v">{{ $auction->entry_fee ? dzd($auction->entry_fee) : '--' }}</div>
                     </div>
                     <div>
-                        <div class="l">سعر الدفتر</div>
+                        <div class="l">{{ __('auctions.show.spec_book') }}</div>
                         <div class="v">{{ $auction->book_price ? dzd($auction->book_price) : '--' }}</div>
                     </div>
                     <div>
-                        <div class="l">عدد الوحدات</div>
+                        <div class="l">{{ __('auctions.show.spec_units') }}</div>
                         <div class="v">{{ $auction->unit_count ?? 1 }}</div>
                     </div>
                     <div>
-                        <div class="l">الولاية</div>
-                        <div class="v">{{ $auction->wilaya->name_ar ?? '--' }}</div>
+                        <div class="l">{{ __('auctions.show.spec_wilaya') }}</div>
+                        <div class="v">{{ $auction->wilaya->name ?? '--' }}</div>
                     </div>
                     <div>
-                        <div class="l">الحالة</div>
+                        <div class="l">{{ __('auctions.show.spec_condition') }}</div>
                         <div class="v">{{ $auction->condition ? $auction->condition->label() : '--' }}</div>
                     </div>
                     <div>
-                        <div class="l">النوع</div>
+                        <div class="l">{{ __('auctions.show.spec_type') }}</div>
                         <div class="v">{{ $auction->auction_type->label() }}</div>
                     </div>
                 </div>
@@ -137,16 +137,16 @@
             <div id="tab-bids" style="display:none">
                 <div class="card">
                     <div class="card-h">
-                        <h3>سجل العروض</h3>
-                        <span class="sub">آخر <span class="num">{{ $bids->count() }}</span> عرض</span>
+                        <h3>{{ __('auctions.show.tab_bids') }}</h3>
+                        <span class="sub">{{ __('auctions.show.recent_prefix') }} <span class="num">{{ $bids->count() }}</span> {{ __('auctions.bids_word') }}</span>
                     </div>
                     @if($bids->count())
                         <table class="tbl">
                             <thead>
                                 <tr>
-                                    <th>المُزايد</th>
-                                    <th>المبلغ</th>
-                                    <th>الوقت</th>
+                                    <th>{{ __('auctions.show.th_bidder') }}</th>
+                                    <th>{{ __('auctions.show.th_amount') }}</th>
+                                    <th>{{ __('auctions.show.th_time') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -161,7 +161,7 @@
                         </table>
                     @else
                         <div class="card-pad" style="text-align:center;color:var(--muted);padding:32px">
-                            لا توجد عروض حتى الآن
+                            {{ __('auctions.show.no_bids') }}
                         </div>
                     @endif
                 </div>
@@ -175,28 +175,28 @@
                 @if($auction->isLive())
                     <div class="live">
                         <span class="d"></span>
-                        مباشر
+                        {{ __('auctions.live') }}
                     </div>
                 @endif
 
-                <div class="cur-l">السعر الحالي</div>
+                <div class="cur-l">{{ __('auctions.current_price') }}</div>
                 <div class="cur-v num">{{ dzd($auction->currentPrice()) }}</div>
-                <div class="cur-s"><span class="num">{{ $auction->bidCount() }}</span> عرض حتى الآن</div>
+                <div class="cur-s"><span class="num">{{ $auction->bidCount() }}</span> {{ __('auctions.show.bids_so_far') }}</div>
 
                 {{-- Countdown --}}
                 @if($auction->isLive() && $auction->end_time)
                     <div class="countdown" data-end="{{ $auction->end_time->toIso8601String() }}">
                         <div class="cd-i">
                             <div class="cd-v num" id="cd-h">00</div>
-                            <div class="cd-l">ساعة</div>
+                            <div class="cd-l">{{ __('auctions.show.cd_hours') }}</div>
                         </div>
                         <div class="cd-i">
                             <div class="cd-v num" id="cd-m">00</div>
-                            <div class="cd-l">دقيقة</div>
+                            <div class="cd-l">{{ __('auctions.show.cd_minutes') }}</div>
                         </div>
                         <div class="cd-i">
                             <div class="cd-v num" id="cd-s">00</div>
-                            <div class="cd-l">ثانية</div>
+                            <div class="cd-l">{{ __('auctions.show.cd_seconds') }}</div>
                         </div>
                     </div>
                 @endif
@@ -206,7 +206,7 @@
                         {{-- Not Logged In --}}
                         <a href="{{ route('login') }}" class="bid-cta" style="margin-top:14px;text-decoration:none">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-                            سجّل الدخول للمشاركة
+                            {{ __('auctions.show.login_to_participate') }}
                         </a>
                     @else
                         @php
@@ -219,7 +219,7 @@
                                 @csrf
                                 <button type="submit" class="bid-cta">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-                                    سجّل في هذه المزايدة
+                                    {{ __('auctions.show.register_in') }}
                                 </button>
                             </form>
                         @else
@@ -228,21 +228,21 @@
                                 @csrf
                                 <div class="bid-quick">
                                     <button type="button" onclick="addBid(100000)">
-                                        <span class="num">+1,000</span> دج
+                                        <span class="num">+1,000</span> {{ __('common.currency') }}
                                     </button>
                                     <button type="button" onclick="addBid(500000)">
-                                        <span class="num">+5,000</span> دج
+                                        <span class="num">+5,000</span> {{ __('common.currency') }}
                                     </button>
                                     <button type="button" onclick="addBid(1000000)">
-                                        <span class="num">+10,000</span> دج
+                                        <span class="num">+10,000</span> {{ __('common.currency') }}
                                     </button>
                                 </div>
                                 <div class="bid-input">
-                                    <input type="number" name="amount" id="bidAmount" placeholder="المبلغ بالسنتيم" min="{{ $auction->currentPrice() + 1 }}" required>
+                                    <input type="number" name="amount" id="bidAmount" placeholder="{{ __('auctions.show.amount_placeholder') }}" min="{{ $auction->currentPrice() + 1 }}" required>
                                 </div>
                                 <button type="submit" class="bid-cta">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5l6 6M3 21l1.5-4.5L17 4a1.41 1.41 0 0 1 2 2L6.5 18.5 3 21z"/></svg>
-                                    قدّم عرضك
+                                    {{ __('auctions.show.place_bid') }}
                                 </button>
                             </form>
                         @endif
@@ -250,18 +250,18 @@
                 @elseif($auction->status === \App\Enums\AuctionStatus::CLOSED)
                     {{-- Auction Closed --}}
                     <div style="margin-top:18px;padding:16px;background:rgba(212,168,67,.15);border-radius:12px;border:1px solid rgba(212,168,67,.3);text-align:center">
-                        <div style="font-size:12px;opacity:.8;margin-bottom:6px">المزايدة مغلقة</div>
+                        <div style="font-size:12px;opacity:.8;margin-bottom:6px">{{ __('auctions.show.closed') }}</div>
                         @if($auction->winner)
-                            <div style="font-size:14px;font-weight:600;color:var(--accent)">الفائز: {{ $auction->winner->fullNameAr() }}</div>
+                            <div style="font-size:14px;font-weight:600;color:var(--accent)">{{ __('auctions.show.winner_label') }} {{ $auction->winner->fullNameAr() }}</div>
                             <div class="num" style="font-size:20px;font-weight:700;color:var(--accent);margin-top:4px">{{ dzd($auction->final_price ?? $auction->currentPrice()) }}</div>
                         @else
-                            <div style="font-size:14px;color:rgba(255,255,255,.7)">لم يتم تحديد فائز</div>
+                            <div style="font-size:14px;color:rgba(255,255,255,.7)">{{ __('auctions.show.no_winner') }}</div>
                         @endif
                     </div>
                 @else
                     {{-- Not Yet Active --}}
                     <div style="margin-top:18px;text-align:center;font-size:13px;opacity:.7">
-                        المزايدة لم تبدأ بعد
+                        {{ __('auctions.show.not_started') }}
                         @if($auction->start_time)
                             <div style="margin-top:6px;font-weight:600;color:var(--accent)" class="num">{{ $auction->start_time->format('Y-m-d H:i') }}</div>
                         @endif
@@ -272,7 +272,7 @@
             {{-- Bid History (Sidebar) --}}
             <div class="card">
                 <div class="card-h">
-                    <h3>آخر العروض</h3>
+                    <h3>{{ __('auctions.show.recent_bids') }}</h3>
                 </div>
                 @if($bids->count())
                     <div style="padding:8px 0">
@@ -290,7 +290,7 @@
                         @endforeach
                     </div>
                 @else
-                    <div class="card-pad" style="text-align:center;color:var(--muted);font-size:13px">لا توجد عروض بعد</div>
+                    <div class="card-pad" style="text-align:center;color:var(--muted);font-size:13px">{{ __('auctions.show.no_bids_side') }}</div>
                 @endif
             </div>
         </div>

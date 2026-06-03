@@ -149,6 +149,6 @@ class Auction extends Model
 
     public function formatPrice(int $centimes): string
     {
-        return number_format($centimes / 100, 0, ',', ' ') . ' دج';
+        return number_format($centimes / 100, 0, ',', ' ') . ' ' . __('common.currency');
     }
 }

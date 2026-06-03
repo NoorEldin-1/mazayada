@@ -15,16 +15,7 @@ enum UserRole: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::CITIZEN => 'مواطن',
-            self::PREMIUM_CITIZEN => 'مواطن مميز',
-            self::SUPER_ADMIN => 'مشرف عام',
-            self::ENTITY_HEAD => 'رئيس جهة',
-            self::APPRAISER => 'خبير تقييم',
-            self::HUISSIER => 'محضر قضائي',
-            self::COMMITTEE_MEMBER => 'عضو لجنة',
-            self::CONTENT_ADMIN => 'مشرف محتوى',
-        };
+        return __('enums.user_role.'.$this->value);
     }
 
     public function isAdmin(): bool

@@ -40,18 +40,18 @@ class BiddingService
         ?string $userAgent = null,
     ): Bid {
         if ($amountCentimes <= 0) {
-            throw new RuntimeException(__('المبلغ غير صالح.'));
+            throw new RuntimeException(__('auctions.bid.invalid_amount'));
         }
 
         if (! $user->canBid()) {
-            throw new RuntimeException(__('لا تستوفي شروط المزايدة (KYC أو الحالة).'));
+            throw new RuntimeException(__('auctions.bid.not_eligible'));
         }
 
         $rateKey = "bid_rate:{$user->id}:{$auction->id}";
         $maxPerMinute = (int) config('mazayada.bidding.max_per_minute', 10);
         $attempts = (int) Cache::get($rateKey, 0);
         if ($attempts >= $maxPerMinute) {
-            throw new RuntimeException(__('تجاوزت الحد الأقصى للمزايدات (:max في الدقيقة).', ['max' => $maxPerMinute]));
+            throw new RuntimeException(__('auctions.bid.rate_limited', ['max' => $maxPerMinute]));
         }
 
         $lock = Cache::lock("auction:{$auction->id}:bid", 3);
@@ -66,11 +66,11 @@ class BiddingService
                     }
 
                     if (! in_array($freshAuction->status, [AuctionStatus::ACTIVE, AuctionStatus::EXTENDED], true)) {
-                        throw new RuntimeException(__('المزايدة ليست نشطة حالياً.'));
+                        throw new RuntimeException(__('auctions.bid.not_active'));
                     }
 
                     if (now()->greaterThan($freshAuction->end_time)) {
-                        throw new RuntimeException(__('انتهت مدة المزايدة.'));
+                        throw new RuntimeException(__('auctions.bid.ended'));
                     }
 
                     $participant = $freshAuction->participants()
@@ -79,7 +79,7 @@ class BiddingService
                         ->first();
 
                     if (! $participant) {
-                        throw new RuntimeException(__('يجب التسجيل ودفع الكفالة أولاً.'));
+                        throw new RuntimeException(__('auctions.bid.must_register'));
                     }
 
                     $currentPrice = (int) ($freshAuction->bids()
@@ -87,7 +87,7 @@ class BiddingService
                         ->max('amount') ?? $freshAuction->opening_price);
 
                     if ($amountCentimes <= $currentPrice) {
-                        throw new RuntimeException(__('المبلغ يجب أن يكون أعلى من السعر الحالي.'));
+                        throw new RuntimeException(__('auctions.bid.too_low'));
                     }
 
                     $bid = Bid::create([
@@ -122,7 +122,7 @@ class BiddingService
         }
 
         if (! $bid) {
-            throw new RuntimeException(__('فشل في تسجيل المزايدة، حاول مرة أخرى.'));
+            throw new RuntimeException(__('auctions.bid.failed'));
         }
 
         Cache::put($rateKey, $attempts + 1, 60);

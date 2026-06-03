@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\EntityType;
+use App\Models\Concerns\HasLocalizedName;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +11,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Entity extends Model
 {
-    use HasUuids;
+    // NOTE: the raw `name` column is an internal admin label (e.g. "DGD - الجمارك").
+    // The localized `->name` accessor below returns the display name
+    // (name_ar / name_fr) instead; the raw label is still reachable via
+    // $entity->getRawOriginal('name') if ever needed.
+    use HasLocalizedName, HasUuids;
 
     protected $fillable = [
         'name', 'name_ar', 'name_fr', 'type', 'wilaya_id',

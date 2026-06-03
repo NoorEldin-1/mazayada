@@ -10,11 +10,7 @@ enum KycStatus: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::PENDING => 'في الانتظار',
-            self::COMPLETE => 'موثّق',
-            self::SUSPENDED => 'معلّق',
-        };
+        return __('enums.kyc_status.'.$this->value);
     }
 
     public function chipClass(): string

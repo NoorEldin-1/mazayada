@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'حول المنصة')
+@section('title', __('pages.about.title_hl'))
 @section('content')
 
 <section style="padding:48px 0 72px">
@@ -7,28 +7,27 @@
         <div class="sect-head">
             <div class="sect-eyebrow">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                من نحن
+                {{ __('pages.about.eyebrow') }}
             </div>
-            <h2>حول <span class="hl">منصة مزايدة</span></h2>
-            <p>المنصة الوطنية الرقمية للمزايدات والإيجارات العمومية في الجزائر</p>
+            <h2>{{ __('pages.about.title_pre') }} <span class="hl">{{ __('pages.about.title_hl') }}</span></h2>
+            <p>{{ __('common.platform_full') }}</p>
         </div>
 
         {{-- Mission --}}
         <div class="card card-pad" style="margin-bottom:32px;max-width:900px;margin-inline:auto">
-            <h3 style="font-size:20px;font-weight:700;margin:0 0 12px;color:var(--primary)">مهمّتنا</h3>
+            <h3 style="font-size:20px;font-weight:700;margin:0 0 12px;color:var(--primary)">{{ __('pages.about.mission_title') }}</h3>
             <p style="font-size:15px;color:var(--ink-2);line-height:1.8;margin:0">
-                تهدف منصة مزايدة إلى رقمنة دورة حياة المزايدة العمومية بالكامل، من الإعلان والنشر إلى المزايدة الحية والترسية والدفع.
-                نضمن الشفافية الكاملة والنزاهة في كل عملية، مع الالتزام بالإطار القانوني الجزائري.
+                {{ __('pages.about.mission_text') }}
             </p>
         </div>
 
         {{-- 4 Pillars --}}
         <div class="fgrid" style="margin-bottom:48px">
             @foreach([
-                ['title' => 'شفافية', 'desc' => 'كل مزايدة مسجلة رقمياً بالتوقيت وعنوان IP والمتصفح. لا مجال للتلاعب.', 'color' => '#2D6A4F'],
-                ['title' => 'سرعة', 'desc' => 'تحديثات فورية عبر WebSocket. مزايدة حية بتمديد تلقائي لضمان العدالة.', 'color' => '#3A86C7'],
-                ['title' => 'أمان', 'desc' => 'تحقق إلزامي من الهوية (KYC). تشفير البيانات وحماية الحسابات.', 'color' => '#D4A843'],
-                ['title' => 'عدالة', 'desc' => 'هوية المزايد مجهولة. لا تمييز. الفائز هو صاحب أعلى عرض.', 'color' => '#6B45B7'],
+                ['title' => __('pages.about.pillar_transparency_title'), 'desc' => __('pages.about.pillar_transparency_desc'), 'color' => '#2D6A4F'],
+                ['title' => __('pages.about.pillar_speed_title'), 'desc' => __('pages.about.pillar_speed_desc'), 'color' => '#3A86C7'],
+                ['title' => __('pages.about.pillar_security_title'), 'desc' => __('pages.about.pillar_security_desc'), 'color' => '#D4A843'],
+                ['title' => __('pages.about.pillar_fairness_title'), 'desc' => __('pages.about.pillar_fairness_desc'), 'color' => '#6B45B7'],
             ] as $pillar)
             <div class="fcard">
                 <div class="ic" style="background:{{ $pillar['color'] }}15;color:{{ $pillar['color'] }}">
@@ -41,14 +40,14 @@
         </div>
 
         {{-- Government Entities --}}
-        <div class="sect-head"><h2>الجهات <span class="hl">الحكومية</span></h2></div>
+        <div class="sect-head"><h2>{{ __('pages.about.gov_pre') }} <span class="hl">{{ __('pages.about.gov_hl') }}</span></h2></div>
         <div class="entities-grid" style="margin-bottom:48px">
             @foreach([
-                ['code' => 'DGD', 'name' => 'المديرية العامة للجمارك', 'desc' => 'بيع البضائع المحجوزة والمصادرة', 'color' => '#2D6A4F'],
-                ['code' => 'DGDPE', 'name' => 'أملاك الدولة', 'desc' => 'تأجير وبيع الممتلكات العمومية', 'color' => '#3A86C7'],
-                ['code' => 'APC', 'name' => 'المجالس البلدية', 'desc' => 'مزادات البلديات', 'color' => '#9A7008'],
-                ['code' => 'HUI', 'name' => 'المحضرون القضائيون', 'desc' => 'البيع بالمزاد العلني بأمر قضائي', 'color' => '#6B45B7'],
-                ['code' => 'DGI', 'name' => 'المديرية العامة للضرائب', 'desc' => 'بيع الأصول الضريبية', 'color' => '#B14641'],
+                ['code' => 'DGD', 'name' => __('home.entities.dgd'), 'desc' => __('pages.about.entity_dgd_desc'), 'color' => '#2D6A4F'],
+                ['code' => 'DGDPE', 'name' => __('home.entities.dgdpe'), 'desc' => __('pages.about.entity_dgdpe_desc'), 'color' => '#3A86C7'],
+                ['code' => 'APC', 'name' => __('home.entities.apc'), 'desc' => __('pages.about.entity_apc_desc'), 'color' => '#9A7008'],
+                ['code' => 'HUI', 'name' => __('home.entities.hui'), 'desc' => __('pages.about.entity_hui_desc'), 'color' => '#6B45B7'],
+                ['code' => 'DGI', 'name' => __('home.entities.dgi'), 'desc' => __('pages.about.entity_dgi_desc'), 'color' => '#B14641'],
             ] as $entity)
             <div class="ent-cell">
                 <div class="ent-logo" style="background:{{ $entity['color'] }}">{{ $entity['code'] }}</div>
@@ -59,14 +58,14 @@
         </div>
 
         {{-- Legal Framework --}}
-        <div class="sect-head"><h2>الإطار <span class="hl">القانوني</span></h2></div>
+        <div class="sect-head"><h2>{{ __('pages.about.legal_pre') }} <span class="hl">{{ __('pages.about.legal_hl') }}</span></h2></div>
         <div style="max-width:800px;margin:0 auto;display:grid;gap:12px">
             @foreach([
-                'المرسوم التنفيذي 97-33 — رسوم المحضر القضائي',
-                'المرسوم التنفيذي 10-210 — رقم التعريف الوطني',
-                'قانون الإجراءات المدنية والإدارية — البيع بالمزاد العلني',
-                'قانون الجمارك — بيع البضائع المحجوزة',
-                'قانون أملاك الدولة — تأجير وبيع الممتلكات العمومية',
+                __('pages.about.law_1'),
+                __('pages.about.law_2'),
+                __('pages.about.law_3'),
+                __('pages.about.law_4'),
+                __('pages.about.law_5'),
             ] as $law)
             <div class="card card-pad" style="display:flex;align-items:center;gap:12px">
                 <div style="width:36px;height:36px;border-radius:10px;background:rgba(27,77,62,.08);color:var(--primary);display:grid;place-items:center;flex-shrink:0">
@@ -79,7 +78,7 @@
 
         {{-- Contact --}}
         <div style="text-align:center;margin-top:48px">
-            <p style="color:var(--muted);font-size:14px;margin:0 0 8px">للتواصل معنا</p>
+            <p style="color:var(--muted);font-size:14px;margin:0 0 8px">{{ __('pages.about.contact_prompt') }}</p>
             <p style="font-size:16px;margin:0"><strong>contact@mazayada.dz</strong> · <span class="num">+213 (0) 23 45 67 89</span></p>
         </div>
     </div>

@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
-@section('title', 'إدارة المستخدمين')
-@section('page-title', 'إدارة المستخدمين')
+@section('title', __('admin.users.manage_title'))
+@section('page-title', __('admin.users.manage_title'))
 
 @section('content')
 
@@ -9,12 +9,12 @@
     <table class="tbl">
         <thead>
             <tr>
-                <th>الاسم</th>
-                <th>البريد الإلكتروني</th>
-                <th>الدور</th>
-                <th>حالة KYC</th>
-                <th>حالة الحساب</th>
-                <th>الإجراءات</th>
+                <th>{{ __('admin.th_name') }}</th>
+                <th>{{ __('admin.th_email') }}</th>
+                <th>{{ __('admin.th_role') }}</th>
+                <th>{{ __('admin.th_kyc') }}</th>
+                <th>{{ __('admin.users.th_account_status') }}</th>
+                <th>{{ __('common.actions') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -30,7 +30,7 @@
                     </td>
                     <td>
                         @if($user->is_blacklisted)
-                            <span class="chip chip-danger">قائمة سوداء</span>
+                            <span class="chip chip-danger">{{ __('admin.users.blacklisted') }}</span>
                         @else
                             <span class="chip {{ $user->account_status->chipClass() }}">{{ $user->account_status->label() }}</span>
                         @endif
@@ -39,15 +39,15 @@
                         @if(!$user->is_blacklisted)
                             <button type="button" class="btn btn-ghost btn-sm" style="color:var(--red-600)"
                                     onclick="document.getElementById('blacklist-{{ $user->id }}').style.display = document.getElementById('blacklist-{{ $user->id }}').style.display === 'none' ? 'block' : 'none'">
-                                قائمة سوداء
+                                {{ __('admin.users.blacklist_action') }}
                             </button>
                             <div id="blacklist-{{ $user->id }}" style="display:none;margin-top:0.5rem">
-                                <form method="POST" action="{{ route('admin.users.blacklist', $user) }}" onsubmit="return confirm('هل أنت متأكد من إدراج هذا المستخدم في القائمة السوداء؟')">
+                                <form method="POST" action="{{ route('admin.users.blacklist', $user) }}" onsubmit="return confirm('{{ __('admin.users.confirm_blacklist_prompt') }}')">
                                     @csrf
                                     <div class="field" style="margin-bottom:0.5rem">
-                                        <input type="text" name="reason" class="input" placeholder="سبب الحظر..." required style="font-size:0.85rem">
+                                        <input type="text" name="reason" class="input" placeholder="{{ __('admin.users.blacklist_reason_placeholder') }}" required style="font-size:0.85rem">
                                     </div>
-                                    <button type="submit" class="btn btn-sm" style="background:var(--red-600);color:#fff">تأكيد الحظر</button>
+                                    <button type="submit" class="btn btn-sm" style="background:var(--red-600);color:#fff">{{ __('admin.users.confirm_blacklist') }}</button>
                                 </form>
                             </div>
                         @else
@@ -57,7 +57,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" style="text-align:center;padding:2rem;color:var(--ink-muted)">لا يوجد مستخدمون</td>
+                    <td colspan="6" style="text-align:center;padding:2rem;color:var(--ink-muted)">{{ __('admin.users.no_users') }}</td>
                 </tr>
             @endforelse
         </tbody>

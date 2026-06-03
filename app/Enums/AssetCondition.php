@@ -12,12 +12,6 @@ enum AssetCondition: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::NEW => 'جديد',
-            self::GOOD => 'جيد',
-            self::FAIR => 'مقبول',
-            self::POOR => 'ضعيف',
-            self::SCRAP => 'خردة',
-        };
+        return __('enums.asset_condition.'.$this->value);
     }
 }

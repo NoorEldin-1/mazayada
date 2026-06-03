@@ -1,0 +1,40 @@
+<?php
+
+return [
+    // ===== Citizen layout — sidebar / nav =====
+    'account_user' => 'User',
+    'nav_dashboard' => 'Dashboard',
+    'nav_my_auctions' => 'My Auctions',
+    'nav_identity' => 'Identity Verification',
+    'nav_appeals' => 'My Appeals',
+    'nav_notifications' => 'Notifications',
+    'nav_profile' => 'Profile',
+
+    // ===== Citizen dashboard — stat tiles =====
+    'tile_active_auctions' => 'Active auctions',
+    'tile_won' => 'Won',
+    'tile_total_participations' => 'Total participations',
+
+    // ===== KYC status card =====
+    'kyc_card_title' => 'Identity verification status',
+    'kyc_incomplete_text' => 'You must complete identity verification to take part in auctions. Complete the required steps now.',
+    'kyc_complete_button' => 'Complete verification',
+    'kyc_verified_text' => 'Your identity has been verified successfully. You can now take part in auctions.',
+
+    // ===== Won auctions =====
+    'won_auctions_title' => 'Auctions you have won',
+    'no_won_auctions' => 'You haven’t won any auction yet',
+
+    // ===== Quick actions =====
+    'quick_appeals_title' => 'My Appeals',
+    'quick_appeals_desc' => 'Manage appeals and complaints',
+    'quick_live_title' => 'Live auctions',
+    'quick_live_desc' => 'Browse active auctions now',
+
+    // ===== My Auctions page =====
+    'tab_active' => 'Active now',
+    'tab_won' => 'Won',
+    'tab_lost' => 'Lost',
+    'tab_upcoming' => 'Starting soon',
+    'no_auctions_section' => 'No auctions in this section',
+];

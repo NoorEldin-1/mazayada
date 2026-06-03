@@ -88,7 +88,7 @@ class AdminAuctionController extends Controller
         ]);
 
         return redirect()->route('admin.auctions.index')
-            ->with('success', 'تم إنشاء المزاد بنجاح.');
+            ->with('success', __('admin.flash.auction_created'));
     }
 
     public function edit(Auction $auction): View
@@ -103,7 +103,7 @@ class AdminAuctionController extends Controller
     public function update(Request $request, Auction $auction): RedirectResponse
     {
         if ($auction->status !== AuctionStatus::DRAFT) {
-            return back()->withErrors(['status' => 'لا يمكن تعديل المزاد إلا في حالة المسودة.']);
+            return back()->withErrors(['status' => __('admin.flash.auction_edit_only_draft')]);
         }
 
         $validated = $request->validate([
@@ -146,13 +146,13 @@ class AdminAuctionController extends Controller
         AuditLog::log('AUCTION_UPDATED', 'Auction', $auction->id);
 
         return redirect()->route('admin.auctions.index')
-            ->with('success', 'تم تحديث المزاد بنجاح.');
+            ->with('success', __('admin.flash.auction_updated'));
     }
 
     public function destroy(Auction $auction): RedirectResponse
     {
         if ($auction->bids()->exists()) {
-            return back()->withErrors(['delete' => 'لا يمكن حذف مزاد يحتوي على عروض.']);
+            return back()->withErrors(['delete' => __('admin.flash.auction_delete_has_bids')]);
         }
 
         $auctionId = $auction->id;
@@ -161,32 +161,32 @@ class AdminAuctionController extends Controller
         AuditLog::log('AUCTION_DELETED', 'Auction', $auctionId);
 
         return redirect()->route('admin.auctions.index')
-            ->with('success', 'تم حذف المزاد بنجاح.');
+            ->with('success', __('admin.flash.auction_deleted'));
     }
 
     public function publish(Auction $auction): RedirectResponse
     {
         if ($auction->status !== AuctionStatus::DRAFT) {
-            return back()->withErrors(['status' => 'يجب أن يكون المزاد في حالة مسودة للنشر.']);
+            return back()->withErrors(['status' => __('admin.flash.auction_publish_only_draft')]);
         }
 
         $auction->update(['status' => AuctionStatus::PUBLISHED]);
 
         AuditLog::log('AUCTION_PUBLISHED', 'Auction', $auction->id);
 
-        return back()->with('success', 'تم نشر المزاد بنجاح.');
+        return back()->with('success', __('admin.flash.auction_published'));
     }
 
     public function start(Auction $auction): RedirectResponse
     {
         if ($auction->status !== AuctionStatus::PUBLISHED) {
-            return back()->withErrors(['status' => 'يجب أن يكون المزاد منشوراً للبدء.']);
+            return back()->withErrors(['status' => __('admin.flash.auction_start_only_published')]);
         }
 
         $auction->update(['status' => AuctionStatus::ACTIVE]);
 
         AuditLog::log('AUCTION_STARTED', 'Auction', $auction->id);
 
-        return back()->with('success', 'تم بدء المزاد بنجاح.');
+        return back()->with('success', __('admin.flash.auction_started'));
     }
 }

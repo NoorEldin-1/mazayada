@@ -40,7 +40,7 @@ class AuthController extends Controller
             $seconds = RateLimiter::availableIn($throttleKey);
 
             return back()->withErrors([
-                'nin_or_email' => __('عدد المحاولات الفاشلة كبير. حاول مجدداً خلال :sec ثانية.', ['sec' => $seconds]),
+                'nin_or_email' => __('auth.too_many_attempts', ['sec' => $seconds]),
             ]);
         }
 
@@ -49,7 +49,7 @@ class AuthController extends Controller
 
         if ($user && $user->isLocked()) {
             return back()->withErrors([
-                'nin_or_email' => __('الحساب مقفل. حاول مجدداً بعد :time', ['time' => $user->locked_until->diffForHumans()]),
+                'nin_or_email' => __('auth.account_locked', ['time' => $user->locked_until->diffForHumans()]),
             ]);
         }
 
@@ -73,13 +73,13 @@ class AuthController extends Controller
                 'ip' => $request->ip(),
             ]);
 
-            return back()->withErrors(['nin_or_email' => __('بيانات الدخول غير صحيحة.')])->onlyInput('nin_or_email');
+            return back()->withErrors(['nin_or_email' => __('auth.invalid_credentials')])->onlyInput('nin_or_email');
         }
 
         if ($user->isBlacklisted()) {
             AuditLog::log('LOGIN_BLOCKED', 'User', $user->id, $user->id, null, ['reason' => 'blacklisted']);
 
-            return back()->withErrors(['nin_or_email' => __('تم حظر هذا الحساب.')]);
+            return back()->withErrors(['nin_or_email' => __('auth.account_blocked')]);
         }
 
         RateLimiter::clear($throttleKey);
@@ -127,6 +127,9 @@ class AuthController extends Controller
             'birth_date' => $validated['birth_date'],
             'password' => $validated['password'],
             'role' => UserRole::CITIZEN,
+            // Carry over the language the guest picked on the landing page so
+            // their account is created in the language they were browsing in.
+            'locale' => session('locale', config('locales.default', 'ar')),
         ]);
 
         $user->assignRole(UserRole::CITIZEN->value);
@@ -154,7 +157,7 @@ class AuthController extends Controller
         $cachedOtp = Cache::get("otp_{$request->user_id}");
 
         if (!$cachedOtp || $cachedOtp !== $request->otp) {
-            return back()->withErrors(['otp' => 'رمز التحقق غير صحيح أو منتهي الصلاحية.']);
+            return back()->withErrors(['otp' => __('auth.otp_invalid')]);
         }
 
         $user = User::findOrFail($request->user_id);
@@ -190,7 +193,7 @@ class AuthController extends Controller
                 ->first();
 
             if (!$user) {
-                return back()->withErrors(['nin' => 'لم يتم العثور على الحساب.']);
+                return back()->withErrors(['nin' => __('auth.account_not_found')]);
             }
 
             $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -201,7 +204,7 @@ class AuthController extends Controller
             return back()->with([
                 'step' => 2,
                 'user_id' => $user->id,
-                'message' => 'تم إرسال رمز التحقق.',
+                'message' => __('auth.otp_sent'),
             ]);
         }
 
@@ -215,7 +218,7 @@ class AuthController extends Controller
         $cachedOtp = Cache::get("reset_otp_{$request->user_id}");
 
         if (!$cachedOtp || $cachedOtp !== $request->otp) {
-            return back()->withErrors(['otp' => 'رمز التحقق غير صحيح أو منتهي الصلاحية.']);
+            return back()->withErrors(['otp' => __('auth.otp_invalid')]);
         }
 
         $user = User::findOrFail($request->user_id);
@@ -225,7 +228,7 @@ class AuthController extends Controller
 
         AuditLog::log('PASSWORD_RESET', 'User', $user->id);
 
-        return redirect()->route('login')->with('success', 'تم تغيير كلمة المرور بنجاح.');
+        return redirect()->route('login')->with('success', __('auth.password_changed'));
     }
 
     public function logout(Request $request): RedirectResponse

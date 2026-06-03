@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
-@section('title', 'طلبات التحقق من الهوية')
-@section('page-title', 'طلبات التحقق من الهوية')
+@section('title', __('admin.kyc.manage_title'))
+@section('page-title', __('admin.kyc.manage_title'))
 
 @section('content')
 
@@ -9,11 +9,11 @@
     <table class="tbl">
         <thead>
             <tr>
-                <th>الاسم</th>
+                <th>{{ __('admin.th_name') }}</th>
                 <th>NIN</th>
-                <th>البريد</th>
-                <th>تاريخ التسجيل</th>
-                <th>الإجراءات</th>
+                <th>{{ __('admin.kyc.th_email_short') }}</th>
+                <th>{{ __('admin.kyc.th_registration_date') }}</th>
+                <th>{{ __('common.actions') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -28,13 +28,13 @@
                             {{-- Approve --}}
                             <form method="POST" action="{{ route('admin.kyc.approve', $user) }}">
                                 @csrf
-                                <button type="submit" class="btn btn-sm" style="background:#10b981;color:#fff">قبول</button>
+                                <button type="submit" class="btn btn-sm" style="background:#10b981;color:#fff">{{ __('admin.kyc.approve') }}</button>
                             </form>
 
                             {{-- Reject Toggle --}}
                             <button type="button" class="btn btn-sm" style="background:#ef4444;color:#fff"
                                     onclick="document.getElementById('reject-{{ $user->id }}').style.display = document.getElementById('reject-{{ $user->id }}').style.display === 'none' ? 'block' : 'none'">
-                                رفض
+                                {{ __('admin.kyc.reject') }}
                             </button>
                         </div>
 
@@ -43,16 +43,16 @@
                             <form method="POST" action="{{ route('admin.kyc.reject', $user) }}">
                                 @csrf
                                 <div class="field" style="margin-bottom:0.5rem">
-                                    <input type="text" name="reason" class="input" placeholder="سبب الرفض..." required style="font-size:0.85rem">
+                                    <input type="text" name="reason" class="input" placeholder="{{ __('admin.kyc.reject_reason_placeholder') }}" required style="font-size:0.85rem">
                                 </div>
-                                <button type="submit" class="btn btn-sm" style="background:#ef4444;color:#fff">تأكيد الرفض</button>
+                                <button type="submit" class="btn btn-sm" style="background:#ef4444;color:#fff">{{ __('admin.kyc.confirm_reject') }}</button>
                             </form>
                         </div>
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" style="text-align:center;padding:2rem;color:var(--ink-muted)">لا توجد طلبات تحقق معلّقة</td>
+                    <td colspan="5" style="text-align:center;padding:2rem;color:var(--ink-muted)">{{ __('admin.kyc.no_pending') }}</td>
                 </tr>
             @endforelse
         </tbody>

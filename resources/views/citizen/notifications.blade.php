@@ -1,10 +1,10 @@
 @extends('layouts.citizen')
-@section('title', 'الإشعارات')
+@section('title', __('notifications.title'))
 @section('content')
 
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
-    <h2 style="font-size:24px;font-weight:700;margin:0">الإشعارات</h2>
-    <span class="chip chip-info"><span class="dot"></span>{{ $notifications->where('is_read', false)->count() }} غير مقروءة</span>
+    <h2 style="font-size:24px;font-weight:700;margin:0">{{ __('notifications.title') }}</h2>
+    <span class="chip chip-info"><span class="dot"></span>{{ __('notifications.unread', ['count' => $notifications->where('is_read', false)->count()]) }}</span>
 </div>
 
 <div class="card">
@@ -27,7 +27,7 @@
         </div>
         @empty
         <div style="text-align:center;padding:48px;color:var(--muted)">
-            <p>لا توجد إشعارات</p>
+            <p>{{ __('notifications.empty') }}</p>
         </div>
         @endforelse
     </div>

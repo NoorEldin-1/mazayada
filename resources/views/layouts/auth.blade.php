@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="{{ locale_lang() }}" dir="{{ locale_dir() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'مزايدة') &mdash; المنصة الوطنية للمزايدات</title>
+    <title>@yield('title', __('common.app_name')) &mdash; {{ __('auth.left_badge') }}</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="alternate icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,9 +15,9 @@
 </head>
 <body>
 
-{{-- Minimal Header (brand only) --}}
+{{-- Minimal Header (brand + language switcher) --}}
 <header class="hd hd-auth">
-    <div class="hd-inner">
+    <div class="hd-inner" style="display:flex;align-items:center;justify-content:space-between;gap:16px">
         <a href="/" class="hd-brand">
             <span class="hd-logo">
                 <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
@@ -32,8 +32,9 @@
                     </defs>
                 </svg>
             </span>
-            <span class="hd-brand-txt">مزايدة</span>
+            <span class="hd-brand-txt">{{ __('common.app_name') }}</span>
         </a>
+        <x-lang-switcher />
     </div>
 </header>
 
@@ -42,9 +43,9 @@
     {{-- Left Panel: Green gradient with testimonial --}}
     <div class="auth-left">
         <div class="auth-left-content">
-            <div class="auth-left-badge">المنصة الوطنية للمزايدات</div>
-            <h1 class="auth-left-title">منصة المزايدات الرقمية الأولى في الجزائر</h1>
-            <p class="auth-left-desc">انضم إلى آلاف المستخدمين الذين يشاركون في المزايدات العمومية بكل شفافية وأمان عبر منصتنا الرقمية.</p>
+            <div class="auth-left-badge">{{ __('auth.left_badge') }}</div>
+            <h1 class="auth-left-title">{{ __('auth.left_title') }}</h1>
+            <p class="auth-left-desc">{{ __('auth.left_desc') }}</p>
 
             <div class="auth-testimonial">
                 <div class="auth-testimonial-stars">
@@ -52,12 +53,12 @@
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="#D4A843" stroke="#D4A843" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                     @endfor
                 </div>
-                <blockquote class="auth-testimonial-txt">"منصة مزايدة غيّرت تجربتنا في المشاركة في المزايدات العمومية. عملية شفافة وسهلة الاستخدام."</blockquote>
+                <blockquote class="auth-testimonial-txt">"{{ __('auth.testimonial') }}"</blockquote>
                 <div class="auth-testimonial-author">
-                    <div class="auth-testimonial-avatar">م</div>
+                    <div class="auth-testimonial-avatar">{{ mb_substr(__('auth.testimonial_name'), 0, 1) }}</div>
                     <div>
-                        <div class="auth-testimonial-name">محمد بن عمر</div>
-                        <div class="auth-testimonial-role">مدير شركة مقاولات</div>
+                        <div class="auth-testimonial-name">{{ __('auth.testimonial_name') }}</div>
+                        <div class="auth-testimonial-role">{{ __('auth.testimonial_role') }}</div>
                     </div>
                 </div>
             </div>
@@ -65,15 +66,15 @@
             <div class="auth-left-stats">
                 <div class="auth-stat">
                     <span class="auth-stat-num">+2,500</span>
-                    <span class="auth-stat-label">مزايدة نشطة</span>
+                    <span class="auth-stat-label">{{ __('auth.stat_active_auctions') }}</span>
                 </div>
                 <div class="auth-stat">
                     <span class="auth-stat-num">+15,000</span>
-                    <span class="auth-stat-label">مستخدم مسجل</span>
+                    <span class="auth-stat-label">{{ __('auth.stat_registered_users') }}</span>
                 </div>
                 <div class="auth-stat">
                     <span class="auth-stat-num">48</span>
-                    <span class="auth-stat-label">ولاية</span>
+                    <span class="auth-stat-label">{{ __('auth.stat_wilayas') }}</span>
                 </div>
             </div>
         </div>

@@ -23,7 +23,7 @@ class KycController extends Controller
         $allowedTypes = ['id-front', 'id-back', 'selfie', 'selfie-with-id'];
 
         if (!in_array($type, $allowedTypes)) {
-            return back()->withErrors(['type' => 'نوع الملف غير مسموح.']);
+            return back()->withErrors(['type' => __('kyc.file_type_not_allowed')]);
         }
 
         $request->validate([
@@ -44,7 +44,7 @@ class KycController extends Controller
             [$fieldMap[$type] => $path]
         );
 
-        return back()->with('success', 'تم رفع الملف بنجاح.');
+        return back()->with('success', __('kyc.file_uploaded'));
     }
 
     public function submit(Request $request): RedirectResponse
@@ -67,6 +67,6 @@ class KycController extends Controller
             'profession', 'address', 'commune_id', 'postal_code', 'rip', 'expected_income',
         ]));
 
-        return back()->with('success', 'تم حفظ المعلومات الشخصية بنجاح.');
+        return back()->with('success', __('kyc.info_saved'));
     }
 }

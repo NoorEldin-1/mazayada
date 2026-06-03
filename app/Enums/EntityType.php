@@ -12,13 +12,7 @@ enum EntityType: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::CUSTOMS => 'المديرية العامة للجمارك',
-            self::STATE_PROPERTIES => 'أملاك الدولة',
-            self::MUNICIPALITY => 'المجالس البلدية',
-            self::JUDICIAL => 'المحضرون القضائيون',
-            self::TAX => 'المديرية العامة للضرائب',
-        };
+        return __('enums.entity_type.'.$this->value);
     }
 
     public function code(): string
