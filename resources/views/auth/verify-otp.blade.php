@@ -8,6 +8,12 @@
     <p>{{ __('auth.otp_subtitle') }}</p>
 </div>
 
+@if(session('status'))
+    <div style="background:#E5F3EC;color:#1d6045;padding:12px 16px;border-radius:11px;font-size:13px;margin-bottom:16px">
+        {{ session('status') }}
+    </div>
+@endif
+
 <form method="POST" action="{{ route('verify-otp') }}" class="auth-form">
     @csrf
     <input type="hidden" name="user_id" value="{{ old('user_id', session('user_id')) }}">
@@ -48,7 +54,7 @@
 
     {{-- Resend --}}
     <div style="text-align:center;margin-top:22px">
-        <button type="submit" name="resend" value="1" style="color:var(--primary);font-weight:600;font-size:13px;background:none;border:none;cursor:pointer;text-decoration:underline">
+        <button type="submit" name="resend" value="1" formnovalidate style="color:var(--primary);font-weight:600;font-size:13px;background:none;border:none;cursor:pointer;text-decoration:underline">
             {{ __('auth.resend') }}
         </button>
         <p style="font-size:12px;color:var(--muted);margin-top:8px">{{ __('auth.resend_hint') }}</p>

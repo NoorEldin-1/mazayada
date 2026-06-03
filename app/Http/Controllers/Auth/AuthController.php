@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\User;
+use App\Notifications\OtpVerificationNotification;
 use App\Rules\AlgerianPhone;
 use App\Rules\NinValidation;
 use Illuminate\Http\RedirectResponse;
@@ -13,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
@@ -20,6 +22,15 @@ use Illuminate\View\View;
 
 class AuthController extends Controller
 {
+    /** Minutes a registration OTP stays valid. */
+    private const OTP_TTL_MINUTES = 5;
+
+    /** Seconds the user must wait between "resend code" requests. */
+    private const OTP_RESEND_COOLDOWN = 60;
+
+    /** Wrong attempts allowed before a fresh code must be requested. */
+    private const OTP_MAX_ATTEMPTS = 5;
+
     public function showLogin(): View
     {
         return view('auth.login');
@@ -82,6 +93,18 @@ class AuthController extends Controller
             return back()->withErrors(['nin_or_email' => __('auth.account_blocked')]);
         }
 
+        // Credentials are valid but the email was never verified — route the
+        // user back through the OTP screen with a fresh code instead of
+        // letting them in. Closes the "register then skip verification" gap.
+        if (! $user->email_verified) {
+            RateLimiter::clear($throttleKey);
+            $this->issueOtp($user);
+
+            return redirect()->route('verify-otp')
+                ->with('user_id', $user->id)
+                ->with('status', __('auth.verify_email_first'));
+        }
+
         RateLimiter::clear($throttleKey);
         $user->update(['failed_login_attempts' => 0, 'locked_until' => null]);
 
@@ -134,10 +157,7 @@ class AuthController extends Controller
 
         $user->assignRole(UserRole::CITIZEN->value);
 
-        $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        Cache::put("otp_{$user->id}", $otp, now()->addMinutes(5));
-
-        // TODO: Send OTP via SMS/Email
+        $this->issueOtp($user);
 
         return redirect()->route('verify-otp')->with('user_id', $user->id);
     }
@@ -149,29 +169,80 @@ class AuthController extends Controller
 
     public function verifyOtp(Request $request): RedirectResponse
     {
+        // ===== Resend branch — re-issue a fresh code, throttled by a cooldown. =====
+        if ($request->boolean('resend')) {
+            $request->validate(['user_id' => ['required', 'exists:users,id']]);
+
+            $cooldownKey = "otp_resend_cooldown_register_{$request->user_id}";
+            if (Cache::has($cooldownKey)) {
+                return back()
+                    ->with('user_id', $request->user_id)
+                    ->withErrors(['otp' => __('auth.otp_resend_cooldown', ['sec' => self::OTP_RESEND_COOLDOWN])]);
+            }
+
+            $user = User::findOrFail($request->user_id);
+            $this->issueOtp($user);
+            Cache::put($cooldownKey, true, now()->addSeconds(self::OTP_RESEND_COOLDOWN));
+
+            return back()->with(['user_id' => $user->id, 'status' => __('auth.otp_resent')]);
+        }
+
+        // ===== Verify branch =====
         $request->validate([
             'user_id' => ['required', 'exists:users,id'],
             'otp' => ['required', 'string', 'size:6'],
         ]);
 
-        $cachedOtp = Cache::get("otp_{$request->user_id}");
+        $attemptsKey = "otp_attempts_register_{$request->user_id}";
 
-        if (!$cachedOtp || $cachedOtp !== $request->otp) {
-            return back()->withErrors(['otp' => __('auth.otp_invalid')]);
+        if ((int) Cache::get($attemptsKey, 0) >= self::OTP_MAX_ATTEMPTS) {
+            return back()
+                ->with('user_id', $request->user_id)
+                ->withErrors(['otp' => __('auth.otp_too_many_attempts')]);
+        }
+
+        $cachedOtp = Cache::get("otp_register_{$request->user_id}");
+
+        if (! $cachedOtp || ! hash_equals($cachedOtp, $request->otp)) {
+            Cache::put($attemptsKey, (int) Cache::get($attemptsKey, 0) + 1, now()->addMinutes(10));
+
+            return back()
+                ->with('user_id', $request->user_id)
+                ->withErrors(['otp' => __('auth.otp_invalid')]);
         }
 
         $user = User::findOrFail($request->user_id);
-        $user->update([
-            'phone_verified' => true,
-            'email_verified' => true,
-        ]);
+        // Email-only verification — phone is verified separately (not yet wired).
+        $user->update(['email_verified' => true]);
 
-        Cache::forget("otp_{$user->id}");
+        Cache::forget("otp_register_{$user->id}");
+        Cache::forget($attemptsKey);
         Auth::login($user);
 
         AuditLog::log('OTP_VERIFIED', 'User', $user->id);
 
         return redirect()->route('citizen.dashboard');
+    }
+
+    /**
+     * Generate a fresh 6-digit code, cache it for OTP_TTL_MINUTES, and email it
+     * to the user (email-only — no SMS). Resets any previous attempt counter.
+     */
+    private function issueOtp(User $user): void
+    {
+        $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        Cache::put("otp_register_{$user->id}", $otp, now()->addMinutes(self::OTP_TTL_MINUTES));
+        Cache::forget("otp_attempts_register_{$user->id}");
+
+        // Never let a mail-transport failure (bad SMTP creds, network blip) turn
+        // into a 500 on registration — the code is cached and the user can hit
+        // "resend" once mail is configured. The failure is logged for ops.
+        try {
+            $user->notify(new OtpVerificationNotification($otp, self::OTP_TTL_MINUTES));
+        } catch (\Throwable $e) {
+            Log::error('OTP email failed to send', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+        }
     }
 
     public function showResetPassword(): View

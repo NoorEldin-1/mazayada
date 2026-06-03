@@ -74,10 +74,10 @@ return [
 
     // ===== Verify OTP =====
     'otp_title' => 'Confirmer le code de vérification',
-    'otp_subtitle' => 'Saisissez le code à 6 chiffres que nous avons envoyé à votre téléphone ou e-mail.',
+    'otp_subtitle' => 'Saisissez le code à 6 chiffres que nous avons envoyé à votre e-mail.',
     'otp_button' => 'Confirmer le code',
     'resend' => 'Renvoyer',
-    'resend_hint' => 'Vous n’avez pas reçu le code ? Vérifiez votre numéro de téléphone ou votre e-mail.',
+    'resend_hint' => 'Vous n’avez pas reçu le code ? Vérifiez votre e-mail ou votre dossier spam.',
 
     // ===== Reset password =====
     'reset_title' => 'Réinitialiser le mot de passe',
@@ -93,6 +93,10 @@ return [
     'invalid_credentials' => 'Identifiants de connexion incorrects.',
     'account_blocked' => 'Ce compte a été bloqué.',
     'otp_invalid' => 'Le code de vérification est incorrect ou a expiré.',
+    'otp_resent' => 'Un nouveau code de vérification a été envoyé à votre e-mail.',
+    'otp_resend_cooldown' => 'Veuillez patienter :sec secondes avant de demander un nouveau code.',
+    'otp_too_many_attempts' => 'Trop de tentatives. Veuillez demander un nouveau code.',
+    'verify_email_first' => 'Vous devez d’abord vérifier votre e-mail. Nous vous avons envoyé un nouveau code.',
     'account_not_found' => 'Compte introuvable.',
     'otp_sent' => 'Code de vérification envoyé.',
     'password_changed' => 'Votre mot de passe a été modifié avec succès.',

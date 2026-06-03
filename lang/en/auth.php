@@ -74,10 +74,10 @@ return [
 
     // ===== Verify OTP =====
     'otp_title' => 'Confirm verification code',
-    'otp_subtitle' => 'Enter the 6-digit code we sent to your phone or email.',
+    'otp_subtitle' => 'Enter the 6-digit code we sent to your email.',
     'otp_button' => 'Confirm code',
     'resend' => 'Resend',
-    'resend_hint' => 'Didn’t receive the code? Check your phone number or email.',
+    'resend_hint' => 'Didn’t receive the code? Check your email or your spam folder.',
 
     // ===== Reset password =====
     'reset_title' => 'Reset password',
@@ -93,6 +93,10 @@ return [
     'invalid_credentials' => 'Invalid login credentials.',
     'account_blocked' => 'This account has been blocked.',
     'otp_invalid' => 'The verification code is incorrect or has expired.',
+    'otp_resent' => 'A new verification code has been sent to your email.',
+    'otp_resend_cooldown' => 'Please wait :sec seconds before requesting a new code.',
+    'otp_too_many_attempts' => 'Too many attempts. Please request a new code.',
+    'verify_email_first' => 'You must verify your email first. We have sent you a new code.',
     'account_not_found' => 'Account not found.',
     'otp_sent' => 'Verification code sent.',
     'password_changed' => 'Your password has been changed successfully.',
