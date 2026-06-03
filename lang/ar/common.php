@@ -25,6 +25,7 @@ return [
     'delete' => 'حذف',
     'create' => 'إنشاء',
     'confirm' => 'تأكيد',
+    'confirm_title' => 'تأكيد الإجراء',
     'view' => 'عرض',
     'actions' => 'الإجراءات',
     'status' => 'الحالة',

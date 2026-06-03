@@ -28,7 +28,8 @@ class User extends Authenticatable implements HasLocalePreference
         'father_name', 'mother_fullname', 'birth_date', 'birth_place',
         'phone', 'email', 'address', 'commune_id', 'postal_code',
         'profession', 'nif', 'nis', 'rip', 'expected_income',
-        'kyc_status', 'kyc_completed_at', 'is_blacklisted', 'blacklist_reason',
+        'kyc_status', 'kyc_completed_at', 'kyc_submitted_at', 'kyc_rejection_reason',
+        'is_blacklisted', 'blacklist_reason',
         'account_status', 'premium_until', 'secret_question', 'secret_answer',
         'password', 'role', 'locale', 'phone_verified', 'email_verified',
         'failed_login_attempts', 'locked_until',
@@ -47,6 +48,7 @@ class User extends Authenticatable implements HasLocalePreference
         return [
             'birth_date' => 'date',
             'kyc_completed_at' => 'datetime',
+            'kyc_submitted_at' => 'datetime',
             'premium_until' => 'datetime',
             'locked_until' => 'datetime',
             'is_blacklisted' => 'boolean',
@@ -69,7 +71,8 @@ class User extends Authenticatable implements HasLocalePreference
         return LogOptions::defaults()
             ->logOnly([
                 'nin', 'email', 'phone', 'first_name_ar', 'last_name_ar',
-                'kyc_status', 'account_status', 'is_blacklisted', 'blacklist_reason',
+                'kyc_status', 'kyc_submitted_at', 'kyc_rejection_reason',
+                'account_status', 'is_blacklisted', 'blacklist_reason',
                 'role', 'failed_login_attempts', 'locked_until',
             ])
             ->logOnlyDirty()
@@ -149,6 +152,45 @@ class User extends Authenticatable implements HasLocalePreference
     public function isKycComplete(): bool
     {
         return $this->kyc_status === KycStatus::COMPLETE;
+    }
+
+    public function isKycPending(): bool
+    {
+        return $this->kyc_status === KycStatus::PENDING;
+    }
+
+    public function isKycUnderReview(): bool
+    {
+        return $this->kyc_status === KycStatus::UNDER_REVIEW;
+    }
+
+    public function isKycRejected(): bool
+    {
+        return $this->kyc_status === KycStatus::REJECTED;
+    }
+
+    /**
+     * Whether the citizen may upload documents / submit the KYC form. Only the
+     * "not yet decided" states are editable — a submission under review or an
+     * already-approved account is locked. A rejected account can resubmit.
+     */
+    public function kycCanSubmit(): bool
+    {
+        return in_array($this->kyc_status, [KycStatus::PENDING, KycStatus::REJECTED], true);
+    }
+
+    /**
+     * The three identity documents required before a KYC request can be
+     * submitted: ID card front, ID card back, and a selfie holding the ID.
+     */
+    public function hasAllKycDocuments(): bool
+    {
+        $bio = $this->biometrics;
+
+        return $bio
+            && $bio->id_front_path
+            && $bio->id_back_path
+            && $bio->selfie_with_id_path;
     }
 
     public function isBlacklisted(): bool

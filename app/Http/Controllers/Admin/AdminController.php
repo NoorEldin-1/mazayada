@@ -16,7 +16,7 @@ class AdminController extends Controller
     {
         $stats = [
             'total_users' => User::count(),
-            'pending_kyc' => User::where('kyc_status', KycStatus::PENDING)->count(),
+            'pending_kyc' => User::where('kyc_status', KycStatus::UNDER_REVIEW)->count(),
             'active_auctions' => Auction::active()->count(),
             'total_bids' => Bid::count(),
         ];

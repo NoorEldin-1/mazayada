@@ -74,7 +74,7 @@
                                 {{-- Edit --}}
                                 <a href="{{ route('admin.auctions.edit', $auction) }}" class="btn btn-ghost btn-sm">{{ __('common.edit') }}</a>
                                 {{-- Delete --}}
-                                <form method="POST" action="{{ route('admin.auctions.destroy', $auction) }}" onsubmit="return confirm('{{ __('admin.auctions.confirm_delete') }}')">
+                                <form method="POST" action="{{ route('admin.auctions.destroy', $auction) }}" data-confirm="{{ __('admin.auctions.confirm_delete') }}" data-confirm-variant="danger" data-confirm-label="{{ __('common.delete') }}">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--red-600)">{{ __('common.delete') }}</button>

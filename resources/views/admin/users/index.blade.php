@@ -20,7 +20,9 @@
         <tbody>
             @forelse($users as $user)
                 <tr class="row-hover">
-                    <td>{{ $user->fullNameAr() }}</td>
+                    <td>
+                        <a href="{{ route('admin.users.show', $user) }}" style="color:var(--primary);font-weight:600;text-decoration:none">{{ $user->fullNameAr() }}</a>
+                    </td>
                     <td style="direction:ltr;text-align:right">{{ $user->email }}</td>
                     <td>
                         <span class="chip chip-info">{{ $user->role->label() }}</span>
@@ -36,13 +38,14 @@
                         @endif
                     </td>
                     <td>
+                        <a href="{{ route('admin.users.show', $user) }}" class="btn btn-ghost btn-sm">{{ __('common.view') }}</a>
                         @if(!$user->is_blacklisted)
                             <button type="button" class="btn btn-ghost btn-sm" style="color:var(--red-600)"
                                     onclick="document.getElementById('blacklist-{{ $user->id }}').style.display = document.getElementById('blacklist-{{ $user->id }}').style.display === 'none' ? 'block' : 'none'">
                                 {{ __('admin.users.blacklist_action') }}
                             </button>
                             <div id="blacklist-{{ $user->id }}" style="display:none;margin-top:0.5rem">
-                                <form method="POST" action="{{ route('admin.users.blacklist', $user) }}" onsubmit="return confirm('{{ __('admin.users.confirm_blacklist_prompt') }}')">
+                                <form method="POST" action="{{ route('admin.users.blacklist', $user) }}" data-confirm="{{ __('admin.users.confirm_blacklist_prompt') }}" data-confirm-variant="danger" data-confirm-label="{{ __('admin.users.confirm_blacklist') }}">
                                     @csrf
                                     <div class="field" style="margin-bottom:0.5rem">
                                         <input type="text" name="reason" class="input" placeholder="{{ __('admin.users.blacklist_reason_placeholder') }}" required style="font-size:0.85rem">
@@ -51,7 +54,12 @@
                                 </form>
                             </div>
                         @else
-                            <span style="font-size:0.8rem;color:var(--ink-muted)">{{ $user->blacklist_reason }}</span>
+                            <form method="POST" action="{{ route('admin.users.unblacklist', $user) }}" style="display:inline"
+                                  data-confirm="{{ __('admin.users.confirm_unblacklist_prompt') }}" data-confirm-label="{{ __('admin.users.unblacklist_action') }}">
+                                @csrf
+                                <button type="submit" class="btn btn-ghost btn-sm" style="color:#1d6045">{{ __('admin.users.unblacklist_action') }}</button>
+                            </form>
+                            <div style="font-size:0.8rem;color:var(--ink-muted);margin-top:0.35rem">{{ $user->blacklist_reason }}</div>
                         @endif
                     </td>
                 </tr>

@@ -210,11 +210,33 @@
                         </a>
                     @else
                         @php
-                            $participant = $auction->participants()->where('user_id', auth()->id())->first();
+                            $u = auth()->user();
+                            $participant = $auction->participants()->where('user_id', $u->id)->first();
                         @endphp
 
-                        @if(!$participant)
-                            {{-- Logged In but Not Registered --}}
+                        @if($u->isBlacklisted())
+                            {{-- Blacklisted — cannot participate --}}
+                            <div style="margin-top:14px;padding:14px 16px;background:rgba(217,84,78,.18);border:1px solid rgba(217,84,78,.45);border-radius:12px;text-align:center;font-size:13px;color:#FCD9D6">
+                                {{ __('auctions.show.cta_blocked') }}
+                            </div>
+                        @elseif($u->isLocked())
+                            {{-- Temporarily locked --}}
+                            <div style="margin-top:14px;padding:14px 16px;background:rgba(217,84,78,.18);border:1px solid rgba(217,84,78,.45);border-radius:12px;text-align:center;font-size:13px;color:#FCD9D6">
+                                {{ __('auctions.show.cta_locked') }}
+                            </div>
+                        @elseif(! $u->isKycComplete())
+                            {{-- KYC not complete — guide to verification --}}
+                            <a href="{{ route('citizen.kyc') }}" class="bid-cta" style="margin-top:14px;text-decoration:none">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                {{ __('auctions.show.cta_complete_kyc') }}
+                            </a>
+                        @elseif(! $u->canBid())
+                            {{-- Account not active for participation --}}
+                            <div style="margin-top:14px;padding:14px 16px;background:rgba(212,168,67,.15);border:1px solid rgba(212,168,67,.3);border-radius:12px;text-align:center;font-size:13px;color:rgba(255,255,255,.85)">
+                                {{ __('auctions.show.cta_inactive') }}
+                            </div>
+                        @elseif(!$participant)
+                            {{-- Eligible but not yet registered --}}
                             <form method="POST" action="{{ route('auctions.register', $auction) }}" style="margin-top:14px">
                                 @csrf
                                 <button type="submit" class="bid-cta">

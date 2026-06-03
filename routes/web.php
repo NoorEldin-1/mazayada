@@ -50,6 +50,7 @@ Route::middleware('auth')->prefix('dashboard')->name('citizen.')->group(function
     Route::get('/kyc', [KycController::class, 'index'])->name('kyc');
     Route::post('/kyc/upload/{type}', [KycController::class, 'upload'])->name('kyc.upload');
     Route::post('/kyc/submit', [KycController::class, 'submit'])->name('kyc.submit');
+    Route::get('/kyc/document/{type}', [KycController::class, 'document'])->name('kyc.document');
     Route::get('/appeals', [AppealController::class, 'index'])->name('appeals');
     Route::post('/appeals', [AppealController::class, 'store'])->name('appeals.store');
     Route::get('/my-auctions', [CitizenController::class, 'myAuctions'])->name('my-auctions');
@@ -76,8 +77,12 @@ Route::middleware(['auth', 'role:SUPER_ADMIN,ENTITY_HEAD,CONTENT_ADMIN'])->prefi
     Route::post('/auctions/{auction}/publish', [AdminAuctionController::class, 'publish'])->name('auctions.publish');
     Route::post('/auctions/{auction}/start', [AdminAuctionController::class, 'start'])->name('auctions.start');
     Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+    Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('users.show');
     Route::post('/users/{user}/blacklist', [AdminUserController::class, 'blacklist'])->name('users.blacklist');
+    Route::post('/users/{user}/unblacklist', [AdminUserController::class, 'unblacklist'])->name('users.unblacklist');
     Route::get('/kyc', [AdminKycController::class, 'pending'])->name('kyc.index');
+    Route::get('/kyc/{user}', [AdminKycController::class, 'show'])->name('kyc.show');
+    Route::get('/kyc/{user}/document/{type}', [AdminKycController::class, 'document'])->name('kyc.document');
     Route::post('/kyc/{user}/approve', [AdminKycController::class, 'approve'])->name('kyc.approve');
     Route::post('/kyc/{user}/reject', [AdminKycController::class, 'reject'])->name('kyc.reject');
     Route::get('/appeals', [AdminAppealController::class, 'index'])->name('appeals.index');

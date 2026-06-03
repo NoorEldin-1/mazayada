@@ -25,6 +25,7 @@ return [
     'delete' => 'Supprimer',
     'create' => 'Créer',
     'confirm' => 'Confirmer',
+    'confirm_title' => 'Confirmer l’action',
     'view' => 'Voir',
     'actions' => 'Actions',
     'status' => 'Statut',

@@ -123,6 +123,7 @@
 
     {{-- Main Content --}}
     <main class="cz-main">
+        <x-kyc-banner />
         @yield('content')
     </main>
 </div>

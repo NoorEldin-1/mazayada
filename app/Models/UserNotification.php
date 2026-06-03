@@ -32,4 +32,21 @@ class UserNotification extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * Create an in-app notification row for a user. Convenience wrapper used by
+     * the KYC review flow and the suspension command so callers don't repeat
+     * the channel/created_at boilerplate.
+     */
+    public static function record(string $userId, string $title, string $body, ?string $actionUrl = null, string $channel = 'PUSH'): self
+    {
+        return self::create([
+            'user_id' => $userId,
+            'title' => $title,
+            'body' => $body,
+            'channel' => $channel,
+            'action_url' => $actionUrl,
+            'created_at' => now(),
+        ]);
+    }
 }

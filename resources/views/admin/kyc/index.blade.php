@@ -5,6 +5,12 @@
 
 @section('content')
 
+@if(session('success'))
+<div style="background:#E5F3EC;color:#1d6045;padding:14px 18px;border-radius:12px;margin-bottom:20px;font-size:13px">
+    {{ session('success') }}
+</div>
+@endif
+
 <div class="card">
     <table class="tbl">
         <thead>
@@ -12,7 +18,7 @@
                 <th>{{ __('admin.th_name') }}</th>
                 <th>NIN</th>
                 <th>{{ __('admin.kyc.th_email_short') }}</th>
-                <th>{{ __('admin.kyc.th_registration_date') }}</th>
+                <th>{{ __('admin.kyc.th_submitted_date') }}</th>
                 <th>{{ __('common.actions') }}</th>
             </tr>
         </thead>
@@ -22,32 +28,11 @@
                     <td>{{ $user->fullNameAr() }}</td>
                     <td class="num" style="direction:ltr;text-align:right">{{ $user->nin }}</td>
                     <td style="direction:ltr;text-align:right">{{ $user->email }}</td>
-                    <td>{{ $user->created_at->format('Y-m-d') }}</td>
+                    <td>{{ $user->kyc_submitted_at?->format('Y-m-d H:i') }}</td>
                     <td>
-                        <div style="display:flex;gap:0.375rem;align-items:flex-start;flex-wrap:wrap">
-                            {{-- Approve --}}
-                            <form method="POST" action="{{ route('admin.kyc.approve', $user) }}">
-                                @csrf
-                                <button type="submit" class="btn btn-sm" style="background:#10b981;color:#fff">{{ __('admin.kyc.approve') }}</button>
-                            </form>
-
-                            {{-- Reject Toggle --}}
-                            <button type="button" class="btn btn-sm" style="background:#ef4444;color:#fff"
-                                    onclick="document.getElementById('reject-{{ $user->id }}').style.display = document.getElementById('reject-{{ $user->id }}').style.display === 'none' ? 'block' : 'none'">
-                                {{ __('admin.kyc.reject') }}
-                            </button>
-                        </div>
-
-                        {{-- Reject Form --}}
-                        <div id="reject-{{ $user->id }}" style="display:none;margin-top:0.5rem">
-                            <form method="POST" action="{{ route('admin.kyc.reject', $user) }}">
-                                @csrf
-                                <div class="field" style="margin-bottom:0.5rem">
-                                    <input type="text" name="reason" class="input" placeholder="{{ __('admin.kyc.reject_reason_placeholder') }}" required style="font-size:0.85rem">
-                                </div>
-                                <button type="submit" class="btn btn-sm" style="background:#ef4444;color:#fff">{{ __('admin.kyc.confirm_reject') }}</button>
-                            </form>
-                        </div>
+                        <a href="{{ route('admin.kyc.show', $user) }}" class="btn btn-sm" style="background:#15573f;color:#fff">
+                            {{ __('admin.kyc.review') }}
+                        </a>
                     </td>
                 </tr>
             @empty

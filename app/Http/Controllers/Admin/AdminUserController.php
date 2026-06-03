@@ -18,6 +18,14 @@ class AdminUserController extends Controller
         return view('admin.users.index', compact('users'));
     }
 
+    public function show(User $user): View
+    {
+        $user->load('biometrics', 'commune.wilaya')
+            ->loadCount(['participations', 'bids', 'wonAuctions']);
+
+        return view('admin.users.show', compact('user'));
+    }
+
     public function blacklist(Request $request, User $user): RedirectResponse
     {
         $request->validate([
@@ -34,5 +42,17 @@ class AdminUserController extends Controller
         ]);
 
         return back()->with('success', __('admin.flash.user_blacklisted'));
+    }
+
+    public function unblacklist(User $user): RedirectResponse
+    {
+        $user->update([
+            'is_blacklisted' => false,
+            'blacklist_reason' => null,
+        ]);
+
+        AuditLog::log('USER_UNBLACKLISTED', 'User', $user->id);
+
+        return back()->with('success', __('admin.flash.user_unblacklisted'));
     }
 }

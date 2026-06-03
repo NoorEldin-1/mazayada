@@ -3,7 +3,9 @@
 return [
     'kyc_status' => [
         'PENDING' => 'في الانتظار',
+        'UNDER_REVIEW' => 'قيد المراجعة',
         'COMPLETE' => 'موثّق',
+        'REJECTED' => 'مرفوض',
         'SUSPENDED' => 'معلّق',
     ],
 
