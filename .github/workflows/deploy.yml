@@ -46,7 +46,10 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
 
-          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          # Best-effort: pre-populate known_hosts. Non-fatal because the SSH
+          # config below sets StrictHostKeyChecking=no, so the connection works
+          # even if the scan returns no keys (e.g. transient unreachability).
+          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
 
           cat >> ~/.ssh/config << EOF
           Host production
