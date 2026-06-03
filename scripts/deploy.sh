@@ -33,6 +33,7 @@ php artisan migrate --force
 # ────────────────────────────────────────────────
 echo "🔐 Seeding roles & permissions..."
 php artisan db:seed --class=RolesPermissionsSeeder --force
+php artisan permission:cache-reset || true
 
 # ────────────────────────────────────────────────
 # 4. Cache configuration, routes, views, events
@@ -40,8 +41,9 @@ php artisan db:seed --class=RolesPermissionsSeeder --force
 echo "⚡ Caching configuration..."
 php artisan config:cache
 
-echo "⚡ Caching routes..."
-php artisan route:cache
+# NOTE: `route:cache` is intentionally skipped — routes/web.php has a closure
+# route (lang.switch) that Laravel cannot serialize, so route:cache would fail.
+# Routes run uncached (negligible cost).
 
 echo "⚡ Caching views..."
 php artisan view:cache
@@ -60,5 +62,12 @@ php artisan storage:link 2>/dev/null || true
 # ────────────────────────────────────────────────
 echo "🔒 Fixing permissions..."
 chmod -R 775 storage bootstrap/cache
+
+# ────────────────────────────────────────────────
+# 7. Restart queue workers so they reload the new code.
+#    Harmless if no worker is running.
+# ────────────────────────────────────────────────
+echo "🔁 Restarting queue workers..."
+php artisan queue:restart || true
 
 echo "✅ Deployment complete!"
