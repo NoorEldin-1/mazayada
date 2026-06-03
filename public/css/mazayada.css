@@ -290,6 +290,27 @@ section{padding:72px 0}
 .auth-testimonial-name{font-size:13px;font-weight:600;line-height:1.3}
 .auth-testimonial-role{font-size:11px;opacity:.7;margin-top:2px}
 
+/* Instructions carousel — replaces the static testimonial; same glass-card look */
+.auth-carousel{position:relative;z-index:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:20px 18px 16px;backdrop-filter:blur(8px);overflow:hidden}
+.auth-carousel-viewport{overflow:hidden;touch-action:pan-y}
+.auth-carousel-track{display:flex;transition:transform .4s ease;will-change:transform}
+.auth-carousel-slide{flex:0 0 100%;min-height:158px;display:flex;flex-direction:column;gap:10px;padding-inline:30px}
+.auth-carousel-icon{width:42px;height:42px;border-radius:11px;background:rgba(212,168,67,.16);color:var(--accent);display:grid;place-items:center;flex-shrink:0}
+.auth-carousel-title{font-size:15px;font-weight:600;line-height:1.3;margin:0}
+.auth-carousel-body{font-size:13px;line-height:1.7;opacity:.85;margin:0}
+.auth-carousel-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.auth-carousel-list li{position:relative;padding-inline-start:18px;font-size:13px;line-height:1.55;opacity:.85}
+.auth-carousel-list li::before{content:"";position:absolute;inset-inline-start:0;top:8px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.auth-carousel-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);color:#fff;display:grid;place-items:center;opacity:.7;transition:opacity .2s,background .2s}
+.auth-carousel-arrow:hover{opacity:1;background:rgba(255,255,255,.22)}
+.auth-carousel-prev{inset-inline-start:6px}
+.auth-carousel-next{inset-inline-end:6px}
+html[dir="rtl"] .auth-carousel-arrow svg{transform:scaleX(-1)}
+.auth-carousel-dots{display:flex;gap:7px;justify-content:center;margin-top:14px}
+.auth-carousel-dot{width:7px;height:7px;padding:0;border:none;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:background .25s,width .25s}
+.auth-carousel-dot.on{width:20px;border-radius:4px;background:var(--accent)}
+@media (prefers-reduced-motion: reduce){.auth-carousel-track{transition:none}}
+
 .auth-left-stats{display:flex;gap:18px;flex-wrap:wrap}
 .auth-stat{flex:1;min-width:90px}
 .auth-stat-num{display:block;font-family:"Inter";font-size:24px;font-weight:700;color:var(--accent);line-height:1;letter-spacing:-.5px}

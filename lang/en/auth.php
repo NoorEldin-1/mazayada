@@ -12,6 +12,32 @@ return [
     'stat_registered_users' => 'registered users',
     'stat_wilayas' => 'wilayas',
 
+    // ===== Marketing side panel — instructions carousel =====
+    'carousel' => [
+        'aria_label' => 'Platform instructions and terms slides',
+        'prev' => 'Previous slide',
+        'next' => 'Next slide',
+        'go_to' => 'Go to slide :num',
+
+        // Slide 1 — entry rules
+        'input_title' => 'Entry rules',
+        'input_nin' => 'National ID Number (NIN): exactly 18 digits.',
+        'input_phone' => 'Phone: 10 digits starting with 05, 06, or 07.',
+        'input_age' => 'Participation is open to those aged 18 and over.',
+
+        // Slide 2 — KYC
+        'kyc_title' => 'Identity verification (KYC)',
+        'kyc_body' => 'After registration, identity verification is mandatory: upload your documents and a selfie. Complete it on time to avoid account suspension.',
+
+        // Slide 3 — security & data protection
+        'security_title' => 'Security & data protection',
+        'security_body' => 'A secure government platform compliant with Algeria’s data protection law (18-07). Your data stays in Algeria and is never transferred abroad.',
+
+        // Slide 4 — how to join auctions
+        'auction_title' => 'How to join auctions',
+        'auction_body' => 'To enter any auction, pay an entry fee and a (refundable) security deposit by bank card, then bid directly.',
+    ],
+
     // ===== Shared field labels & placeholders =====
     'nin_label' => 'National ID Number (NIN)',
     'login_id_label' => 'National ID number or email',

@@ -12,6 +12,32 @@ return [
     'stat_registered_users' => 'utilisateurs inscrits',
     'stat_wilayas' => 'wilayas',
 
+    // ===== Marketing side panel — instructions carousel =====
+    'carousel' => [
+        'aria_label' => 'Diapositives d’instructions et conditions de la plateforme',
+        'prev' => 'Diapositive précédente',
+        'next' => 'Diapositive suivante',
+        'go_to' => 'Aller à la diapositive :num',
+
+        // Slide 1 — entry rules
+        'input_title' => 'Règles de saisie',
+        'input_nin' => 'Numéro d’identification nationale (NIN) : exactement 18 chiffres.',
+        'input_phone' => 'Téléphone : 10 chiffres commençant par 05, 06 ou 07.',
+        'input_age' => 'Participation réservée aux personnes âgées de 18 ans et plus.',
+
+        // Slide 2 — KYC
+        'kyc_title' => 'Étapes de vérification (KYC)',
+        'kyc_body' => 'Après l’inscription, une vérification d’identité est obligatoire : téléversez vos documents et un selfie. Effectuez-la à temps pour éviter la suspension de votre compte.',
+
+        // Slide 3 — security & data protection
+        'security_title' => 'Sécurité et protection des données',
+        'security_body' => 'Plateforme gouvernementale sécurisée, conforme à la loi algérienne sur la protection des données (18-07). Vos données restent en Algérie et ne sont jamais transférées à l’étranger.',
+
+        // Slide 4 — how to join auctions
+        'auction_title' => 'Comment participer aux enchères',
+        'auction_body' => 'Pour participer à une enchère, réglez des frais d’inscription et une caution (remboursable) par carte bancaire, puis enchérissez directement.',
+    ],
+
     // ===== Shared field labels & placeholders =====
     'nin_label' => 'Numéro d’identification nationale (NIN)',
     'login_id_label' => 'Numéro d’identification nationale ou e-mail',

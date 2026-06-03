@@ -47,21 +47,7 @@
             <h1 class="auth-left-title">{{ __('auth.left_title') }}</h1>
             <p class="auth-left-desc">{{ __('auth.left_desc') }}</p>
 
-            <div class="auth-testimonial">
-                <div class="auth-testimonial-stars">
-                    @for($i = 0; $i < 5; $i++)
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#D4A843" stroke="#D4A843" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                    @endfor
-                </div>
-                <blockquote class="auth-testimonial-txt">"{{ __('auth.testimonial') }}"</blockquote>
-                <div class="auth-testimonial-author">
-                    <div class="auth-testimonial-avatar">{{ mb_substr(__('auth.testimonial_name'), 0, 1) }}</div>
-                    <div>
-                        <div class="auth-testimonial-name">{{ __('auth.testimonial_name') }}</div>
-                        <div class="auth-testimonial-role">{{ __('auth.testimonial_role') }}</div>
-                    </div>
-                </div>
-            </div>
+            <x-auth-carousel />
 
             <div class="auth-left-stats">
                 <div class="auth-stat">
