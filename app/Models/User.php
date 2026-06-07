@@ -27,7 +27,7 @@ class User extends Authenticatable implements HasLocalePreference
         'first_name_ar', 'last_name_ar', 'first_name_fr', 'last_name_fr',
         'father_name', 'mother_fullname', 'birth_date', 'birth_place',
         'phone', 'email', 'address', 'commune_id', 'postal_code',
-        'profession', 'nif', 'nis', 'rip', 'expected_income',
+        'profession', 'nif', 'nis', 'commerce_register_no', 'rip', 'expected_income',
         'kyc_status', 'kyc_completed_at', 'kyc_submitted_at', 'kyc_rejection_reason',
         'is_blacklisted', 'blacklist_reason',
         'account_status', 'premium_until', 'secret_question', 'secret_answer',
@@ -145,6 +145,16 @@ class User extends Authenticatable implements HasLocalePreference
         return $this->hasMany(Payment::class);
     }
 
+    public function inspectionQuestions(): HasMany
+    {
+        return $this->hasMany(InspectionQuestion::class);
+    }
+
+    public function documents(): HasMany
+    {
+        return $this->hasMany(Document::class);
+    }
+
     public function wonAuctions(): HasMany
     {
         return $this->hasMany(Auction::class, 'winner_user_id');
@@ -227,6 +237,15 @@ class User extends Authenticatable implements HasLocalePreference
     public function isBlacklisted(): bool
     {
         return (bool) $this->is_blacklisted;
+    }
+
+    /**
+     * Holds a valid Commerce Register (Registre du Commerce) — required to bid
+     * on professional/commercial customs goods (spec §2.3).
+     */
+    public function hasCommerceRegister(): bool
+    {
+        return filled($this->commerce_register_no);
     }
 
     public function isLocked(): bool

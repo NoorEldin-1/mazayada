@@ -34,19 +34,50 @@
     <div class="ad-grid">
         {{-- Left Column (Main) --}}
         <div>
-            {{-- Gallery --}}
-            <div class="ad-gallery">
-                <div class="ad-hero">
-                    <svg width="90" height="90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5l6 6M3 21l1.5-4.5L17 4a1.41 1.41 0 0 1 2 2L6.5 18.5 3 21z"/><path d="M15 6l3 3"/></svg>
-                </div>
-                <div class="ad-thumbs">
-                    @for($i = 0; $i < 5; $i++)
-                        <div class="ad-thumb {{ $i === 0 ? 'on' : '' }}">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            {{-- Gallery — swipeable photo carousel when present, placeholder otherwise (spec §4 step 1) --}}
+            @php $photoUrls = $auction->photoUrls(); $photoCount = count($photoUrls); @endphp
+            @if($photoCount)
+                <div class="ad-gallery" data-gallery>
+                    <div class="ad-hero">
+                        <div class="ad-hero-track" data-gtrack>
+                            @foreach($photoUrls as $url)
+                                <div class="ad-hero-slide"><img src="{{ $url }}" alt="{{ $auction->title_ar }}"></div>
+                            @endforeach
                         </div>
-                    @endfor
+                        @if($photoCount > 1)
+                            <button type="button" class="ad-nav ad-nav-prev" data-gprev aria-label="{{ __('auctions.show.gallery_prev') }}">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                            </button>
+                            <button type="button" class="ad-nav ad-nav-next" data-gnext aria-label="{{ __('auctions.show.gallery_next') }}">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                            </button>
+                            <span class="ad-hero-count num" data-gcount>1 / {{ $photoCount }}</span>
+                        @endif
+                    </div>
+                    @if($photoCount > 1)
+                        <div class="ad-thumbs">
+                            @foreach($photoUrls as $i => $url)
+                                <div class="ad-thumb {{ $i === 0 ? 'on' : '' }}" data-gthumb="{{ $i }}">
+                                    <img src="{{ $url }}" alt="" loading="lazy">
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
-            </div>
+            @else
+                <div class="ad-gallery">
+                    <div class="ad-hero">
+                        <svg width="90" height="90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5l6 6M3 21l1.5-4.5L17 4a1.41 1.41 0 0 1 2 2L6.5 18.5 3 21z"/><path d="M15 6l3 3"/></svg>
+                    </div>
+                    <div class="ad-thumbs">
+                        @for($i = 0; $i < 5; $i++)
+                            <div class="ad-thumb {{ $i === 0 ? 'on' : '' }}">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                            </div>
+                        @endfor
+                    </div>
+                </div>
+            @endif
 
             {{-- Title + Status --}}
             <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px">
@@ -78,6 +109,7 @@
             <div class="tab-strip" id="tabStrip">
                 <button class="on" data-tab="details">{{ __('auctions.show.tab_details') }}</button>
                 <button data-tab="specs">{{ __('auctions.show.tab_specs') }}</button>
+                <button data-tab="inspection">{{ __('auctions.show.tab_inspection') }}</button>
                 <button data-tab="bids">{{ __('auctions.show.tab_bids') }}</button>
             </div>
 
@@ -129,6 +161,92 @@
                     <div>
                         <div class="l">{{ __('auctions.show.spec_type') }}</div>
                         <div class="v">{{ $auction->auction_type->label() }}</div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Tab: Inspection window + Q&A (§4 step 4) --}}
+            <div id="tab-inspection" style="display:none">
+                {{-- Inspection window --}}
+                <div class="card" style="margin-bottom:24px">
+                    <div class="card-h">
+                        <h3>{{ __('inspections.window_title') }}</h3>
+                    </div>
+                    <div class="card-pad">
+                        @if($auction->inspection_start || $auction->inspection_end || $auction->inspection_location)
+                            <div class="facts">
+                                @if($auction->inspection_start)
+                                    <div>
+                                        <div class="l">{{ __('inspections.window_from') }}</div>
+                                        <div class="v">{{ $auction->inspection_start->format('Y-m-d H:i') }}</div>
+                                    </div>
+                                @endif
+                                @if($auction->inspection_end)
+                                    <div>
+                                        <div class="l">{{ __('inspections.window_to') }}</div>
+                                        <div class="v">{{ $auction->inspection_end->format('Y-m-d H:i') }}</div>
+                                    </div>
+                                @endif
+                                @if($auction->inspection_location)
+                                    <div>
+                                        <div class="l">{{ __('inspections.window_location') }}</div>
+                                        <div class="v">{{ $auction->inspection_location }}</div>
+                                    </div>
+                                @endif
+                            </div>
+                        @else
+                            <p style="margin:0;font-size:14px;color:var(--muted)">{{ __('inspections.window_none') }}</p>
+                        @endif
+
+                        {{-- Condition book download (§4 step 2) --}}
+                        @if($conditionBook)
+                            <a href="{{ route('documents.download', $conditionBook) }}" class="btn btn-ghost" style="margin-top:16px;display:inline-flex;align-items:center;gap:8px;text-decoration:none">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                {{ __('auctions.show.read_condition_book') }}
+                            </a>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- Q&A --}}
+                <div class="card" style="margin-bottom:24px">
+                    <div class="card-h">
+                        <h3>{{ __('inspections.section_title') }}</h3>
+                    </div>
+
+                    {{-- Answered, public questions --}}
+                    @if($questions->count())
+                        <div style="padding:4px 0">
+                            @foreach($questions as $q)
+                                <div style="padding:14px 20px;{{ !$loop->last ? 'border-bottom:1px solid var(--line)' : '' }}">
+                                    <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px">
+                                        <span style="color:var(--primary);font-weight:700">{{ __('inspections.q_label') }}:</span> {{ $q->question }}
+                                    </div>
+                                    <div style="font-size:13px;color:var(--ink-2);line-height:1.7">
+                                        <span style="color:var(--muted);font-weight:700">{{ __('inspections.a_label') }}:</span> {{ $q->answer }}
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="card-pad" style="text-align:center;color:var(--muted);font-size:13px">{{ __('inspections.qa_none') }}</div>
+                    @endif
+
+                    {{-- Ask form — authenticated, KYC-complete, bid-eligible users (§4 step 4) --}}
+                    <div class="card-pad" style="border-top:1px solid var(--line)">
+                        @guest
+                            <a href="{{ route('login') }}" style="font-size:13px;color:var(--primary);font-weight:600;text-decoration:none">{{ __('inspections.ask_login') }}</a>
+                        @else
+                            @if(auth()->user()->isKycComplete() && auth()->user()->canBid() && !auth()->user()->isBlacklisted() && !auth()->user()->isLocked())
+                                <form method="POST" action="{{ route('auctions.questions', $auction) }}">
+                                    @csrf
+                                    <textarea name="question" rows="3" required maxlength="1000" class="input" placeholder="{{ __('inspections.ask_placeholder') }}" style="width:100%;resize:vertical;margin-bottom:10px"></textarea>
+                                    <button type="submit" class="btn btn-primary">{{ __('inspections.ask_submit') }}</button>
+                                </form>
+                            @else
+                                <p style="margin:0;font-size:13px;color:var(--muted)">{{ __('inspections.ask_login') }}</p>
+                            @endif
+                        @endguest
                     </div>
                 </div>
             </div>
@@ -235,8 +353,24 @@
                             <div style="margin-top:14px;padding:14px 16px;background:rgba(212,168,67,.15);border:1px solid rgba(212,168,67,.3);border-radius:12px;text-align:center;font-size:13px;color:rgba(255,255,255,.85)">
                                 {{ __('auctions.show.cta_inactive') }}
                             </div>
-                        @elseif(!$participant)
-                            {{-- Eligible but not yet registered --}}
+                        @elseif(!$participant || !$participant->condition_book_acknowledged_at)
+                            {{-- §10.3 — must acknowledge the condition book before registering --}}
+                            @if($conditionBook)
+                                <a href="{{ route('documents.download', $conditionBook) }}" style="display:inline-flex;align-items:center;gap:6px;margin-top:14px;color:var(--accent);font-size:13px;font-weight:600;text-decoration:none">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    {{ __('auctions.show.read_condition_book') }}
+                                </a>
+                            @endif
+                            <form method="POST" action="{{ route('auctions.acknowledge-book', $auction) }}" style="margin-top:14px">
+                                @csrf
+                                <label style="display:flex;gap:8px;align-items:flex-start;font-size:12px;color:rgba(255,255,255,.85);margin-bottom:10px;cursor:pointer">
+                                    <input type="checkbox" required style="margin-top:3px">
+                                    <span>{{ __('auctions.show.ack_book') }}</span>
+                                </label>
+                                <button type="submit" class="bid-cta">{{ __('auctions.show.ack_submit') }}</button>
+                            </form>
+                        @elseif(!$participant->isFullyRegistered())
+                            {{-- Acknowledged → pay deposit + entry fee to register (§4 step 3) --}}
                             <form method="POST" action="{{ route('auctions.register', $auction) }}" style="margin-top:14px">
                                 @csrf
                                 <button type="submit" class="bid-cta">
@@ -276,6 +410,22 @@
                         @if($auction->winner)
                             <div style="font-size:14px;font-weight:600;color:var(--accent)">{{ __('auctions.show.winner_label') }} {{ $auction->winner->fullNameAr() }}</div>
                             <div class="num" style="font-size:20px;font-weight:700;color:var(--accent);margin-top:4px">{{ dzd($auction->final_price ?? $auction->currentPrice()) }}</div>
+                            {{-- §4 step 7 — the winner pays the final amount within the legal deadline --}}
+                            @auth
+                                @if(auth()->id() === $auction->winner_user_id)
+                                    <form method="POST" action="{{ route('auctions.final-payment', $auction) }}" style="margin-top:12px">
+                                        @csrf
+                                        <button type="submit" class="bid-cta">{{ __('auctions.show.pay_final') }}</button>
+                                    </form>
+                                    {{-- §4 step 6 — the winner's signed award report (PDF + QR) --}}
+                                    @if($awardDocument)
+                                        <a href="{{ route('documents.download', $awardDocument) }}" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;color:var(--accent);font-size:13px;font-weight:600;text-decoration:none">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                            {{ __('auctions.show.download_award') }}
+                                        </a>
+                                    @endif
+                                @endif
+                            @endauth
                         @else
                             <div style="font-size:14px;color:rgba(255,255,255,.7)">{{ __('auctions.show.no_winner') }}</div>
                         @endif
@@ -336,6 +486,62 @@ document.querySelectorAll('#tabStrip button').forEach(btn => {
 function addBid(amount) {
     document.getElementById('bidAmount').value = {{ $auction->currentPrice() }} + amount;
 }
+
+// Photo gallery — swipeable carousel (hero track + thumbnail sync), RTL-aware
+(function () {
+    const root = document.querySelector('[data-gallery]');
+    if (!root) return;
+    const track = root.querySelector('[data-gtrack]');
+    if (!track) return;
+    const slides = track.children;
+    const count = slides.length;
+    if (count <= 1) return;
+
+    const thumbs = root.querySelectorAll('[data-gthumb]');
+    const counter = root.querySelector('[data-gcount]');
+    const prevBtn = root.querySelector('[data-gprev]');
+    const nextBtn = root.querySelector('[data-gnext]');
+    let index = 0;
+
+    function isRtl() { return getComputedStyle(track).direction === 'rtl'; }
+
+    function render() {
+        const pct = index * 100;
+        // RTL lays slides out right-to-left, so the shift sign flips.
+        track.style.transform = 'translateX(' + (isRtl() ? pct : -pct) + '%)';
+        for (let i = 0; i < thumbs.length; i++) {
+            thumbs[i].classList.toggle('on', i === index);
+        }
+        if (counter) counter.textContent = (index + 1) + ' / ' + count;
+    }
+
+    function go(i) { index = (i % count + count) % count; render(); }
+
+    if (nextBtn) nextBtn.addEventListener('click', () => go(index + 1));
+    if (prevBtn) prevBtn.addEventListener('click', () => go(index - 1));
+    for (let t = 0; t < thumbs.length; t++) {
+        thumbs[t].addEventListener('click', function () {
+            go(parseInt(this.getAttribute('data-gthumb'), 10) || 0);
+        });
+    }
+
+    // Touch / pointer swipe on the hero.
+    let startX = null;
+    track.addEventListener('pointerdown', (e) => { startX = e.clientX; });
+    track.addEventListener('pointerup', (e) => {
+        if (startX === null) return;
+        const dx = e.clientX - startX;
+        startX = null;
+        if (Math.abs(dx) > 40) {
+            let forward = dx < 0;       // swipe toward inline-start = next (LTR)
+            if (isRtl()) forward = !forward;
+            go(forward ? index + 1 : index - 1);
+        }
+    });
+    track.addEventListener('pointercancel', () => { startX = null; });
+
+    render();
+})();
 
 // Countdown timer
 (function() {

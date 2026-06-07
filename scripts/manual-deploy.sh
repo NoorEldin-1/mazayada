@@ -82,8 +82,22 @@ deploy() {
   php artisan view:cache
 
   # ── 7/8  Storage link + writable permissions ──────────────
+  #   Generated PDFs (award / condition book / receipt / delivery report) are
+  #   stored on the PRIVATE 'documents' disk (storage/app/private/documents) and
+  #   served only via the gated /documents/{id}/download route — never the public
+  #   symlink. The public /verify route (QR authenticity check) needs no auth.
+  #   storage:link exposes auction photos (public disk) at /storage. Generated
+  #   PDFs stay PRIVATE. mpdf needs a writable temp dir for Arabic-shaped PDFs.
   echo "🔗 [7/8] Storage link + permissions..."
+  # A stale plain `public/storage` directory (not a symlink) makes storage:link
+  # a silent no-op and 404s every uploaded auction photo — remove it first,
+  # then (re)create the symlink.
+  if [ -e public/storage ] && [ ! -L public/storage ]; then
+    echo "   public/storage is not a symlink — recreating it."
+    rm -rf public/storage
+  fi
   php artisan storage:link 2>/dev/null || true
+  mkdir -p storage/app/private/documents storage/app/mpdf storage/app/public/auctions
   chmod -R 775 storage bootstrap/cache
 
   # ── 8/8  Restart queue workers ────────────────────────────
@@ -108,10 +122,13 @@ deploy "$@"
 #       nohup php artisan reverb:start > storage/logs/reverb.log 2>&1 &
 #
 #  • SCHEDULER (cron) — the daily KYC auto-suspension
-#    (`kyc:suspend-stale`) and the per-minute auction commands
-#    (`auctions:activate`, `auctions:close`) only run if a system
-#    cron invokes Laravel's scheduler every minute. Verify this line
-#    exists in the site user's crontab (`crontab -l`):
+#    (`kyc:suspend-stale`), the per-minute auction commands
+#    (`auctions:activate`, `auctions:close`), the hourly deposit
+#    settlement (`auctions:settle-deposits` — refunds losers / forfeits
+#    defaulting winners after the final-payment deadline, spec §4 step 8),
+#    and the daily final-payment reminder (`auctions:remind-final-payment`)
+#    only run if a system cron invokes Laravel's scheduler every minute.
+#    Verify this line exists in the site user's crontab (`crontab -l`):
 #       * * * * * cd /home/mazayada.findosystem.com/laravel && php artisan schedule:run >> /dev/null 2>&1
 #
 #  • KYC / OTP EMAILS — approve/reject/suspend notifications and

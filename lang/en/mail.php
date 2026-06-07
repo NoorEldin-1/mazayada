@@ -46,4 +46,61 @@ return [
         'cta' => 'Complete verification',
         'footer' => 'This is an automated message from Mazayada, please do not reply.',
     ],
+
+    // ===== Auction lifecycle event emails (spec §10.1) =====
+    'events_common' => [
+        'greeting' => 'Hello :name,',
+        'cta' => 'View details',
+        'footer' => 'This is an automated message from Mazayada, please do not reply.',
+    ],
+    'events' => [
+        'auction_won' => [
+            'subject' => 'Congratulations! You won the auction — Mazayada',
+            'line' => 'You won the auction “:auction” for :amount. The final payment must be made within :days days.',
+        ],
+        'auction_lost' => [
+            'subject' => 'Auction ended — Mazayada',
+            'line' => 'The auction “:auction” has ended and you were not the highest bidder. Your deposit will be refunded automatically.',
+        ],
+        'payment_confirmed' => [
+            'subject' => 'Payment confirmed — Mazayada',
+            'line' => 'Your :type payment of :amount for the auction “:auction” has been confirmed.',
+        ],
+        'payment_failed' => [
+            'subject' => 'Payment failed — Mazayada',
+            'line' => 'Your :type payment for the auction “:auction” did not go through. You can try again.',
+        ],
+        'final_payment_due' => [
+            'subject' => 'Final payment due — Mazayada',
+            'line' => 'The final payment for the auction “:auction” must be made within :days days, otherwise the deposit will be forfeited.',
+        ],
+        'deposit_refunded' => [
+            'subject' => 'Deposit refunded — Mazayada',
+            'line' => 'Your deposit of :amount for the auction “:auction” has been refunded.',
+        ],
+        'deposit_forfeited' => [
+            'subject' => 'Deposit forfeited — Mazayada',
+            'line' => 'Because the final payment for the auction “:auction” was not made in time, your deposit was forfeited and your account blacklisted.',
+        ],
+        'outbid' => [
+            'subject' => 'You have been outbid — Mazayada',
+            'line' => 'A higher bid of :amount was placed on the auction “:auction”. Place a new bid soon.',
+        ],
+        'inspection_answered' => [
+            'subject' => 'Your question was answered — Mazayada',
+            'line' => 'Your question about the auction “:auction” has been answered.',
+        ],
+        'condition_book_published' => [
+            'subject' => 'Condition book published — Mazayada',
+            'line' => 'The condition book for the auction “:auction” is now available. Review it before registering.',
+        ],
+        'delivery_update' => [
+            'subject' => 'Delivery update — Mazayada',
+            'line' => 'The delivery status for the auction “:auction” changed to: :status.',
+        ],
+        'appeal_updated' => [
+            'subject' => 'Update on your appeal — Mazayada',
+            'line' => 'Your appeal status changed to: :status.',
+        ],
+    ],
 ];

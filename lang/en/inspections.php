@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'manage_title' => 'Inspection questions',
+    'th_auction' => 'Auction',
+    'th_question' => 'Question',
+    'answer' => 'Answer',
+    'answer_label' => 'Answer text',
+    'public' => 'Show publicly',
+    'submit_answer' => 'Send answer',
+    'reject' => 'Reject',
+    'none' => 'No questions',
+    'flash_asked' => 'Your question has been sent. You will receive the answer when available.',
+    'flash_answered' => 'Answer sent.',
+    'flash_rejected' => 'Question rejected.',
+    'section_title' => 'Inspection Q&A',
+    'ask_placeholder' => 'Write your question about the asset…',
+    'ask_submit' => 'Ask a question',
+    'ask_login' => 'Log in to ask an inspection question.',
+    'qa_none' => 'No published questions and answers yet.',
+    'q_label' => 'Question',
+    'a_label' => 'Answer',
+    'window_title' => 'Inspection window',
+    'window_from' => 'From',
+    'window_to' => 'To',
+    'window_location' => 'Inspection location',
+    'window_none' => 'No inspection window has been set for this auction.',
+];

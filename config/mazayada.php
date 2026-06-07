@@ -62,6 +62,47 @@ return [
             'movable' => 8,
             'real_estate' => 15,
         ],
+
+        // How many days before the final-payment deadline the winner is reminded.
+        'reminder_days_before_deadline' => 1,
+    ],
+
+    /*
+    | Judicial-officer fee schedule (Decree 97-33) + TVA — spec §2.2.
+    | All money is in integer centimes. Tiers are PROGRESSIVE (marginal): each
+    | rate applies only to the portion of the value within that tier, like income
+    | tax brackets. Scalar rates are mirrored into system_settings so a Super
+    | Admin can tune them; the tier arrays live here (they don't fit the flat
+    | key/value settings model).
+    */
+    'fees' => [
+        // Appraisal / expertise fee — applies to all asset classes.
+        'appraisal_tiers' => [
+            ['upTo' => 3_000_000,  'rate' => 0.02],   // first 30,000 DZD
+            ['upTo' => 10_000_000, 'rate' => 0.01],   // 30,000 → 100,000 DZD
+            ['upTo' => null,       'rate' => 0.005],  // above 100,000 DZD
+        ],
+
+        // Hammer (adjudication) fee — MOVABLES only. Real estate uses the
+        // proportional rights instead (no hammer-fee tier).
+        'hammer_tiers' => [
+            ['upTo' => 6_000_000,  'rate' => 0.06],   // up to 60,000 DZD
+            ['upTo' => 20_000_000, 'rate' => 0.03],   // 60,000 → 200,000 DZD
+            ['upTo' => null,       'rate' => 0.015],  // above 200,000 DZD
+        ],
+
+        'proportional_seller' => 0.05,                 // 5% — informational on the buyer receipt
+        'proportional_buyer'  => 0.03,                 // 3% — borne by the buyer
+        'work_session_flat_centimes' => 100_000,       // 1,000 DZD flat per 3-hour session
+        'tva_rate' => 0.19,                            // VAT — applied to the fee subtotal
+        'customs_min_immediate_rate' => 0.20,          // §2.3 — 20% due immediately on a customs win
+        'newspaper_announcement_threshold_centimes' => 20_000_000, // §2.4 — >200,000 DZD needs press notice
+    ],
+
+    // Lease auction defaults (spec §2.4) — configurable per auction.
+    'lease' => [
+        'default_duration_years' => 3,
+        'max_renewals' => 2,
     ],
 
     'security' => [
@@ -78,6 +119,16 @@ return [
 
     'documents' => [
         'qr_verification_base_url' => env('QR_VERIFICATION_BASE_URL'),
+
+        // Private disk for generated PDFs (award / condition book / receipt /
+        // delivery report). Served only through gated routes — never the public
+        // /storage symlink. See config/filesystems.php.
+        'disk' => env('DOCUMENTS_DISK', 'documents'),
+
+        // HMAC key used to sign the QR payload embedded in every document
+        // (simplified electronic verification per Law 15-04; a real ANCE/X.509
+        // certificate is a later phase). Falls back to APP_KEY.
+        'signing_key' => env('DOCUMENT_SIGNING_KEY', env('APP_KEY')),
     ],
 
 ];

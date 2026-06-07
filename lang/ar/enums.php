@@ -76,4 +76,38 @@ return [
         'PASSPORT' => 'جواز السفر',
         'LICENSE' => 'رخصة السياقة',
     ],
+
+    'asset_class' => [
+        'MOVABLE' => 'منقول',
+        'REAL_ESTATE' => 'عقار',
+        'CUSTOMS' => 'بضائع جمركية',
+    ],
+
+    'delivery_status' => [
+        'SCHEDULED' => 'مُجدولة',
+        'IN_TRANSIT' => 'قيد النقل',
+        'DELIVERED' => 'تم التسليم',
+        'FAILED' => 'فشل التسليم',
+        'CANCELLED' => 'ملغاة',
+    ],
+
+    'inspection_question_status' => [
+        'PENDING' => 'في الانتظار',
+        'ANSWERED' => 'تمت الإجابة',
+        'REJECTED' => 'مرفوض',
+    ],
+
+    'document_type' => [
+        'CONDITION_BOOK' => 'كراسة الشروط',
+        'AWARD' => 'وثيقة الترسية',
+        'PAYMENT_RECEIPT' => 'إيصال دفع',
+        'DELIVERY_REPORT' => 'محضر التسليم',
+    ],
+
+    'notification_channel' => [
+        'PUSH' => 'إشعار فوري',
+        'SMS' => 'رسالة نصية',
+        'EMAIL' => 'بريد إلكتروني',
+        'IN_APP' => 'داخل التطبيق',
+    ],
 ];

@@ -18,6 +18,7 @@ class BiddingService
 {
     public function __construct(
         private readonly BidderAliasService $aliases,
+        private readonly NotificationService $notifications,
     ) {
     }
 
@@ -55,10 +56,11 @@ class BiddingService
         }
 
         $lock = Cache::lock("auction:{$auction->id}:bid", 3);
+        $outbidUserId = null;
 
         try {
-            $bid = $lock->block(2, function () use ($auction, $user, $amountCentimes, $ip, $userAgent) {
-                return DB::transaction(function () use ($auction, $user, $amountCentimes, $ip, $userAgent) {
+            $bid = $lock->block(2, function () use ($auction, $user, $amountCentimes, $ip, $userAgent, &$outbidUserId) {
+                return DB::transaction(function () use ($auction, $user, $amountCentimes, $ip, $userAgent, &$outbidUserId) {
                     /** @var Auction $freshAuction */
                     $freshAuction = Auction::query()->lockForUpdate()->find($auction->id);
                     if (! $freshAuction) {
@@ -82,12 +84,23 @@ class BiddingService
                         throw new RuntimeException(__('auctions.bid.must_register'));
                     }
 
-                    $currentPrice = (int) ($freshAuction->bids()
+                    // The current top bidder (about to be outbid) — notified below.
+                    $previousTop = $freshAuction->bids()
                         ->where('is_valid', true)
-                        ->max('amount') ?? $freshAuction->opening_price);
+                        ->orderByDesc('amount')
+                        ->orderBy('bid_time')
+                        ->first();
+
+                    $currentPrice = $previousTop
+                        ? (int) $previousTop->amount
+                        : (int) $freshAuction->opening_price;
 
                     if ($amountCentimes <= $currentPrice) {
                         throw new RuntimeException(__('auctions.bid.too_low'));
+                    }
+
+                    if ($previousTop && $previousTop->user_id !== $user->id) {
+                        $outbidUserId = $previousTop->user_id;
                     }
 
                     $bid = Bid::create([
@@ -100,11 +113,15 @@ class BiddingService
                         'is_valid' => true,
                     ]);
 
+                    // Auto-extension (§6.3) — capped at max_extensions.
                     $secondsRemaining = now()->diffInSeconds($freshAuction->end_time, false);
-                    if ($secondsRemaining <= $freshAuction->extension_trigger_seconds && $secondsRemaining > 0) {
+                    if ($secondsRemaining <= $freshAuction->extension_trigger_seconds
+                        && $secondsRemaining > 0
+                        && $freshAuction->extension_count < $freshAuction->max_extensions) {
                         $freshAuction->update([
                             'end_time' => $freshAuction->end_time->copy()->addMinutes($freshAuction->extension_duration_minutes),
                             'status' => AuctionStatus::EXTENDED,
+                            'extension_count' => $freshAuction->extension_count + 1,
                         ]);
                         AuctionExtended::dispatch($freshAuction->fresh());
                     }
@@ -131,6 +148,14 @@ class BiddingService
         Cache::forget("auction:{$auction->id}:current_price");
 
         BidPlaced::dispatch($bid, $this->aliases->aliasFor($user->id, $auction->id));
+
+        // Notify the bidder who was just outbid (spec §10.1).
+        if ($outbidUserId) {
+            $outbidUser = User::find($outbidUserId);
+            if ($outbidUser) {
+                $this->notifications->outbid($outbidUser, $auction, $amountCentimes);
+            }
+        }
 
         return $bid;
     }

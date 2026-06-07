@@ -38,11 +38,19 @@ class RolesPermissionsSeeder extends Seeder
         'documents.upload',
         'documents.sign',
         'documents.download',
+        'documents.generate', // generate signed PDFs (award / condition book / receipt / delivery report)
 
         // Payments
         'payments.viewAny',
         'payments.refund',
         'payments.confirm',
+
+        // Inspection Q&A (spec §4 step 4)
+        'inspections.ask',
+        'inspections.answer',
+
+        // Delivery (spec §4 step 9)
+        'deliveries.manage',
 
         // KYC
         'kyc.review',
@@ -78,10 +86,11 @@ class RolesPermissionsSeeder extends Seeder
             'auctions.viewAny', 'auctions.view', 'auctions.create', 'auctions.update',
             'auctions.publish', 'auctions.cancel', 'auctions.extend', 'auctions.comment',
             'bids.viewAny',
-            'documents.upload', 'documents.sign', 'documents.download',
-            'payments.viewAny', 'payments.confirm',
+            'documents.upload', 'documents.sign', 'documents.download', 'documents.generate',
+            'payments.viewAny', 'payments.confirm', 'payments.refund',
             'kyc.review',
             'entities.members.manage',
+            'inspections.answer', 'deliveries.manage',
             'appeals.viewAny', 'appeals.respond',
             'system.auditlogs.view',
         ],
@@ -89,7 +98,8 @@ class RolesPermissionsSeeder extends Seeder
         UserRole::CONTENT_ADMIN->value => [
             'auctions.viewAny', 'auctions.view', 'auctions.create', 'auctions.update',
             'auctions.publish',
-            'documents.upload', 'documents.download',
+            'documents.upload', 'documents.download', 'documents.generate',
+            'inspections.answer',
             'categories.manage',
         ],
 
@@ -100,8 +110,9 @@ class RolesPermissionsSeeder extends Seeder
 
         UserRole::HUISSIER->value => [
             'auctions.viewAny', 'auctions.view',
-            'documents.upload', 'documents.sign', 'documents.download',
-            'payments.viewAny', 'payments.confirm',
+            'documents.upload', 'documents.sign', 'documents.download', 'documents.generate',
+            'payments.viewAny', 'payments.confirm', 'payments.refund',
+            'inspections.answer', 'deliveries.manage',
             'appeals.viewAny',
         ],
 
@@ -116,6 +127,7 @@ class RolesPermissionsSeeder extends Seeder
             'auctions.viewAny', 'auctions.view',
             'bids.place',
             'documents.download',
+            'inspections.ask',
             'appeals.create',
         ],
 
@@ -123,6 +135,7 @@ class RolesPermissionsSeeder extends Seeder
             'auctions.viewAny', 'auctions.view',
             'bids.place',
             'documents.download',
+            'inspections.ask',
             'appeals.create',
         ],
     ];

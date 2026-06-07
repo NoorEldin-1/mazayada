@@ -17,7 +17,8 @@ class Payment extends Model
     protected $fillable = [
         'user_id', 'auction_id', 'payment_type', 'amount',
         'status', 'transaction_ref', 'receipt_path',
-        'confirmed_at', 'refunded_at',
+        'gateway', 'gateway_ref', 'gateway_payload', 'payable_meta',
+        'confirmed_at', 'due_at', 'refunded_at', 'failed_at', 'forfeited_at',
     ];
 
     protected function casts(): array
@@ -26,8 +27,13 @@ class Payment extends Model
             'amount' => 'integer',
             'payment_type' => PaymentType::class,
             'status' => PaymentStatus::class,
+            'gateway_payload' => 'array',
+            'payable_meta' => 'array',
             'confirmed_at' => 'datetime',
+            'due_at' => 'datetime',
             'refunded_at' => 'datetime',
+            'failed_at' => 'datetime',
+            'forfeited_at' => 'datetime',
         ];
     }
 

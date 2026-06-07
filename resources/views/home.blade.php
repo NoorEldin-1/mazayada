@@ -95,7 +95,12 @@
             @forelse ($auctions as $auction)
             <a href="{{ route('auctions.show', $auction) }}" class="auc-card" style="text-decoration:none">
                 <div class="auc-img">
+                    @php $cover = $auction->coverPhotoUrl(); @endphp
+                    @if($cover)
+                    <img src="{{ $cover }}" alt="{{ $auction->title_ar }}" loading="lazy">
+                    @else
                     <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                    @endif
                     @if($auction->isLive())
                     <span class="auc-tag live"><span class="dot"></span> {{ __('auctions.live') }}</span>
                     @else

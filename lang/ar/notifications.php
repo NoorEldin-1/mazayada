@@ -4,4 +4,60 @@ return [
     'title' => 'الإشعارات',
     'unread' => ':count غير مقروءة',
     'empty' => 'لا توجد إشعارات',
+    'mark_read' => 'تعليم كمقروء',
+    'mark_all_read' => 'تعليم الكل كمقروء',
+    'flash_marked_read' => 'تم تعليم الإشعار كمقروء.',
+    'flash_all_marked_read' => 'تم تعليم جميع الإشعارات كمقروءة.',
+
+    // In-app copy for the auction lifecycle events (spec §10.1).
+    'events' => [
+        'auction_won' => [
+            'title' => 'لقد فزت بالمزايدة',
+            'body' => 'فزت بمزايدة «:auction» بمبلغ :amount. أتمم الدفع خلال :days يوماً.',
+        ],
+        'auction_lost' => [
+            'title' => 'انتهت المزايدة',
+            'body' => 'انتهت مزايدة «:auction» ولم تفز بها. سيُعاد التأمين تلقائياً.',
+        ],
+        'payment_confirmed' => [
+            'title' => 'تم تأكيد الدفع',
+            'body' => 'تم تأكيد دفعتك (:type) بمبلغ :amount لمزايدة «:auction».',
+        ],
+        'payment_failed' => [
+            'title' => 'فشل الدفع',
+            'body' => 'تعذّر إتمام دفعتك (:type) لمزايدة «:auction».',
+        ],
+        'final_payment_due' => [
+            'title' => 'الدفع النهائي مستحق',
+            'body' => 'أتمم الدفع النهائي لمزايدة «:auction» خلال :days يوماً.',
+        ],
+        'deposit_refunded' => [
+            'title' => 'تم استرداد الكفالة',
+            'body' => 'تم استرداد كفالتك بمبلغ :amount عن مزايدة «:auction».',
+        ],
+        'deposit_forfeited' => [
+            'title' => 'تم مصادرة الكفالة',
+            'body' => 'صودرت كفالتك في مزايدة «:auction» لعدم إتمام الدفع.',
+        ],
+        'outbid' => [
+            'title' => 'تم تجاوز عرضك',
+            'body' => 'قُدِّم عرض أعلى (:amount) في مزايدة «:auction».',
+        ],
+        'inspection_answered' => [
+            'title' => 'تمت الإجابة على سؤالك',
+            'body' => 'تمت الإجابة على سؤالك بخصوص مزايدة «:auction».',
+        ],
+        'condition_book_published' => [
+            'title' => 'نُشرت كراسة الشروط',
+            'body' => 'كراسة شروط مزايدة «:auction» متاحة الآن.',
+        ],
+        'delivery_update' => [
+            'title' => 'تحديث التسليم',
+            'body' => 'حالة تسليم مزايدة «:auction»: :status.',
+        ],
+        'appeal_updated' => [
+            'title' => 'تحديث على طعنك',
+            'body' => 'حالة طعنك الآن: :status.',
+        ],
+    ],
 ];

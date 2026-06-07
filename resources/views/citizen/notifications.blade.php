@@ -2,9 +2,15 @@
 @section('title', __('notifications.title'))
 @section('content')
 
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;gap:12px">
     <h2 style="font-size:24px;font-weight:700;margin:0">{{ __('notifications.title') }}</h2>
-    <span class="chip chip-info"><span class="dot"></span>{{ __('notifications.unread', ['count' => $notifications->where('is_read', false)->count()]) }}</span>
+    <div style="display:flex;align-items:center;gap:10px">
+        <span class="chip chip-info"><span class="dot"></span>{{ __('notifications.unread', ['count' => $notifications->where('is_read', false)->count()]) }}</span>
+        <form method="POST" action="{{ route('citizen.notifications.read-all') }}">
+            @csrf
+            <button type="submit" class="btn btn-ghost btn-sm">{{ __('notifications.mark_all_read') }}</button>
+        </form>
+    </div>
 </div>
 
 <div class="card">
@@ -22,7 +28,12 @@
                 <p style="margin:0;font-size:13px;color:var(--muted);line-height:1.6">{{ $notif->body }}</p>
             </div>
             @if(!$notif->is_read)
-            <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;margin-top:8px"></div>
+            <form method="POST" action="{{ route('citizen.notifications.read', $notif) }}" style="flex-shrink:0">
+                @csrf
+                <button type="submit" title="{{ __('notifications.mark_read') }}" style="background:none;border:0;cursor:pointer;padding:4px">
+                    <span style="display:block;width:8px;height:8px;border-radius:50%;background:var(--primary)"></span>
+                </button>
+            </form>
             @endif
         </div>
         @empty

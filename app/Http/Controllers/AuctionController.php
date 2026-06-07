@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\DocumentType;
+use App\Enums\InspectionQuestionStatus;
 use App\Models\Auction;
 use App\Models\AuctionParticipant;
-use App\Models\AuditLog;
-use App\Models\Bid;
-use App\Models\Category;
-use App\Models\Wilaya;
+use App\Models\InspectionQuestion;
+use App\Models\Payment;
+use App\Services\BiddingService;
+use App\Services\PaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use RuntimeException;
 
 class AuctionController extends Controller
 {
@@ -41,8 +44,8 @@ class AuctionController extends Controller
 
         $auctions = $query->latest('start_time')->paginate(12)->withQueryString();
 
-        $categories = Category::where('is_active', true)->get();
-        $wilayas = Wilaya::all();
+        $categories = \App\Models\Category::where('is_active', true)->get();
+        $wilayas = \App\Models\Wilaya::all();
 
         return view('auctions.index', compact('auctions', 'categories', 'wilayas'));
     }
@@ -57,67 +60,150 @@ class AuctionController extends Controller
             ->limit(10)
             ->get();
 
-        $isParticipant = false;
+        $participant = null;
         if (auth()->check()) {
-            $isParticipant = AuctionParticipant::where('auction_id', $auction->id)
+            $participant = AuctionParticipant::where('auction_id', $auction->id)
                 ->where('user_id', auth()->id())
-                ->exists();
+                ->first();
         }
+        $isParticipant = $participant?->isFullyRegistered() ?? false;
 
-        return view('auctions.show', compact('auction', 'bids', 'isParticipant'));
+        // Answered, public Q&A is shown to everyone (competition principle, §4 step 4).
+        $questions = $auction->inspectionQuestions()
+            ->where('is_public', true)
+            ->where('status', InspectionQuestionStatus::ANSWERED)
+            ->latest()
+            ->get();
+
+        // §4 step 2 — the published (public) condition book, downloadable before
+        // acknowledging. §4 step 6 — the award report, fetched only for the winner.
+        $conditionBook = $auction->documents()
+            ->where('type', DocumentType::CONDITION_BOOK)
+            ->where('is_public', true)
+            ->latest()
+            ->first();
+
+        $awardDocument = $auction->winner_user_id
+            ? $auction->documents()->where('type', DocumentType::AWARD)->latest()->first()
+            : null;
+
+        return view('auctions.show', compact(
+            'auction', 'bids', 'participant', 'isParticipant',
+            'questions', 'conditionBook', 'awardDocument',
+        ));
     }
 
-    public function registerParticipant(Auction $auction): RedirectResponse
+    /**
+     * §10.3 — record that the citizen has read the condition book. Required
+     * before registration. Creates (or updates) the participation stub.
+     */
+    public function acknowledgeConditionBook(Auction $auction): RedirectResponse
     {
-        $existing = AuctionParticipant::where('auction_id', $auction->id)
-            ->where('user_id', auth()->id())
-            ->exists();
-
-        if ($existing) {
-            return back()->with('info', __('auctions.flash_already_registered'));
-        }
-
-        AuctionParticipant::create([
+        $participant = AuctionParticipant::firstOrNew([
             'auction_id' => $auction->id,
             'user_id' => auth()->id(),
-            'deposit_paid' => true,
-            'registered_at' => now(),
         ]);
 
-        AuditLog::log('PARTICIPANT_REGISTERED', 'Auction', $auction->id, null, null, [
-            'user_id' => auth()->id(),
-        ]);
+        $participant->condition_book_acknowledged_at = now();
+        $participant->registered_at = $participant->registered_at ?? now();
+        $participant->save();
 
-        return back()->with('success', __('auctions.flash_registered'));
+        return back()->with('success', __('auctions.flash_book_acknowledged'));
     }
 
-    public function bid(Request $request, Auction $auction): RedirectResponse|JsonResponse
+    /**
+     * §4 step 3 — begin paid registration (deposit + entry fee + condition book)
+     * through the payment gateway. Replaces the old flag-flipping stub.
+     */
+    public function startRegistration(Auction $auction, PaymentService $payments): RedirectResponse
+    {
+        try {
+            $result = $payments->initiateRegistration($auction, auth()->user());
+        } catch (RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return redirect()->away($result['redirect_url']);
+    }
+
+    /**
+     * §4 step 7 — begin the winner's final payment.
+     */
+    public function startFinalPayment(Auction $auction, PaymentService $payments): RedirectResponse
+    {
+        try {
+            $result = $payments->initiateFinalPayment($auction, auth()->user());
+        } catch (RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return redirect()->away($result['redirect_url']);
+    }
+
+    /**
+     * Gateway return URL (mock + CIBWeb). Confirms/fails the payment set and
+     * redirects back to the related auction.
+     */
+    public function paymentCallback(Request $request, PaymentService $payments): RedirectResponse
+    {
+        $ref = (string) $request->query('ref');
+        $decision = (string) $request->query('decision', 'success');
+
+        $payment = Payment::where('gateway_ref', $ref)->with('auction')->first();
+
+        if ($ref) {
+            $payments->handleCallback($ref, $decision);
+        }
+
+        $auction = $payment?->auction;
+        $route = $auction ? redirect()->route('auctions.show', $auction) : redirect()->route('citizen.dashboard');
+
+        return $decision === 'success'
+            ? $route->with('success', __('payments.flash_confirmed'))
+            : $route->with('error', __('payments.flash_failed'));
+    }
+
+    /**
+     * §4 step 4 — a registered bidder asks a written question during inspection.
+     */
+    public function askQuestion(Request $request, Auction $auction): RedirectResponse
+    {
+        $validated = $request->validate([
+            'question' => ['required', 'string', 'max:1000'],
+        ]);
+
+        InspectionQuestion::create([
+            'auction_id' => $auction->id,
+            'user_id' => auth()->id(),
+            'question' => $validated['question'],
+            'status' => InspectionQuestionStatus::PENDING,
+            'is_public' => true,
+        ]);
+
+        return back()->with('success', __('inspections.flash_asked'));
+    }
+
+    public function bid(Request $request, Auction $auction, BiddingService $bidding): RedirectResponse|JsonResponse
     {
         $request->validate([
             'amount' => ['required', 'integer', 'min:1'],
         ]);
 
-        $currentPrice = $auction->currentPrice();
-
-        if ($request->amount <= $currentPrice) {
-            $error = __('auctions.bid_too_low_priced', ['price' => $auction->formatPrice($currentPrice)]);
-
+        try {
+            $bid = $bidding->placeBid(
+                $auction,
+                auth()->user(),
+                (int) $request->amount,
+                $request->ip(),
+                $request->userAgent(),
+            );
+        } catch (RuntimeException $e) {
             if ($request->wantsJson()) {
-                return response()->json(['error' => $error], 422);
+                return response()->json(['error' => $e->getMessage()], 422);
             }
 
-            return back()->withErrors(['amount' => $error]);
+            return back()->withErrors(['amount' => $e->getMessage()]);
         }
-
-        $bid = Bid::create([
-            'auction_id' => $auction->id,
-            'user_id' => auth()->id(),
-            'amount' => $request->amount,
-            'bid_time' => now(),
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-            'is_valid' => true,
-        ]);
 
         if ($request->wantsJson()) {
             return response()->json([

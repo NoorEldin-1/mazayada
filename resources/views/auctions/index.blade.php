@@ -81,7 +81,12 @@
             @foreach($auctions as $auction)
                 <a href="{{ route('auctions.show', $auction) }}" class="auc-card">
                     <div class="auc-img">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5l6 6M3 21l1.5-4.5L17 4a1.41 1.41 0 0 1 2 2L6.5 18.5 3 21z"/><path d="M15 6l3 3"/></svg>
+                        @php $cover = $auction->coverPhotoUrl(); @endphp
+                        @if($cover)
+                            <img src="{{ $cover }}" alt="{{ $auction->title_ar }}" loading="lazy">
+                        @else
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5l6 6M3 21l1.5-4.5L17 4a1.41 1.41 0 0 1 2 2L6.5 18.5 3 21z"/><path d="M15 6l3 3"/></svg>
+                        @endif
                         @if($auction->isLive())
                             <span class="auc-tag live"><span class="dot"></span> {{ __('auctions.live') }}</span>
                         @else

@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Services\Payments\CibWebGateway;
+use App\Services\Payments\MockPaymentGateway;
+use App\Services\Payments\PaymentGatewayInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\URL;
@@ -12,7 +15,13 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        // Payment gateway: mock by default (spec §7 / CIBWEB_MOCK=true), real
+        // CIBWeb/SATIM client once credentials are configured and mock is off.
+        $this->app->bind(PaymentGatewayInterface::class, function () {
+            return setting('payments.mock', config('mazayada.payments.mock', true))
+                ? new MockPaymentGateway()
+                : new CibWebGateway();
+        });
     }
 
     public function boot(): void

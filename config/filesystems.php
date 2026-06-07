@@ -47,6 +47,17 @@ return [
             'report' => false,
         ],
 
+        // Generated, electronically-signed PDFs (award / condition book /
+        // receipt / delivery report). PRIVATE — never symlinked into public/.
+        // Served only via the gated DocumentController::download route.
+        'documents' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/documents'),
+            'visibility' => 'private',
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

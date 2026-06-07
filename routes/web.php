@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\AuctionController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\Citizen\CitizenController;
 use App\Http\Controllers\Citizen\KycController;
@@ -17,6 +18,8 @@ use App\Http\Controllers\Admin\AdminEntityController;
 use App\Http\Controllers\Admin\AdminCategoryController;
 use App\Http\Controllers\Admin\AdminSettingsController;
 use App\Http\Controllers\Admin\AdminEntityStaffController;
+use App\Http\Controllers\Admin\AdminInspectionController;
+use App\Http\Controllers\Admin\AdminDeliveryController;
 use App\Http\Controllers\Api\GeoController;
 
 // Public
@@ -25,6 +28,9 @@ Route::get('/auctions', [AuctionController::class, 'index'])->name('auctions.ind
 Route::get('/auctions/{auction}', [AuctionController::class, 'show'])->name('auctions.show');
 Route::get('/how-it-works', [PageController::class, 'howItWorks'])->name('how-it-works');
 Route::get('/about', [PageController::class, 'about'])->name('about');
+
+// Public document verification via the QR code on every generated PDF (spec §9.3).
+Route::get('/verify', [DocumentController::class, 'verify'])->name('documents.verify');
 
 // Legal / static policy pages — linked from the footer and the registration form.
 Route::prefix('legal')->name('legal.')->group(function () {
@@ -68,13 +74,28 @@ Route::middleware('auth')->prefix('dashboard')->name('citizen.')->group(function
     Route::post('/appeals', [AppealController::class, 'store'])->name('appeals.store');
     Route::get('/my-auctions', [CitizenController::class, 'myAuctions'])->name('my-auctions');
     Route::get('/notifications', [CitizenController::class, 'notifications'])->name('notifications');
+    Route::post('/notifications/{notification}/read', [CitizenController::class, 'markNotificationRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [CitizenController::class, 'markAllNotificationsRead'])->name('notifications.read-all');
     Route::get('/profile', [CitizenController::class, 'profile'])->name('profile');
     Route::put('/profile', [CitizenController::class, 'updateProfile'])->name('profile.update');
 });
 
+// Authenticated, non-KYC-gated document + payment-callback routes.
+Route::middleware('auth')->group(function () {
+    Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
+    // Payment gateway return URL (mock + CIBWeb) for every checkout flow.
+    Route::get('/payments/callback', [AuctionController::class, 'paymentCallback'])->name('payments.callback');
+});
+
 // Auction actions (authenticated) — bidding is rate-limited per user per auction.
 Route::middleware(['auth', 'kyc.verified'])->group(function () {
-    Route::post('/auctions/{auction}/register', [AuctionController::class, 'registerParticipant'])->name('auctions.register');
+    // §10.3 acknowledge the condition book → §4 step 3 paid registration.
+    Route::post('/auctions/{auction}/acknowledge-book', [AuctionController::class, 'acknowledgeConditionBook'])->name('auctions.acknowledge-book');
+    Route::post('/auctions/{auction}/register', [AuctionController::class, 'startRegistration'])->name('auctions.register');
+    // §4 step 7 — the winner's final payment.
+    Route::post('/auctions/{auction}/final-payment', [AuctionController::class, 'startFinalPayment'])->name('auctions.final-payment');
+    // §4 step 4 — bidder inspection question.
+    Route::post('/auctions/{auction}/questions', [AuctionController::class, 'askQuestion'])->name('auctions.questions');
     Route::post('/auctions/{auction}/bid', [AuctionController::class, 'bid'])->middleware('throttle:bidding')->name('auctions.bid');
 });
 
@@ -94,6 +115,18 @@ Route::middleware(['auth', 'admin.2fa', 'role:SUPER_ADMIN,ENTITY_HEAD,CONTENT_AD
     Route::post('/auctions/{auction}/start', [AdminAuctionController::class, 'start'])->name('auctions.start');
     Route::post('/auctions/{auction}/extend', [AdminAuctionController::class, 'extend'])->name('auctions.extend');
     Route::post('/auctions/{auction}/cancel', [AdminAuctionController::class, 'cancel'])->name('auctions.cancel');
+    // §4 step 2 — generate the signed condition book.
+    Route::post('/auctions/{auction}/condition-book', [AdminAuctionController::class, 'publishConditionBook'])->name('auctions.condition-book');
+
+    // §4 step 4 — inspection Q&A moderation.
+    Route::get('/inspections', [AdminInspectionController::class, 'index'])->name('inspections.index');
+    Route::post('/inspection-questions/{question}/answer', [AdminInspectionController::class, 'answer'])->name('inspections.answer');
+    Route::post('/inspection-questions/{question}/reject', [AdminInspectionController::class, 'reject'])->name('inspections.reject');
+
+    // §4 step 9 — delivery scheduling.
+    Route::get('/deliveries', [AdminDeliveryController::class, 'index'])->name('deliveries.index');
+    Route::post('/auctions/{auction}/delivery', [AdminDeliveryController::class, 'store'])->name('deliveries.store');
+    Route::post('/deliveries/{delivery}/deliver', [AdminDeliveryController::class, 'markDelivered'])->name('deliveries.deliver');
 
     // Entity management (SUPER_ADMIN via entities.manage)
     Route::get('/entities', [AdminEntityController::class, 'index'])->name('entities.index');

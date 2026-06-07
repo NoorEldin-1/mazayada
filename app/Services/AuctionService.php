@@ -3,12 +3,21 @@
 namespace App\Services;
 
 use App\Enums\AuctionStatus;
+use App\Events\AuctionClosed;
 use App\Models\Auction;
 use App\Models\AuditLog;
+use App\Models\Bid;
 use Illuminate\Support\Facades\DB;
 
 class AuctionService
 {
+    public function __construct(
+        private readonly BidderAliasService $aliases,
+        private readonly FeeCalculator $fees,
+        private readonly DocumentService $documents,
+        private readonly NotificationService $notifications,
+    ) {}
+
     public function publish(Auction $auction): void
     {
         if ($auction->status !== AuctionStatus::DRAFT) {
@@ -27,36 +36,111 @@ class AuctionService
         AuditLog::log('AUCTION_STARTED', 'auction', $auction->id);
     }
 
+    /**
+     * Close the auction (spec §4 steps 5-6): pick the winner (applying the
+     * original-owner tie priority — §6.4), record the close, broadcast, and —
+     * when there is a winner — declare the award (fee breakdown + signed PDF)
+     * and notify everyone.
+     */
     public function close(Auction $auction): void
     {
-        if (!in_array($auction->status, [AuctionStatus::ACTIVE, AuctionStatus::EXTENDED])) {
+        if (! in_array($auction->status, [AuctionStatus::ACTIVE, AuctionStatus::EXTENDED], true)) {
             return;
         }
 
-        DB::transaction(function () use ($auction) {
+        $winningBid = DB::transaction(function () use ($auction) {
+            /** @var Auction $auction */
             $auction = Auction::lockForUpdate()->findOrFail($auction->id);
 
-            $winningBid = $auction->bids()
-                ->where('is_valid', true)
-                ->orderByDesc('amount')
-                ->first();
+            $winningBid = $this->resolveWinningBid($auction);
 
             $auction->update([
                 'status' => AuctionStatus::CLOSED,
                 'winner_user_id' => $winningBid?->user_id,
                 'final_price' => $winningBid?->amount ?? $auction->opening_price,
+                'closed_at' => now(),
             ]);
 
             AuditLog::log('AUCTION_CLOSED', 'auction', $auction->id, 'system', 'SYSTEM', [
                 'winner' => $winningBid?->user_id,
                 'final_price' => $winningBid?->amount,
             ]);
+
+            return $winningBid;
         });
+
+        $auction->refresh();
+
+        // Broadcast realtime close (spec §6) — the event existed but was never dispatched.
+        $winnerAlias = $winningBid
+            ? $this->aliases->aliasFor($winningBid->user_id, $auction->id)
+            : null;
+        AuctionClosed::dispatch($auction, $winnerAlias, (int) $auction->final_price);
+
+        $this->declareOutcome($auction, $winningBid);
     }
 
     public function cancel(Auction $auction): void
     {
         $auction->update(['status' => AuctionStatus::CANCELLED]);
         AuditLog::log('AUCTION_CANCELLED', 'auction', $auction->id);
+    }
+
+    /**
+     * Highest valid bid wins. On a tie at the top amount, the original owner
+     * (designated by the Huissier via original_owner_nin) wins; otherwise the
+     * earliest bid at that amount (spec §6.4).
+     */
+    private function resolveWinningBid(Auction $auction): ?Bid
+    {
+        $maxAmount = $auction->bids()->where('is_valid', true)->max('amount');
+
+        if ($maxAmount === null) {
+            return null;
+        }
+
+        $topBids = $auction->bids()
+            ->where('is_valid', true)
+            ->where('amount', $maxAmount)
+            ->with('user:id,nin')
+            ->orderBy('bid_time')
+            ->get();
+
+        if ($auction->original_owner_nin) {
+            $ownerBid = $topBids->first(
+                fn (Bid $bid) => $bid->user && $bid->user->nin === $auction->original_owner_nin
+            );
+            if ($ownerBid) {
+                return $ownerBid;
+            }
+        }
+
+        return $topBids->first();
+    }
+
+    /**
+     * Post-close side effects (outside the DB transaction): award declaration
+     * (§6), winner/loser notifications (§10.1), and the winner's payment deadline.
+     */
+    private function declareOutcome(Auction $auction, ?Bid $winningBid): void
+    {
+        if ($winningBid && $auction->winner) {
+            $fees = $this->fees->forAward($auction, (int) $auction->final_price);
+            $this->documents->generateAward($auction, $fees);
+
+            $this->notifications->auctionWon($auction->winner, $auction);
+            $this->notifications->finalPaymentDue($auction->winner, $auction);
+        }
+
+        // Notify the non-winning participants that the auction ended.
+        $auction->participants()
+            ->with('user')
+            ->where('user_id', '!=', $auction->winner_user_id)
+            ->get()
+            ->each(function ($participant) use ($auction) {
+                if ($participant->user) {
+                    $this->notifications->auctionLost($participant->user, $auction);
+                }
+            });
     }
 }

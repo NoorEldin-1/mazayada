@@ -38,9 +38,14 @@ return [
     // ===== Auction detail (auctions/show) =====
     'show' => [
         'back' => 'Back to auctions',
+        'gallery_prev' => 'Previous image',
+        'gallery_next' => 'Next image',
         'tab_details' => 'Details',
         'tab_specs' => 'Specifications',
+        'tab_inspection' => 'Inspection & questions',
         'tab_bids' => 'Bid history',
+        'read_condition_book' => 'Download the condition book',
+        'download_award' => 'Download the award report',
         'desc_title' => 'Auction description',
         'no_desc' => 'No description available for this auction.',
         'spec_opening' => 'Opening price',
@@ -61,7 +66,10 @@ return [
         'cd_minutes' => 'minutes',
         'cd_seconds' => 'seconds',
         'login_to_participate' => 'Log in to participate',
-        'register_in' => 'Register for this auction',
+        'register_in' => 'Register & pay',
+        'ack_book' => 'I acknowledge that I have read and accept the condition book.',
+        'ack_submit' => 'Acknowledge & continue',
+        'pay_final' => 'Make the final payment',
         'cta_blocked' => 'You cannot participate — your account is blacklisted.',
         'cta_locked' => 'Your account is temporarily locked, please try again later.',
         'cta_complete_kyc' => 'Complete identity verification to participate',
@@ -79,6 +87,7 @@ return [
     // ===== Controller flash messages =====
     'flash_registered' => 'Successfully registered for the auction.',
     'flash_already_registered' => 'You are already registered for this auction.',
+    'flash_book_acknowledged' => 'Your acknowledgement of the condition book is recorded. You can now register.',
     'flash_bid_placed' => 'Your bid has been placed successfully.',
     'bid_too_low_priced' => 'The amount must be higher than the current price (:price).',
 ];

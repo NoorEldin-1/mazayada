@@ -15,7 +15,12 @@
     @forelse($auctions ?? [] as $auction)
     <a href="{{ route('auctions.show', $auction) }}" class="auc-card" style="text-decoration:none">
         <div class="auc-img">
+            @php $cover = $auction->coverPhotoUrl(); @endphp
+            @if($cover)
+            <img src="{{ $cover }}" alt="{{ $auction->title_ar }}" loading="lazy">
+            @else
             <svg width="54" height="54" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="opacity:.4"><path d="m14.5 17.5 3 3 3-3"/><path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
+            @endif
             <span class="auc-tag {{ in_array($auction->status->value, ['ACTIVE','EXTENDED']) ? 'live' : '' }}">
                 @if(in_array($auction->status->value, ['ACTIVE','EXTENDED']))<span class="dot"></span>@endif
                 {{ $auction->status->label() }}

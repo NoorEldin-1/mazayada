@@ -85,6 +85,18 @@
                 <span>{{ __('admin.nav_appeals') }}</span>
             </a>
             @endcan
+            @can('inspections.answer')
+            <a href="{{ route('admin.inspections.index') }}" class="{{ request()->routeIs('admin.inspections.*') ? 'on' : '' }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M11 8v3"/><path d="M11 14h.01"/></svg>
+                <span>{{ __('admin.nav_inspections') }}</span>
+            </a>
+            @endcan
+            @can('deliveries.manage')
+            <a href="{{ route('admin.deliveries.index') }}" class="{{ request()->routeIs('admin.deliveries.*') ? 'on' : '' }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                <span>{{ __('admin.nav_deliveries') }}</span>
+            </a>
+            @endcan
             @can('entities.manage')
             <a href="{{ route('admin.entities.index') }}" class="{{ request()->routeIs('admin.entities.*') ? 'on' : '' }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>

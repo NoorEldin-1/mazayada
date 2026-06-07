@@ -76,4 +76,38 @@ return [
         'PASSPORT' => 'Passeport',
         'LICENSE' => 'Permis de conduire',
     ],
+
+    'asset_class' => [
+        'MOVABLE' => 'Bien meuble',
+        'REAL_ESTATE' => 'Bien immobilier',
+        'CUSTOMS' => 'Marchandises douanières',
+    ],
+
+    'delivery_status' => [
+        'SCHEDULED' => 'Planifiée',
+        'IN_TRANSIT' => 'En cours',
+        'DELIVERED' => 'Livrée',
+        'FAILED' => 'Échec',
+        'CANCELLED' => 'Annulée',
+    ],
+
+    'inspection_question_status' => [
+        'PENDING' => 'En attente',
+        'ANSWERED' => 'Répondue',
+        'REJECTED' => 'Rejetée',
+    ],
+
+    'document_type' => [
+        'CONDITION_BOOK' => 'Cahier des charges',
+        'AWARD' => 'Procès-verbal d’adjudication',
+        'PAYMENT_RECEIPT' => 'Reçu de paiement',
+        'DELIVERY_REPORT' => 'Procès-verbal de livraison',
+    ],
+
+    'notification_channel' => [
+        'PUSH' => 'Notification push',
+        'SMS' => 'SMS',
+        'EMAIL' => 'E-mail',
+        'IN_APP' => 'Dans l’application',
+    ],
 ];

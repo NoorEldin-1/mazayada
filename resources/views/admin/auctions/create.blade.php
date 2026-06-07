@@ -5,7 +5,7 @@
 
 @section('content')
 
-<form method="POST" action="{{ route('admin.auctions.store') }}">
+<form method="POST" action="{{ route('admin.auctions.store') }}" enctype="multipart/form-data">
     @csrf
 
     {{-- Section 1: Titles & Descriptions --}}
@@ -121,6 +121,52 @@
                     @error('lease_renewals') <small style="color:var(--red-600)">{{ $message }}</small> @enderror
                 </div>
             </div>
+        </div>
+    </div>
+
+    {{-- Section 2b: Lifecycle (spec §2/§4) --}}
+    <div class="card card-pad" style="margin-bottom:1.5rem">
+        <h3 class="card-h">{{ __('admin.auctions.sec_lifecycle') }}</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+            <div class="field">
+                <label for="asset_class">{{ __('admin.auctions.f_asset_class') }}</label>
+                <select id="asset_class" name="asset_class" class="select">
+                    @foreach(['MOVABLE','REAL_ESTATE','CUSTOMS'] as $ac)
+                        <option value="{{ $ac }}" {{ old('asset_class', 'MOVABLE') === $ac ? 'selected' : '' }}>{{ __('enums.asset_class.'.$ac) }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="field">
+                <label for="max_extensions">{{ __('admin.auctions.f_max_extensions') }}</label>
+                <input type="number" id="max_extensions" name="max_extensions" class="input" value="{{ old('max_extensions', 10) }}" min="0">
+            </div>
+            <div class="field">
+                <label for="inspection_start">{{ __('admin.auctions.f_inspection_start') }}</label>
+                <input type="datetime-local" id="inspection_start" name="inspection_start" class="input" value="{{ old('inspection_start') }}">
+            </div>
+            <div class="field">
+                <label for="inspection_end">{{ __('admin.auctions.f_inspection_end') }}</label>
+                <input type="datetime-local" id="inspection_end" name="inspection_end" class="input" value="{{ old('inspection_end') }}">
+            </div>
+            <div class="field">
+                <label for="inspection_location">{{ __('admin.auctions.f_inspection_location') }}</label>
+                <input type="text" id="inspection_location" name="inspection_location" class="input" value="{{ old('inspection_location') }}">
+            </div>
+            <div class="field">
+                <label for="original_owner_nin">{{ __('admin.auctions.f_original_owner_nin') }}</label>
+                <input type="text" id="original_owner_nin" name="original_owner_nin" class="input num" value="{{ old('original_owner_nin') }}" maxlength="18">
+            </div>
+        </div>
+    </div>
+
+    {{-- Section 2c: Photos (spec §4 step 1) --}}
+    <div class="card card-pad" style="margin-bottom:1.5rem">
+        <h3 class="card-h">{{ __('admin.auctions.sec_photos') }}</h3>
+        <div class="field">
+            <label for="photos">{{ __('admin.auctions.f_photos') }}</label>
+            <input type="file" id="photos" name="photos[]" class="input" accept="image/jpeg,image/png,image/webp" multiple>
+            <small style="color:var(--ink-muted)">{{ __('admin.auctions.photos_hint') }}</small>
+            @error('photos.*') <small style="color:var(--red-600)">{{ $message }}</small> @enderror
         </div>
     </div>
 

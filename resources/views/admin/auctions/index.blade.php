@@ -67,6 +67,20 @@
                     </td>
                     <td>
                         <div style="display:flex;gap:0.375rem;flex-wrap:wrap">
+                            {{-- §4 step 2 — condition book: generate (then download) for any pre-close auction --}}
+                            @can('documents.generate')
+                                @if(in_array($auction->status, [\App\Enums\AuctionStatus::DRAFT, \App\Enums\AuctionStatus::PUBLISHED, \App\Enums\AuctionStatus::ACTIVE, \App\Enums\AuctionStatus::EXTENDED], true))
+                                    @php $cb = $auction->documents()->where('type', 'CONDITION_BOOK')->where('is_public', true)->latest()->first(); @endphp
+                                    @if($cb)
+                                        <a href="{{ route('documents.download', $cb) }}" class="btn btn-ghost btn-sm">↓ {{ __('admin.auctions.cb_download') }}</a>
+                                    @else
+                                        <form method="POST" action="{{ route('admin.auctions.condition-book', $auction) }}">
+                                            @csrf
+                                            <button type="submit" class="btn btn-ghost btn-sm">{{ __('admin.auctions.cb_generate') }}</button>
+                                        </form>
+                                    @endif
+                                @endif
+                            @endcan
                             @if($auction->status === \App\Enums\AuctionStatus::DRAFT)
                                 {{-- Publish --}}
                                 @can('publish', $auction)

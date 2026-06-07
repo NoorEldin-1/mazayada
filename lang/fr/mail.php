@@ -46,4 +46,61 @@ return [
         'cta' => 'Compléter la vérification',
         'footer' => 'Ceci est un message automatique de Mazayada, merci de ne pas y répondre.',
     ],
+
+    // ===== Auction lifecycle event emails (spec §10.1) =====
+    'events_common' => [
+        'greeting' => 'Bonjour :name,',
+        'cta' => 'Voir les détails',
+        'footer' => 'Ceci est un message automatique de Mazayada, merci de ne pas y répondre.',
+    ],
+    'events' => [
+        'auction_won' => [
+            'subject' => 'Félicitations ! Vous avez remporté l’enchère — Mazayada',
+            'line' => 'Vous avez remporté l’enchère « :auction » pour :amount. Le paiement final doit être effectué sous :days jours.',
+        ],
+        'auction_lost' => [
+            'subject' => 'Enchère terminée — Mazayada',
+            'line' => 'L’enchère « :auction » est terminée et vous n’étiez pas le plus offrant. Votre caution sera remboursée automatiquement.',
+        ],
+        'payment_confirmed' => [
+            'subject' => 'Paiement confirmé — Mazayada',
+            'line' => 'Votre paiement (:type) de :amount pour l’enchère « :auction » a été confirmé.',
+        ],
+        'payment_failed' => [
+            'subject' => 'Échec du paiement — Mazayada',
+            'line' => 'Votre paiement (:type) pour l’enchère « :auction » n’a pas abouti. Vous pouvez réessayer.',
+        ],
+        'final_payment_due' => [
+            'subject' => 'Paiement final dû — Mazayada',
+            'line' => 'Le paiement final de l’enchère « :auction » doit être effectué sous :days jours, sinon la caution sera confisquée.',
+        ],
+        'deposit_refunded' => [
+            'subject' => 'Caution remboursée — Mazayada',
+            'line' => 'Votre caution de :amount pour l’enchère « :auction » a été remboursée.',
+        ],
+        'deposit_forfeited' => [
+            'subject' => 'Caution confisquée — Mazayada',
+            'line' => 'Faute de paiement final dans les délais pour l’enchère « :auction », votre caution a été confisquée et votre compte mis sur liste noire.',
+        ],
+        'outbid' => [
+            'subject' => 'Vous avez été surenchéri — Mazayada',
+            'line' => 'Une offre plus élevée de :amount a été placée sur l’enchère « :auction ». Placez une nouvelle offre.',
+        ],
+        'inspection_answered' => [
+            'subject' => 'Réponse à votre question — Mazayada',
+            'line' => 'Une réponse a été apportée à votre question concernant l’enchère « :auction ».',
+        ],
+        'condition_book_published' => [
+            'subject' => 'Cahier des charges publié — Mazayada',
+            'line' => 'Le cahier des charges de l’enchère « :auction » est disponible. Consultez-le avant de vous inscrire.',
+        ],
+        'delivery_update' => [
+            'subject' => 'Mise à jour de la livraison — Mazayada',
+            'line' => 'Le statut de livraison de l’enchère « :auction » est passé à : :status.',
+        ],
+        'appeal_updated' => [
+            'subject' => 'Mise à jour de votre recours — Mazayada',
+            'line' => 'Le statut de votre recours est passé à : :status.',
+        ],
+    ],
 ];

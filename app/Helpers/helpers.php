@@ -102,6 +102,25 @@ if (! function_exists('setting')) {
     }
 }
 
+if (! function_exists('mask_nin')) {
+    /**
+     * Partially mask a National Identity Number for display on generated
+     * documents (spec §10.2 — "NIN partially masked, last 2 visible"). The full
+     * NIN is never printed.
+     */
+    function mask_nin(?string $nin): string
+    {
+        $nin = (string) $nin;
+        $len = strlen($nin);
+
+        if ($len <= 2) {
+            return $nin;
+        }
+
+        return str_repeat('*', $len - 2).substr($nin, -2);
+    }
+}
+
 if (! function_exists('dzd')) {
     /**
      * Format centimes to a DZD display string.

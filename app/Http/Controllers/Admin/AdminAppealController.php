@@ -6,6 +6,7 @@ use App\Enums\AppealStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Appeal;
 use App\Models\AuditLog;
+use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -27,24 +28,31 @@ class AdminAppealController extends Controller
         return view('admin.appeals.index', compact('appeals'));
     }
 
-    public function respond(Request $request, Appeal $appeal): RedirectResponse
+    public function respond(Request $request, Appeal $appeal, NotificationService $notifications): RedirectResponse
     {
         $this->authorize('respond', $appeal);
 
         $request->validate([
             'admin_response' => ['required', 'string', 'max:2000'],
-            'status' => ['required', 'in:RESOLVED,REJECTED'],
+            // §4 step 10 — full set of transitions, not just the two terminals.
+            'status' => ['required', 'in:UNDER_REVIEW,RESOLVED,REJECTED,ESCALATED'],
         ]);
+
+        $status = AppealStatus::from($request->status);
+        // Only terminal decisions stamp resolved_at; review/escalation keep it open.
+        $isTerminal = in_array($status, [AppealStatus::RESOLVED, AppealStatus::REJECTED], true);
 
         $appeal->update([
             'admin_response' => $request->admin_response,
-            'status' => AppealStatus::from($request->status),
-            'resolved_at' => now(),
+            'status' => $status,
+            'resolved_at' => $isTerminal ? now() : null,
         ]);
 
         AuditLog::log('APPEAL_RESPONDED', 'Appeal', $appeal->id, null, null, [
             'status' => $request->status,
         ]);
+
+        $notifications->appealUpdated($appeal->fresh());
 
         return back()->with('success', __('appeals.flash_responded'));
     }

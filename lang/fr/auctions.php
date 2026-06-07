@@ -38,9 +38,14 @@ return [
     // ===== Auction detail (auctions/show) =====
     'show' => [
         'back' => 'Retour aux enchères',
+        'gallery_prev' => 'Image précédente',
+        'gallery_next' => 'Image suivante',
         'tab_details' => 'Détails',
         'tab_specs' => 'Caractéristiques',
+        'tab_inspection' => 'Inspection & questions',
         'tab_bids' => 'Historique des offres',
+        'read_condition_book' => 'Télécharger le cahier des charges',
+        'download_award' => 'Télécharger le procès-verbal d’adjudication',
         'desc_title' => 'Description de l’enchère',
         'no_desc' => 'Aucune description disponible pour cette enchère.',
         'spec_opening' => 'Prix de départ',
@@ -61,7 +66,10 @@ return [
         'cd_minutes' => 'minutes',
         'cd_seconds' => 'secondes',
         'login_to_participate' => 'Connectez-vous pour participer',
-        'register_in' => 'S’inscrire à cette enchère',
+        'register_in' => 'S’inscrire et payer',
+        'ack_book' => 'Je confirme avoir lu et accepté le cahier des charges.',
+        'ack_submit' => 'Confirmer et continuer',
+        'pay_final' => 'Effectuer le paiement final',
         'cta_blocked' => 'Vous ne pouvez pas participer — votre compte est sur liste noire.',
         'cta_locked' => 'Votre compte est temporairement verrouillé, réessayez plus tard.',
         'cta_complete_kyc' => 'Complétez votre vérification d’identité pour participer',
@@ -79,6 +87,7 @@ return [
     // ===== Controller flash messages =====
     'flash_registered' => 'Inscription à l’enchère réussie.',
     'flash_already_registered' => 'Vous êtes déjà inscrit à cette enchère.',
+    'flash_book_acknowledged' => 'Votre confirmation de lecture du cahier des charges est enregistrée. Vous pouvez maintenant vous inscrire.',
     'flash_bid_placed' => 'Votre offre a été placée avec succès.',
     'bid_too_low_priced' => 'Le montant doit être supérieur au prix actuel (:price).',
 ];

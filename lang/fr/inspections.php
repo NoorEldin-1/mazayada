@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'manage_title' => 'Questions d’inspection',
+    'th_auction' => 'Enchère',
+    'th_question' => 'Question',
+    'answer' => 'Répondre',
+    'answer_label' => 'Texte de la réponse',
+    'public' => 'Afficher publiquement',
+    'submit_answer' => 'Envoyer la réponse',
+    'reject' => 'Rejeter',
+    'none' => 'Aucune question',
+    'flash_asked' => 'Votre question a été envoyée. Vous recevrez la réponse dès qu’elle sera disponible.',
+    'flash_answered' => 'Réponse envoyée.',
+    'flash_rejected' => 'Question rejetée.',
+    'section_title' => 'Questions & réponses d’inspection',
+    'ask_placeholder' => 'Écrivez votre question sur le bien…',
+    'ask_submit' => 'Envoyer une question',
+    'ask_login' => 'Connectez-vous pour poser une question sur l’inspection.',
+    'qa_none' => 'Aucune question/réponse publiée pour le moment.',
+    'q_label' => 'Question',
+    'a_label' => 'Réponse',
+    'window_title' => 'Période d’inspection',
+    'window_from' => 'Du',
+    'window_to' => 'Au',
+    'window_location' => 'Lieu d’inspection',
+    'window_none' => 'Aucune période d’inspection définie pour cette enchère.',
+];

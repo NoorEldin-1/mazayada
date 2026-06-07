@@ -76,4 +76,38 @@ return [
         'PASSPORT' => 'Passport',
         'LICENSE' => 'Driver\'s license',
     ],
+
+    'asset_class' => [
+        'MOVABLE' => 'Movable',
+        'REAL_ESTATE' => 'Real estate',
+        'CUSTOMS' => 'Customs goods',
+    ],
+
+    'delivery_status' => [
+        'SCHEDULED' => 'Scheduled',
+        'IN_TRANSIT' => 'In transit',
+        'DELIVERED' => 'Delivered',
+        'FAILED' => 'Failed',
+        'CANCELLED' => 'Cancelled',
+    ],
+
+    'inspection_question_status' => [
+        'PENDING' => 'Pending',
+        'ANSWERED' => 'Answered',
+        'REJECTED' => 'Rejected',
+    ],
+
+    'document_type' => [
+        'CONDITION_BOOK' => 'Condition book',
+        'AWARD' => 'Award document',
+        'PAYMENT_RECEIPT' => 'Payment receipt',
+        'DELIVERY_REPORT' => 'Delivery report',
+    ],
+
+    'notification_channel' => [
+        'PUSH' => 'Push',
+        'SMS' => 'SMS',
+        'EMAIL' => 'Email',
+        'IN_APP' => 'In-app',
+    ],
 ];

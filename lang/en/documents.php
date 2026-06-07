@@ -1,0 +1,79 @@
+<?php
+
+return [
+    'common' => [
+        'doc_id' => 'Document no.',
+        'issued_at' => 'Issued at',
+        'verify_footer' => 'This document was electronically generated and signed. Verify its authenticity at:',
+        'electronic_signature' => 'Electronic signature — per Law 15-04',
+    ],
+
+    'condition_book' => [
+        'title' => 'Condition book — :auction',
+        'asset_section' => 'Asset information',
+        'opening_price' => 'Opening price',
+        'deposit' => 'Deposit amount',
+        'book_price' => 'Book price',
+        'start' => 'Auction start',
+        'description' => 'Description',
+        'terms' => 'Terms',
+        'terms_body' => 'The participant agrees to the condition book and the applicable Algerian laws. Acknowledging the book is required before registering.',
+        'requires_commerce_register' => 'This asset requires a valid Commerce Register.',
+        'requires_newspaper' => 'This auction is announced in a national newspaper in addition to the platform.',
+    ],
+
+    'award' => [
+        'title' => 'Award document — :auction',
+        'winner_section' => 'Winner information',
+        'winner_name' => 'Name',
+        'winner_nin' => 'National ID number',
+        'winner_phone' => 'Phone',
+        'winner_address' => 'Address',
+        'asset_section' => 'Asset information',
+        'asset_title' => 'Title',
+        'category' => 'Category',
+        'condition' => 'Condition',
+        'unit_count' => 'Unit count',
+        'location' => 'Location',
+        'auction_section' => 'Auction information',
+        'auction_id' => 'Auction no.',
+        'entity' => 'Entity',
+        'closed_at' => 'Closed at',
+        'financial_section' => 'Financial summary',
+        'delivery_section' => 'Delivery terms',
+        'delivery_note' => 'Delivery takes place after full payment within :days days, upon presenting the award document and payment receipt.',
+        'legal_notice' => 'A legally binding document under the Civil Code (Art. 96) and the Code of Civil Procedure. Ownership transfers after full payment.',
+    ],
+
+    'receipt' => [
+        'title' => 'Payment receipt — :type',
+        'section' => 'Payment details',
+        'payer' => 'Payer',
+        'payment_type' => 'Payment type',
+        'amount' => 'Amount',
+        'status' => 'Status',
+        'reference' => 'Reference',
+        'confirmed_at' => 'Confirmed at',
+    ],
+
+    'delivery_report' => [
+        'title' => 'Delivery report — :auction',
+        'section' => 'Delivery information',
+        'recipient' => 'Recipient',
+        'scheduled_at' => 'Scheduled at',
+        'delivered_at' => 'Delivered at',
+        'address' => 'Address',
+        'status' => 'Status',
+    ],
+
+    'verify' => [
+        'title' => 'Document verification',
+        'valid_title' => 'Valid document',
+        'valid_intro' => 'This document was issued by Mazayada and electronically signed.',
+        'invalid_title' => 'Invalid document',
+        'invalid_intro' => 'This document could not be verified. The link may be incorrect or the document was altered.',
+        'doc_type' => 'Document type',
+        'issued_at' => 'Issued at',
+        'auction' => 'Auction',
+    ],
+];

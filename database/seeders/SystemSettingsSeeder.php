@@ -29,6 +29,20 @@ class SystemSettingsSeeder extends Seeder
         'security.enforce_admin_2fa' => ['0', 'bool', 'security'],
 
         'identity.nin_checksum_enforced' => ['0', 'bool', 'identity'],
+
+        // Judicial-officer fee schedule (Decree 97-33) + TVA — spec §2.2. The
+        // progressive tier tables stay in config/mazayada.php; only the flat
+        // scalar rates are tunable here. Rates are fractions (0.19 = 19%).
+        'fees.proportional_seller' => ['0.05', 'float', 'fees'],
+        'fees.proportional_buyer' => ['0.03', 'float', 'fees'],
+        'fees.tva_rate' => ['0.19', 'float', 'fees'],
+        'fees.work_session_flat_centimes' => ['100000', 'int', 'fees'],
+        'fees.customs_min_immediate_rate' => ['0.20', 'float', 'fees'],
+        'fees.newspaper_announcement_threshold_centimes' => ['20000000', 'int', 'fees'],
+
+        // Lease defaults (spec §2.4).
+        'lease.default_duration_years' => ['3', 'int', 'lease'],
+        'lease.max_renewals' => ['2', 'int', 'lease'],
     ];
 
     public function run(): void

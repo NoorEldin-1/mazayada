@@ -5,7 +5,7 @@
 
 @section('content')
 
-<form method="POST" action="{{ route('admin.auctions.update', $auction) }}">
+<form method="POST" action="{{ route('admin.auctions.update', $auction) }}" enctype="multipart/form-data">
     @csrf
     @method('PUT')
 
@@ -125,6 +125,59 @@
         </div>
     </div>
 
+    {{-- Section 2b: Lifecycle (spec §2/§4) --}}
+    <div class="card card-pad" style="margin-bottom:1.5rem">
+        <h3 class="card-h">{{ __('admin.auctions.sec_lifecycle') }}</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+            <div class="field">
+                <label for="asset_class">{{ __('admin.auctions.f_asset_class') }}</label>
+                <select id="asset_class" name="asset_class" class="select">
+                    @foreach(['MOVABLE','REAL_ESTATE','CUSTOMS'] as $ac)
+                        <option value="{{ $ac }}" {{ old('asset_class', $auction->asset_class?->value ?? 'MOVABLE') === $ac ? 'selected' : '' }}>{{ __('enums.asset_class.'.$ac) }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="field">
+                <label for="max_extensions">{{ __('admin.auctions.f_max_extensions') }}</label>
+                <input type="number" id="max_extensions" name="max_extensions" class="input" value="{{ old('max_extensions', $auction->max_extensions) }}" min="0">
+            </div>
+            <div class="field">
+                <label for="inspection_start">{{ __('admin.auctions.f_inspection_start') }}</label>
+                <input type="datetime-local" id="inspection_start" name="inspection_start" class="input" value="{{ old('inspection_start', $auction->inspection_start?->format('Y-m-d\TH:i')) }}">
+            </div>
+            <div class="field">
+                <label for="inspection_end">{{ __('admin.auctions.f_inspection_end') }}</label>
+                <input type="datetime-local" id="inspection_end" name="inspection_end" class="input" value="{{ old('inspection_end', $auction->inspection_end?->format('Y-m-d\TH:i')) }}">
+            </div>
+            <div class="field">
+                <label for="inspection_location">{{ __('admin.auctions.f_inspection_location') }}</label>
+                <input type="text" id="inspection_location" name="inspection_location" class="input" value="{{ old('inspection_location', $auction->inspection_location) }}">
+            </div>
+            <div class="field">
+                <label for="original_owner_nin">{{ __('admin.auctions.f_original_owner_nin') }}</label>
+                <input type="text" id="original_owner_nin" name="original_owner_nin" class="input num" value="{{ old('original_owner_nin', $auction->original_owner_nin) }}" maxlength="18" placeholder="18">
+            </div>
+        </div>
+    </div>
+
+    {{-- Section 2c: Photos (spec §4 step 1) --}}
+    <div class="card card-pad" style="margin-bottom:1.5rem">
+        <h3 class="card-h">{{ __('admin.auctions.sec_photos') }}</h3>
+        @if($auction->photosArray())
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+                @foreach($auction->photosArray() as $p)
+                    <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($p) }}" style="width:90px;height:90px;object-fit:cover;border-radius:8px;border:1px solid var(--line)">
+                @endforeach
+            </div>
+        @endif
+        <div class="field">
+            <label for="photos">{{ __('admin.auctions.f_photos') }}</label>
+            <input type="file" id="photos" name="photos[]" class="input" accept="image/jpeg,image/png,image/webp" multiple>
+            <small style="color:var(--ink-muted)">{{ __('admin.auctions.photos_hint') }}</small>
+            @error('photos.*') <small style="color:var(--red-600)">{{ $message }}</small> @enderror
+        </div>
+    </div>
+
     {{-- Section 3: Pricing --}}
     <div class="card card-pad" style="margin-bottom:1.5rem">
         <h3 class="card-h">{{ __('admin.auctions.sec_pricing') }}</h3>
@@ -196,6 +249,25 @@
     {{-- Submit --}}
     <button type="submit" class="btn btn-primary btn-block btn-lg">{{ __('admin.auctions.submit_edit') }}</button>
 </form>
+
+{{-- §4 step 2 — generate the signed condition book (separate form; cannot nest) --}}
+@can('documents.generate')
+<div class="card card-pad" style="margin-top:1.5rem">
+    <h3 class="card-h">{{ __('admin.auctions.sec_documents') }}</h3>
+    <p style="font-size:0.85rem;color:var(--ink-muted);margin-bottom:1rem">{{ __('admin.auctions.gen_condition_book_hint') }}</p>
+    <form method="POST" action="{{ route('admin.auctions.condition-book', $auction) }}">
+        @csrf
+        <button type="submit" class="btn btn-ghost">{{ __('admin.auctions.gen_condition_book') }}</button>
+    </form>
+    @if($auction->documents()->where('type','CONDITION_BOOK')->exists())
+        <div style="margin-top:0.75rem;font-size:0.85rem">
+            @foreach($auction->documents()->where('type','CONDITION_BOOK')->latest()->get() as $doc)
+                <a href="{{ route('documents.download', $doc) }}" style="display:block;margin-bottom:4px">↓ {{ $doc->title }}</a>
+            @endforeach
+        </div>
+    @endif
+</div>
+@endcan
 
 @endsection
 

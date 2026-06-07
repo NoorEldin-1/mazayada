@@ -38,9 +38,14 @@ return [
     // ===== Auction detail (auctions/show) =====
     'show' => [
         'back' => 'العودة إلى المزايدات',
+        'gallery_prev' => 'الصورة السابقة',
+        'gallery_next' => 'الصورة التالية',
         'tab_details' => 'التفاصيل',
         'tab_specs' => 'المواصفات',
+        'tab_inspection' => 'المعاينة والأسئلة',
         'tab_bids' => 'سجل العروض',
+        'read_condition_book' => 'تحميل كراسة الشروط',
+        'download_award' => 'تحميل محضر الترسية',
         'desc_title' => 'وصف المزايدة',
         'no_desc' => 'لا يوجد وصف متاح لهذه المزايدة.',
         'spec_opening' => 'سعر الافتتاح',
@@ -61,7 +66,10 @@ return [
         'cd_minutes' => 'دقيقة',
         'cd_seconds' => 'ثانية',
         'login_to_participate' => 'سجّل الدخول للمشاركة',
-        'register_in' => 'سجّل في هذه المزايدة',
+        'register_in' => 'سجّل وادفع للمشاركة',
+        'ack_book' => 'أقرّ بأنني اطّلعت على كراسة الشروط وأوافق عليها.',
+        'ack_submit' => 'إقرار والمتابعة',
+        'pay_final' => 'إتمام الدفع النهائي',
         'cta_blocked' => 'لا يمكنك المشاركة — حسابك مُدرج في القائمة السوداء.',
         'cta_locked' => 'حسابك مقفل مؤقتاً، يرجى المحاولة لاحقاً.',
         'cta_complete_kyc' => 'أكمل التحقق من الهوية للمشاركة',
@@ -79,6 +87,7 @@ return [
     // ===== Controller flash messages =====
     'flash_registered' => 'تم التسجيل في المزاد بنجاح.',
     'flash_already_registered' => 'أنت مسجل بالفعل في هذا المزاد.',
+    'flash_book_acknowledged' => 'تم تسجيل إقرارك بقراءة كراسة الشروط. يمكنك الآن التسجيل.',
     'flash_bid_placed' => 'تم تقديم عرضك بنجاح.',
     'bid_too_low_priced' => 'يجب أن يكون المبلغ أعلى من السعر الحالي (:price).',
 ];

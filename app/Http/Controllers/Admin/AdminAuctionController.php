@@ -75,6 +75,19 @@ class AdminAuctionController extends Controller
             'end_time' => ['required', 'date', 'after:start_time'],
             'wilaya_id' => ['required', 'exists:wilayas,id'],
             'asset_location' => ['nullable', 'string', 'max:255'],
+            // Asset photos (spec §4 step 1).
+            'photos' => ['nullable', 'array', 'max:10'],
+            'photos.*' => ['image', 'mimes:jpeg,png,webp', 'max:4096'],
+            // Lifecycle fields (spec §2, §4).
+            'asset_class' => ['nullable', 'string', 'in:MOVABLE,REAL_ESTATE,CUSTOMS'],
+            'requires_commerce_register' => ['nullable', 'boolean'],
+            'inspection_start' => ['nullable', 'date'],
+            'inspection_end' => ['nullable', 'date', 'after_or_equal:inspection_start'],
+            'inspection_location' => ['nullable', 'string', 'max:255'],
+            'max_extensions' => ['nullable', 'integer', 'min:0', 'max:1000'],
+            'original_owner_nin' => ['nullable', 'digits:18'],
+            'lease_duration_years' => ['nullable', 'integer', 'min:1', 'max:99'],
+            'lease_renewals' => ['nullable', 'integer', 'min:0', 'max:10'],
         ]);
 
         // Convert DZD to centimes
@@ -89,13 +102,34 @@ class AdminAuctionController extends Controller
             $validated['book_price'] = (int) ($validated['book_price'] * 100);
         }
 
+        // entry_fee / book_price are NOT NULL — a blank field must become 0, not null.
+        $validated['entry_fee'] = $validated['entry_fee'] ?? 0;
+        $validated['book_price'] = $validated['book_price'] ?? 0;
+
+        $validated['asset_class'] = $validated['asset_class'] ?? 'MOVABLE';
+        $validated['requires_commerce_register'] = $request->boolean('requires_commerce_register');
+        $validated['max_extensions'] = $validated['max_extensions'] ?? 10;
+        $validated = $this->normalizeLeaseFields($validated);
+        // §2.4 — assets above the threshold must also be announced in a national
+        // newspaper (the platform announcement supplements, not replaces, it).
+        $threshold = (int) setting('fees.newspaper_announcement_threshold_centimes',
+            config('mazayada.fees.newspaper_announcement_threshold_centimes', 20_000_000));
+        $validated['requires_newspaper_announcement'] = $validated['opening_price'] > $threshold;
+
         $validated['status'] = AuctionStatus::DRAFT;
         $validated['created_by'] = auth()->id();
         $validated['entity_id'] = $isSuperAdmin
             ? $validated['entity_id']
             : auth()->user()->entity_id;
 
+        // Uploaded files are handled separately (storePhotos) — never mass-assign.
+        unset($validated['photos']);
+
         $auction = Auction::create($validated);
+
+        if ($request->hasFile('photos')) {
+            $auction->update(['photos' => $this->storePhotos($request, $auction)]);
+        }
 
         AuditLog::log('AUCTION_CREATED', 'Auction', $auction->id, null, null, [
             'title' => $validated['title_ar'],
@@ -144,6 +178,17 @@ class AdminAuctionController extends Controller
             'end_time' => ['sometimes', 'date'],
             'wilaya_id' => ['sometimes', 'exists:wilayas,id'],
             'asset_location' => ['nullable', 'string', 'max:255'],
+            'photos' => ['nullable', 'array', 'max:10'],
+            'photos.*' => ['image', 'mimes:jpeg,png,webp', 'max:4096'],
+            'asset_class' => ['nullable', 'string', 'in:MOVABLE,REAL_ESTATE,CUSTOMS'],
+            'requires_commerce_register' => ['nullable', 'boolean'],
+            'inspection_start' => ['nullable', 'date'],
+            'inspection_end' => ['nullable', 'date', 'after_or_equal:inspection_start'],
+            'inspection_location' => ['nullable', 'string', 'max:255'],
+            'max_extensions' => ['nullable', 'integer', 'min:0', 'max:1000'],
+            'original_owner_nin' => ['nullable', 'digits:18'],
+            'lease_duration_years' => ['nullable', 'integer', 'min:1', 'max:99'],
+            'lease_renewals' => ['nullable', 'integer', 'min:0', 'max:10'],
         ]);
 
         if (isset($validated['opening_price'])) {
@@ -162,11 +207,42 @@ class AdminAuctionController extends Controller
             $validated['book_price'] = (int) ($validated['book_price'] * 100);
         }
 
+        if ($request->has('requires_commerce_register')) {
+            $validated['requires_commerce_register'] = $request->boolean('requires_commerce_register');
+        }
+
+        // NOT NULL columns: a submitted-but-blank value must not become null.
+        if (array_key_exists('entry_fee', $validated) && $validated['entry_fee'] === null) {
+            $validated['entry_fee'] = 0;
+        }
+        if (array_key_exists('book_price', $validated) && $validated['book_price'] === null) {
+            $validated['book_price'] = 0;
+        }
+        if (array_key_exists('max_extensions', $validated) && $validated['max_extensions'] === null) {
+            $validated['max_extensions'] = 10;
+        }
+        $validated = $this->normalizeLeaseFields($validated, $auction);
+
+        // Recompute the newspaper-announcement flag against the (possibly new) price.
+        $price = $validated['opening_price'] ?? $auction->opening_price;
+        $threshold = (int) setting('fees.newspaper_announcement_threshold_centimes',
+            config('mazayada.fees.newspaper_announcement_threshold_centimes', 20_000_000));
+        $validated['requires_newspaper_announcement'] = $price > $threshold;
+
         if (! $isSuperAdmin) {
             unset($validated['entity_id']);
         }
 
+        // Uploaded files are handled separately (storePhotos) — never mass-assign.
+        unset($validated['photos']);
+
         $auction->update($validated);
+
+        // Newly uploaded photos are appended to any existing ones.
+        if ($request->hasFile('photos')) {
+            $existing = $auction->photos ? $auction->photos.';' : '';
+            $auction->update(['photos' => $existing.$this->storePhotos($request, $auction)]);
+        }
 
         AuditLog::log('AUCTION_UPDATED', 'Auction', $auction->id);
 
@@ -241,6 +317,69 @@ class AdminAuctionController extends Controller
         ]);
 
         return back()->with('success', __('admin.flash.auction_extended'));
+    }
+
+    /**
+     * Store uploaded asset photos on the PUBLIC disk (served via /storage) and
+     * return a ';'-joined path string for the auctions.photos column.
+     */
+    private function storePhotos(Request $request, Auction $auction): string
+    {
+        $paths = [];
+        foreach ($request->file('photos') as $file) {
+            $paths[] = $file->store('auctions/'.$auction->id, 'public');
+        }
+
+        return implode(';', $paths);
+    }
+
+    /**
+     * Lease columns only apply to LEASE auctions. For a SALE we drop them so the
+     * DB defaults stand (lease_renewals is NOT NULL with a default); for a LEASE
+     * we fill sensible defaults when the form left them empty.
+     *
+     * @param  array<string, mixed>  $validated
+     * @return array<string, mixed>
+     */
+    private function normalizeLeaseFields(array $validated, ?Auction $auction = null): array
+    {
+        $type = $validated['auction_type'] ?? $auction?->auction_type?->value;
+
+        if ($type !== 'LEASE') {
+            unset($validated['lease_duration_years'], $validated['lease_renewals']);
+
+            return $validated;
+        }
+
+        if (empty($validated['lease_duration_years'])) {
+            $validated['lease_duration_years'] = (int) setting('lease.default_duration_years',
+                config('mazayada.lease.default_duration_years', 3));
+        }
+        if (! isset($validated['lease_renewals']) || $validated['lease_renewals'] === null) {
+            $validated['lease_renewals'] = (int) setting('lease.max_renewals',
+                config('mazayada.lease.max_renewals', 2));
+        }
+
+        return $validated;
+    }
+
+    /**
+     * §4 step 2 — generate the signed condition book (cahier des charges) PDF
+     * and notify watchers. Gated by documents.generate.
+     */
+    public function publishConditionBook(
+        Auction $auction,
+        \App\Services\DocumentService $documents,
+        \App\Services\NotificationService $notifications,
+    ): RedirectResponse {
+        $this->authorize('documents.generate');
+
+        $documents->generateConditionBook($auction);
+        $notifications->conditionBookPublished($auction);
+
+        AuditLog::log('CONDITION_BOOK_PUBLISHED', 'Auction', $auction->id);
+
+        return back()->with('success', __('admin.flash.condition_book_published'));
     }
 
     public function cancel(Request $request, Auction $auction): RedirectResponse

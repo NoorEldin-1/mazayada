@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Citizen;
 use App\Enums\AuctionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\AuctionParticipant;
+use App\Models\UserNotification;
 use App\Rules\AlgerianPhone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -72,6 +73,24 @@ class CitizenController extends Controller
             ->paginate(20);
 
         return view('citizen.notifications', compact('notifications'));
+    }
+
+    public function markNotificationRead(UserNotification $notification): RedirectResponse
+    {
+        abort_unless($notification->user_id === auth()->id(), 403);
+
+        $notification->update(['is_read' => true]);
+
+        return back()->with('success', __('notifications.flash_marked_read'));
+    }
+
+    public function markAllNotificationsRead(): RedirectResponse
+    {
+        auth()->user()->userNotifications()
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+
+        return back()->with('success', __('notifications.flash_all_marked_read'));
     }
 
     public function profile(): View

@@ -55,7 +55,18 @@ php artisan event:cache
 # 5. Storage symbolic link (idempotent)
 # ────────────────────────────────────────────────
 echo "🔗 Ensuring storage link..."
+# A stale plain `public/storage` directory (not a symlink) makes storage:link a
+# silent no-op and 404s every uploaded auction photo — remove it first, then link.
+if [ -e public/storage ] && [ ! -L public/storage ]; then
+  echo "   public/storage is not a symlink — recreating it."
+  rm -rf public/storage
+fi
 php artisan storage:link 2>/dev/null || true
+
+# Generated PDFs (award / condition book / receipt / delivery report) live on the
+# PRIVATE 'documents' disk — never the public symlink. Auction photos live on the
+# PUBLIC disk (served via /storage). mpdf needs a writable temp dir.
+mkdir -p storage/app/private/documents storage/app/mpdf storage/app/public/auctions
 
 # ────────────────────────────────────────────────
 # 6. Fix file permissions
