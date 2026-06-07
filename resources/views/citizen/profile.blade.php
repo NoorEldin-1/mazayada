@@ -58,12 +58,37 @@
                     <div class="field">
                         <label>{{ __('profile.postal_code') }}</label>
                         <input class="input" name="postal_code" value="{{ old('postal_code', auth()->user()->postal_code) }}" dir="ltr" maxlength="5">
+                        @error('postal_code') <small style="color:var(--danger)">{{ $message }}</small> @enderror
                     </div>
                     <div class="field">
                         <label>{{ __('profile.profession') }}</label>
                         <input class="input" name="profession" value="{{ old('profession', auth()->user()->profession) }}">
                     </div>
                 </div>
+                <div class="field" style="margin-bottom:14px">
+                    <label>{{ __('profile.phone') }}</label>
+                    <input class="input" name="phone" value="{{ old('phone', auth()->user()->phone) }}" dir="ltr" maxlength="10">
+                    @error('phone') <small style="color:var(--danger)">{{ $message }}</small> @enderror
+                </div>
+
+                {{-- Account recovery: secret question (spec §8.4) --}}
+                <div class="field" style="margin-bottom:14px">
+                    <label>{{ __('profile.secret_question') }}</label>
+                    <select class="select" name="secret_question">
+                        <option value="">{{ __('profile.secret_question_none') }}</option>
+                        @foreach((array) __('auth.secret_questions') as $key => $label)
+                            <option value="{{ $key }}" {{ old('secret_question', auth()->user()->secret_question) === $key ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="field" style="margin-bottom:14px">
+                    <label>{{ __('profile.secret_answer') }}</label>
+                    <input class="input" name="secret_answer" autocomplete="off"
+                           placeholder="{{ auth()->user()->secret_answer ? __('profile.secret_answer_set') : '' }}">
+                    <small style="color:var(--muted)">{{ __('profile.secret_answer_hint') }}</small>
+                    @error('secret_answer') <small style="color:var(--danger)">{{ $message }}</small> @enderror
+                </div>
+
                 <button type="submit" class="btn btn-primary btn-block">{{ __('profile.save_changes') }}</button>
             </form>
         </div>

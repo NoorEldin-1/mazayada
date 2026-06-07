@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Citizen;
 
+use App\Enums\IdDocumentType;
 use App\Enums\KycStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SubmitKycRequest;
@@ -20,6 +21,10 @@ class KycController extends Controller
         'id-front' => 'id_front_path',
         'id-back' => 'id_back_path',
         'selfie-with-id' => 'selfie_with_id_path',
+        // Optional standalone biometric photo (spec §3.2, 35×45mm). Not part of
+        // the 3-document submit gate yet — becomes mandatory with the Phase-2
+        // face-match step.
+        'photo-biometric' => 'photo_biometric_path',
     ];
 
     public function index(): View
@@ -40,9 +45,14 @@ class KycController extends Controller
             return back()->withErrors(['file' => __('kyc.locked')]);
         }
 
+        // Per-type size cap (spec §3.2): identity scans ≤ 1MB, biometric ≤ 120KB.
+        $maxKb = $type === 'photo-biometric'
+            ? (int) setting('kyc.biometric_max_kb', 120)
+            : (int) setting('kyc.doc_max_kb', 1024);
+
         $request->validate([
-            // Stored privately (Law 18-07); 2 MB cap, JPG/PNG only.
-            'file' => ['required', 'image', 'mimes:jpeg,png', 'max:2048'],
+            // Stored privately (Law 18-07); JPG/PNG only.
+            'file' => ['required', 'image', 'mimes:jpeg,png', 'max:'.$maxKb],
         ]);
 
         // Private disk — never reachable by a static /storage URL. Served only
@@ -69,11 +79,20 @@ class KycController extends Controller
                 ->withErrors(['file' => __('kyc.error_docs_required')]);
         }
 
+        // Map the chosen identity document to its specific column (spec §3.2).
+        $idColumn = [];
+        if ($request->filled('id_type') && $request->filled('id_number')) {
+            $column = IdDocumentType::from($request->safe()->input('id_type'))->column();
+            $idColumn[$column] = $request->safe()->input('id_number');
+        }
+
         $user->update([
             ...$request->safe()->only([
                 'first_name_fr', 'last_name_fr', 'father_name', 'mother_fullname',
                 'profession', 'address', 'commune_id', 'postal_code', 'rip', 'expected_income',
+                'nif', 'nis',
             ]),
+            ...$idColumn,
             'kyc_status' => KycStatus::UNDER_REVIEW,
             'kyc_submitted_at' => now(),
             'kyc_rejection_reason' => null,

@@ -70,4 +70,10 @@ return [
         'BOOK_PURCHASE' => 'Cahier des charges',
         'FINAL_PAYMENT' => 'Paiement final',
     ],
+
+    'id_document_type' => [
+        'ID_CARD' => 'Carte nationale d\'identité',
+        'PASSPORT' => 'Passeport',
+        'LICENSE' => 'Permis de conduire',
+    ],
 ];

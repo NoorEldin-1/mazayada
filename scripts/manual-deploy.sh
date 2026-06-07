@@ -54,8 +54,14 @@ deploy() {
   #   reloads (truncate + insert) only when it's missing/incomplete —
   #   e.g. servers still on the old 3-wilaya sample. Requires wilayas
   #   to already exist (WilayaSeeder — first-time setup below).
+  #
+  #   SystemSettingsSeeder seeds the runtime platform parameters
+  #   (Section 8.2) and is IDEMPOTENT: it firstOrCreate's each key, so
+  #   an admin-edited value in the system_settings table is never
+  #   overwritten on re-deploy — only missing keys are (re)added.
   echo "🔐 [4/8] Syncing roles, permissions & reference data..."
   php artisan db:seed --class=RolesPermissionsSeeder --force
+  php artisan db:seed --class=SystemSettingsSeeder --force
   php artisan db:seed --class=CommuneSeeder --force
   php artisan permission:cache-reset || true
 
@@ -128,9 +134,9 @@ deploy "$@"
 #       php artisan db:seed --class=CategorySeeder --force
 #       php artisan db:seed --class=EntitySeeder --force
 #       php artisan db:seed --class=AdminUserSeeder --force
-#    (CommuneSeeder is now idempotent and runs in step 4 above — do
-#     NOT list it here.) WilayaSeeder must run before the first
-#     CommuneSeeder so the wilaya FK targets exist.
+#    (CommuneSeeder and SystemSettingsSeeder are idempotent and run in
+#     step 4 above — do NOT list them here.) WilayaSeeder must run
+#     before the first CommuneSeeder so the wilaya FK targets exist.
 #    ❗ NEVER run `php artisan db:seed` (no class) in production —
 #       it also runs DemoDataSeeder (demo data).
 #

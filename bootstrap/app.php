@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureRole;
+use App\Http\Middleware\EnsureTwoFactorForAdmins;
 use App\Http\Middleware\KycVerified;
 use App\Http\Middleware\NoCacheHeaders;
 use App\Http\Middleware\SetLocale;
@@ -22,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role'         => EnsureRole::class,
             'kyc.verified' => KycVerified::class,
+            'admin.2fa'    => EnsureTwoFactorForAdmins::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

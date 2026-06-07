@@ -119,6 +119,31 @@
             </div>
             @endforeach
         </div>
+
+        {{-- Optional standalone biometric photo (spec §3.2) — separate cap (120KB). --}}
+        @php $bioPhotoUploaded = $bio && $bio->photo_biometric_path; @endphp
+        <div style="margin-top:16px;max-width:240px">
+            <form action="{{ route('citizen.kyc.upload', 'photo-biometric') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="upbox {{ $bioPhotoUploaded ? 'done' : '' }}" @if($canSubmit) onclick="this.querySelector('input[type=file]')?.click()" style="cursor:pointer" @endif>
+                    @if($bioPhotoUploaded)
+                        <img src="{{ route('citizen.kyc.document', 'photo-biometric') }}" alt="{{ __('kyc.doc_photo_biometric') }}" style="width:100%;max-height:96px;object-fit:cover;border-radius:10px;margin-bottom:8px">
+                        <div class="t">{{ __('kyc.doc_photo_biometric') }}</div>
+                        <div class="s">{{ $canSubmit ? __('kyc.uploaded_replace') : __('kyc.uploaded') }}</div>
+                    @else
+                        <div class="ic">
+                            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                        <div class="t">{{ __('kyc.doc_photo_biometric') }}</div>
+                        <div class="s">{{ __('kyc.doc_photo_biometric_hint') }}</div>
+                    @endif
+                    @if($canSubmit)
+                        <input type="file" name="file" accept="image/jpeg,image/png" style="display:none" onchange="this.form.submit()">
+                    @endif
+                </div>
+            </form>
+        </div>
+
         <div style="background:#FBEFD6;border-radius:14px;padding:18px;margin-top:18px;font-size:13px;color:#8A6310">
             <strong>{{ __('kyc.requirements_title') }}</strong>
             <ul style="margin:8px 0 0;padding-inline-start:18px;line-height:2">
@@ -196,7 +221,36 @@
                 </div>
                 <div class="field">
                     <label>{{ __('kyc.f_rip') }}</label>
-                    <input class="input" name="rip" value="{{ old('rip', $user->rip) }}" dir="ltr" {{ $ro }}>
+                    <input class="input" name="rip" value="{{ old('rip', $user->rip) }}" dir="ltr" placeholder="00799999000123456789" {{ $ro }}>
+                </div>
+            </div>
+
+            {{-- Identity document (spec §3.2) --}}
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+                <div class="field">
+                    <label>{{ __('kyc.f_id_type') }}</label>
+                    <select class="input" name="id_type" {{ $ro }}>
+                        <option value="">{{ __('kyc.id_type_none') }}</option>
+                        @foreach(\App\Enums\IdDocumentType::cases() as $idt)
+                            <option value="{{ $idt->value }}" @selected(old('id_type') === $idt->value)>{{ $idt->label() }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="field">
+                    <label>{{ __('kyc.f_id_number') }}</label>
+                    <input class="input" name="id_number" value="{{ old('id_number') }}" dir="ltr" {{ $ro }}>
+                </div>
+            </div>
+
+            {{-- Tax / statistical IDs — optional, for merchants & companies (spec §3.2) --}}
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+                <div class="field">
+                    <label>{{ __('kyc.f_nif') }}</label>
+                    <input class="input" name="nif" value="{{ old('nif', $user->nif) }}" dir="ltr" maxlength="15" inputmode="numeric" {{ $ro }}>
+                </div>
+                <div class="field">
+                    <label>{{ __('kyc.f_nis') }}</label>
+                    <input class="input" name="nis" value="{{ old('nis', $user->nis) }}" dir="ltr" maxlength="18" inputmode="numeric" {{ $ro }}>
                 </div>
             </div>
 

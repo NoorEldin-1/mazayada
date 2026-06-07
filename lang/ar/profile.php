@@ -14,6 +14,12 @@ return [
     'profession' => 'المهنة',
     'save_changes' => 'حفظ التعديلات',
 
+    'secret_question' => 'سؤال الأمان',
+    'secret_question_none' => '— لا يوجد —',
+    'secret_answer' => 'إجابة سؤال الأمان',
+    'secret_answer_set' => '•••••• (محفوظة)',
+    'secret_answer_hint' => 'تُستخدم لاسترجاع الحساب عند فقدان البريد الإلكتروني. اتركها فارغة للإبقاء على الإجابة الحالية.',
+
     // ===== Controller flash messages =====
     'flash_updated' => 'تم تحديث الملف الشخصي بنجاح.',
 ];

@@ -14,7 +14,13 @@ class AdminAppealController extends Controller
 {
     public function index(): View
     {
-        $appeals = Appeal::with(['user', 'auction'])
+        $this->authorize('viewAny', Appeal::class);
+
+        // whereHas('auction') makes appeals inherit per-entity isolation: the
+        // auction sub-query is filtered by EntityScope, so an entity head only
+        // sees appeals against their own entity's auctions (SUPER_ADMIN: all).
+        $appeals = Appeal::whereHas('auction')
+            ->with(['user', 'auction'])
             ->latest()
             ->paginate(20);
 
@@ -23,6 +29,8 @@ class AdminAppealController extends Controller
 
     public function respond(Request $request, Appeal $appeal): RedirectResponse
     {
+        $this->authorize('respond', $appeal);
+
         $request->validate([
             'admin_response' => ['required', 'string', 'max:2000'],
             'status' => ['required', 'in:RESOLVED,REJECTED'],

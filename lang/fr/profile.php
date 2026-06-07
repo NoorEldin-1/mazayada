@@ -14,6 +14,12 @@ return [
     'profession' => 'Profession',
     'save_changes' => 'Enregistrer les modifications',
 
+    'secret_question' => 'Question secrète',
+    'secret_question_none' => '— Aucune —',
+    'secret_answer' => 'Réponse secrète',
+    'secret_answer_set' => '•••••• (enregistrée)',
+    'secret_answer_hint' => 'Sert à récupérer le compte en cas de perte de l\'e-mail. Laissez vide pour conserver la réponse actuelle.',
+
     // ===== Controller flash messages =====
     'flash_updated' => 'Profil mis à jour avec succès.',
 ];

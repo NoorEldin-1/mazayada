@@ -31,7 +31,7 @@ class User extends Authenticatable implements HasLocalePreference
         'kyc_status', 'kyc_completed_at', 'kyc_submitted_at', 'kyc_rejection_reason',
         'is_blacklisted', 'blacklist_reason',
         'account_status', 'premium_until', 'secret_question', 'secret_answer',
-        'password', 'role', 'locale', 'phone_verified', 'email_verified',
+        'password', 'role', 'entity_id', 'locale', 'phone_verified', 'email_verified',
         'failed_login_attempts', 'locked_until',
     ];
 
@@ -95,6 +95,26 @@ class User extends Authenticatable implements HasLocalePreference
         return $this->belongsTo(Commune::class);
     }
 
+    /**
+     * The government entity this account is bound to. NULL for citizens and the
+     * SUPER_ADMIN (platform-wide). Non-null for entity staff — drives the
+     * per-entity data isolation in the admin dashboard (see EntityScope).
+     */
+    public function entity(): BelongsTo
+    {
+        return $this->belongsTo(Entity::class);
+    }
+
+    /**
+     * The matching EntityUser membership row (management surface for staff).
+     * The canonical login identity is always this User; EntityUser mirrors the
+     * link for the staff-management UI.
+     */
+    public function entityMembership(): HasOne
+    {
+        return $this->hasOne(EntityUser::class);
+    }
+
     public function biometrics(): HasOne
     {
         return $this->hasOne(UserBiometric::class);
@@ -142,6 +162,17 @@ class User extends Authenticatable implements HasLocalePreference
             UserRole::ENTITY_HEAD->value,
             UserRole::CONTENT_ADMIN->value,
         ]);
+    }
+
+    /**
+     * Any government/platform staff member (the 6 non-citizen roles). Drives
+     * admin-area access and the post-login redirect. Checks both the Spatie
+     * roles and the legacy `role` column for backward compatibility.
+     */
+    public function isStaff(): bool
+    {
+        return $this->hasAnyRole(UserRole::staffValues())
+            || ($this->role?->isStaff() ?? false);
     }
 
     public function isPremium(): bool

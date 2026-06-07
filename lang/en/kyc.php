@@ -82,4 +82,12 @@ return [
     'notif_rejected_body' => 'Your verification request was rejected. Reason: :reason. Please correct and resubmit.',
     'notif_suspended_title' => 'Account suspended',
     'notif_suspended_body' => 'Your account was suspended because identity verification was not completed in time.',
+
+    'doc_photo_biometric' => 'Biometric photo (optional)',
+    'doc_photo_biometric_hint' => '35×45mm, white background, max 120KB',
+    'f_id_type' => 'Identity document type',
+    'id_type_none' => '— Choose type —',
+    'f_id_number' => 'Identity document number',
+    'f_nif' => 'Tax ID (NIF)',
+    'f_nis' => 'Statistical ID (NIS)',
 ];

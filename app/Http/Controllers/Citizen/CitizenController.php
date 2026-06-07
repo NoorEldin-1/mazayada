@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Citizen;
 use App\Enums\AuctionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\AuctionParticipant;
+use App\Rules\AlgerianPhone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class CitizenController extends Controller
@@ -81,18 +83,33 @@ class CitizenController extends Controller
 
     public function updateProfile(Request $request): RedirectResponse
     {
+        $user = auth()->user();
+
+        // Same strict rules as registration/KYC — profile edits must not be a
+        // backdoor around them (spec §3.2): real Algerian phone, 5-digit postal.
         $request->validate([
-            'phone' => ['sometimes', 'string', 'max:10'],
-            'email' => ['sometimes', 'email', 'unique:users,email,' . auth()->id()],
-            'address' => ['sometimes', 'string', 'max:255'],
-            'commune_id' => ['sometimes', 'exists:communes,id'],
-            'postal_code' => ['sometimes', 'string', 'max:5'],
-            'profession' => ['sometimes', 'string', 'max:100'],
+            'phone' => ['sometimes', 'string', new AlgerianPhone, 'unique:users,phone,'.$user->id],
+            'email' => ['sometimes', 'email', 'unique:users,email,'.$user->id],
+            'address' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'commune_id' => ['sometimes', 'nullable', 'exists:communes,id'],
+            'postal_code' => ['sometimes', 'nullable', 'regex:/^\d{5}$/'],
+            'profession' => ['sometimes', 'nullable', 'string', 'max:100'],
+            // Secret question/answer recovery (spec §8.4). Stored as a stable key;
+            // the answer is hashed by the model cast.
+            'secret_question' => ['sometimes', 'nullable', Rule::in(array_keys((array) __('auth.secret_questions')))],
+            'secret_answer' => ['nullable', 'string', 'min:2', 'max:200'],
         ]);
 
-        auth()->user()->update($request->only([
-            'phone', 'email', 'address', 'commune_id', 'postal_code', 'profession',
-        ]));
+        $fields = $request->only([
+            'phone', 'email', 'address', 'commune_id', 'postal_code', 'profession', 'secret_question',
+        ]);
+
+        // Only overwrite the stored answer when the user actually typed a new one.
+        if ($request->filled('secret_answer')) {
+            $fields['secret_answer'] = $request->input('secret_answer');
+        }
+
+        $user->update($fields);
 
         return back()->with('success', __('profile.flash_updated'));
     }

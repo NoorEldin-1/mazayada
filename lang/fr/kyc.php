@@ -82,4 +82,12 @@ return [
     'notif_rejected_body' => 'Votre demande de vérification a été rejetée. Motif : :reason. Veuillez corriger et renvoyer.',
     'notif_suspended_title' => 'Compte suspendu',
     'notif_suspended_body' => 'Votre compte a été suspendu pour vérification d’identité non complétée à temps.',
+
+    'doc_photo_biometric' => 'Photo biométrique (optionnel)',
+    'doc_photo_biometric_hint' => '35×45mm, fond blanc, max 120 Ko',
+    'f_id_type' => 'Type de pièce d\'identité',
+    'id_type_none' => '— Choisir le type —',
+    'f_id_number' => 'Numéro de la pièce d\'identité',
+    'f_nif' => 'Numéro fiscal (NIF)',
+    'f_nis' => 'Numéro statistique (NIS)',
 ];

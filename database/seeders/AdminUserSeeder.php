@@ -60,6 +60,10 @@ class AdminUserSeeder extends Seeder
 
         $apc = Entity::where('name', 'LIKE', '%خنشلة%')->first();
         if ($apc) {
+            // Bind the staff User to its entity — this is what EntityScope reads
+            // to isolate the entity head's view inside the admin dashboard.
+            $entityHead->update(['entity_id' => $apc->id]);
+
             EntityUser::updateOrCreate(
                 ['entity_id' => $apc->id, 'user_id' => $entityHead->id],
                 [

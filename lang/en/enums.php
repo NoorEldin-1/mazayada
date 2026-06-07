@@ -70,4 +70,10 @@ return [
         'BOOK_PURCHASE' => 'Specifications booklet',
         'FINAL_PAYMENT' => 'Final payment',
     ],
+
+    'id_document_type' => [
+        'ID_CARD' => 'National ID card',
+        'PASSPORT' => 'Passport',
+        'LICENSE' => 'Driver\'s license',
+    ],
 ];

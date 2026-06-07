@@ -38,4 +38,6 @@ return [
     'filter' => 'تصفية',
     'none' => 'لا يوجد',
     'optional' => 'اختياري',
+    'active' => 'نشط',
+    'inactive' => 'غير نشط',
 ];

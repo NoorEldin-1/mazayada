@@ -46,6 +46,62 @@ if (! function_exists('locale_font_class')) {
     }
 }
 
+if (! function_exists('invalidate_user_sessions')) {
+    /**
+     * Force-log-out a user everywhere by deleting their persisted sessions
+     * (spec §8.4 — invalidate sessions on password change / blacklist /
+     * suspension). Only meaningful for the database session driver; a no-op
+     * otherwise (e.g. the array driver used in tests).
+     */
+    function invalidate_user_sessions(string $userId): void
+    {
+        if (config('session.driver') !== 'database') {
+            return;
+        }
+
+        try {
+            \Illuminate\Support\Facades\DB::table(config('session.table', 'sessions'))
+                ->where('user_id', $userId)
+                ->delete();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Session invalidation failed', [
+                'user_id' => $userId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+}
+
+if (! function_exists('setting')) {
+    /**
+     * Read a runtime platform parameter (spec §8.2). Resolution order:
+     *   1. system_settings table (cached for the request lifetime, busted on write)
+     *   2. config/mazayada.php (matching dot-key, e.g. 'bidding.extension_trigger_seconds')
+     *   3. the provided $default
+     *
+     * The DB lookup is wrapped so that calling setting() before the table is
+     * migrated (e.g. during early migrations) safely falls back to config.
+     */
+    function setting(string $key, mixed $default = null): mixed
+    {
+        $all = \Illuminate\Support\Facades\Cache::rememberForever('system_settings', function () {
+            try {
+                return \App\Models\SystemSetting::all()
+                    ->mapWithKeys(fn ($s) => [$s->key => $s->typedValue()])
+                    ->all();
+            } catch (\Throwable $e) {
+                return [];
+            }
+        });
+
+        if (array_key_exists($key, $all)) {
+            return $all[$key];
+        }
+
+        return config('mazayada.'.$key, $default);
+    }
+}
+
 if (! function_exists('dzd')) {
     /**
      * Format centimes to a DZD display string.

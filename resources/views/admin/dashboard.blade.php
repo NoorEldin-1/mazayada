@@ -34,7 +34,40 @@
             <div class="v num">{{ $stats['total_bids'] }}</div>
         </div>
     </div>
+    <div class="tile">
+        <div class="ic ic-gold"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+        <div>
+            <div class="l">{{ __('admin.stat_revenue') }}</div>
+            <div class="v num">{{ dzd($stats['revenue']) }}</div>
+        </div>
+    </div>
+    <div class="tile">
+        <div class="ic ic-mint"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+        <div>
+            <div class="l">{{ __('admin.stat_active_bidders') }}</div>
+            <div class="v num">{{ $stats['active_bidders'] }}</div>
+        </div>
+    </div>
 </div>
+
+{{-- Auction distribution by wilaya --}}
+@if($wilayaDistribution->isNotEmpty())
+<div class="card card-pad" style="margin-bottom:20px">
+    <h3 class="card-h">{{ __('admin.stat_wilaya_distribution') }}</h3>
+    @php($max = $wilayaDistribution->max('total') ?: 1)
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+        @foreach($wilayaDistribution as $row)
+            <div style="display:flex;align-items:center;gap:12px">
+                <div style="width:140px;font-size:13px;font-weight:600">{{ $row['name'] }}</div>
+                <div style="flex:1;background:var(--bg);border-radius:8px;overflow:hidden;height:18px">
+                    <div style="height:100%;background:var(--primary);width:{{ round($row['total'] / $max * 100) }}%"></div>
+                </div>
+                <div class="num" style="width:40px;text-align:end;font-weight:600">{{ $row['total'] }}</div>
+            </div>
+        @endforeach
+    </div>
+</div>
+@endif
 
 {{-- Recent Auctions --}}
 <div class="card" style="margin-bottom:20px">

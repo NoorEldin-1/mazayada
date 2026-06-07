@@ -175,7 +175,8 @@
         </div>
     </div>
 
-    {{-- Entity --}}
+    {{-- Entity — only a SUPER_ADMIN chooses; entity staff are pinned to their own. --}}
+    @if(auth()->user()->hasRole('SUPER_ADMIN'))
     <div class="card card-pad" style="margin-bottom:1.5rem">
         <h3 class="card-h">{{ __('admin.auctions.sec_entity') }}</h3>
         <div class="field">
@@ -189,6 +190,7 @@
             @error('entity_id') <small style="color:var(--red-600)">{{ $message }}</small> @enderror
         </div>
     </div>
+    @endif
 
     {{-- Submit --}}
     <button type="submit" class="btn btn-primary btn-block btn-lg">{{ __('admin.auctions.submit_create') }}</button>

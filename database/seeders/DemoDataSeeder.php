@@ -31,7 +31,7 @@ class DemoDataSeeder extends Seeder
 
         $userModels = [];
         foreach ($citizens as [$nin, $fAr, $lAr, $fFr, $lFr, $phone, $email, $dob, $role, $kyc]) {
-            $userModels[] = User::create([
+            $user = User::create([
                 'nin' => $nin,
                 'first_name_ar' => $fAr,
                 'last_name_ar' => $lAr,
@@ -44,10 +44,19 @@ class DemoDataSeeder extends Seeder
                 'role' => $role,
                 'kyc_status' => $kyc,
                 'kyc_completed_at' => $kyc === KycStatus::COMPLETE ? now() : null,
-                'account_status' => $kyc === KycStatus::SUSPENDED ? AccountStatus::SUSPENDED : AccountStatus::ACTIVE,
+                // A stale-KYC suspension keeps the account ACTIVE (the user may
+                // still log in and view, just not bid/pay — spec §3.3). Only an
+                // explicit account suspension/ban blocks login.
+                'account_status' => AccountStatus::ACTIVE,
                 'phone_verified' => true,
                 'email_verified' => true,
             ]);
+
+            // Keep the Spatie role in sync with the role column so permission
+            // checks (and the new policies) work for demo accounts too.
+            $user->syncRoles([$role->value]);
+
+            $userModels[] = $user;
         }
 
         // Demo auctions

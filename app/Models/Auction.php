@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\AssetCondition;
 use App\Enums\AuctionStatus;
 use App\Enums\AuctionType;
+use App\Models\Concerns\BelongsToEntity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
@@ -16,7 +17,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Auction extends Model
 {
-    use HasUuids, LogsActivity;
+    use BelongsToEntity, HasUuids, LogsActivity;
 
     protected $fillable = [
         'entity_id', 'category_id', 'title_ar', 'title_fr', 'title_en',
@@ -61,10 +62,7 @@ class Auction extends Model
     }
 
     // Relationships
-    public function entity(): BelongsTo
-    {
-        return $this->belongsTo(Entity::class);
-    }
+    // entity() is provided by the BelongsToEntity trait (also registers EntityScope).
 
     public function category(): BelongsTo
     {
@@ -83,7 +81,9 @@ class Auction extends Model
 
     public function createdByUser(): BelongsTo
     {
-        return $this->belongsTo(EntityUser::class, 'created_by');
+        // created_by stores the User id of the staff member who created the
+        // auction (see AdminAuctionController::store). The FK targets users.
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function bids(): HasMany

@@ -153,7 +153,11 @@ return [
         Features::updatePasswords(),
         Features::twoFactorAuthentication([
             'confirm' => true,
-            'confirmPassword' => true,
+            // No password.confirm view is wired (Fortify views are disabled and
+            // we drive 2FA from our own /two-factor/setup page), so requiring a
+            // password re-confirmation here would redirect to a missing route.
+            // The user is already freshly authenticated when enrolling.
+            'confirmPassword' => false,
             // 'window' => 0,
         ]),
     ],

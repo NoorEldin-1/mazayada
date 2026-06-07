@@ -22,10 +22,13 @@ class AdminKycController extends Controller
         'id-front' => 'id_front_path',
         'id-back' => 'id_back_path',
         'selfie-with-id' => 'selfie_with_id_path',
+        'photo-biometric' => 'photo_biometric_path',
     ];
 
     public function pending(): View
     {
+        $this->authorize('kyc.review');
+
         // Only real submissions awaiting a decision — not every freshly
         // registered (PENDING) account.
         $users = User::where('kyc_status', KycStatus::UNDER_REVIEW)
@@ -38,6 +41,8 @@ class AdminKycController extends Controller
 
     public function show(User $user): View
     {
+        $this->authorize('kyc.review');
+
         $user->load('biometrics', 'commune.wilaya');
 
         return view('admin.kyc.show', compact('user'));
@@ -50,6 +55,8 @@ class AdminKycController extends Controller
      */
     public function document(User $user, string $type): StreamedResponse
     {
+        $this->authorize('kyc.review');
+
         abort_unless(array_key_exists($type, self::DOCUMENT_FIELDS), 404);
 
         $path = $user->biometrics?->{self::DOCUMENT_FIELDS[$type]};
@@ -61,6 +68,8 @@ class AdminKycController extends Controller
 
     public function approve(User $user): RedirectResponse
     {
+        $this->authorize('kyc.approve');
+
         $user->update([
             'kyc_status' => KycStatus::COMPLETE,
             'kyc_completed_at' => now(),
@@ -83,6 +92,8 @@ class AdminKycController extends Controller
 
     public function reject(Request $request, User $user): RedirectResponse
     {
+        $this->authorize('kyc.reject');
+
         $validated = $request->validate([
             'reason' => ['required', 'string', 'max:500'],
         ]);

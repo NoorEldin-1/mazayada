@@ -30,8 +30,20 @@ return [
         // After how many days a PENDING KYC results in account suspension.
         'pending_grace_days' => 30,
 
+        // Per-file upload caps (KB). Spec §3.2: identity scans ≤ 1MB,
+        // biometric photo ≤ 120KB. Overridable via the system_settings table.
+        'doc_max_kb' => 1024,
+        'biometric_max_kb' => 120,
+
         'liveness_threshold' => (float) env('KYC_LIVENESS_THRESHOLD', 0.85),
         'match_threshold' => (float) env('KYC_MATCH_THRESHOLD', 0.80),
+    ],
+
+    'identity' => [
+        // Best-effort NIN control-key validation (spec §3.1). OFF by default —
+        // the reverse-engineered checksum is unconfirmed, so format-only is the
+        // safe default. Flip on once verified against a civil-registry source.
+        'nin_checksum_enforced' => (bool) env('NIN_CHECKSUM_ENFORCED', false),
     ],
 
     'payments' => [

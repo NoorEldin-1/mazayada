@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\AuctionStatus;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Auction;
 use App\Models\AuditLog;
@@ -17,6 +18,8 @@ class AdminAuctionController extends Controller
 {
     public function index(Request $request): View
     {
+        $this->authorize('viewAny', Auction::class);
+
         $query = Auction::with(['entity', 'category', 'wilaya']);
 
         if ($request->filled('status')) {
@@ -38,6 +41,8 @@ class AdminAuctionController extends Controller
 
     public function create(): View
     {
+        $this->authorize('create', Auction::class);
+
         $categories = Category::where('is_active', true)->get();
         $wilayas = Wilaya::orderBy('code')->get();
         $entities = Entity::where('is_active', true)->get();
@@ -47,8 +52,14 @@ class AdminAuctionController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $this->authorize('create', Auction::class);
+
+        // Only a SUPER_ADMIN chooses the owning entity. Entity staff always
+        // create within their own entity — never trust a client-supplied value.
+        $isSuperAdmin = auth()->user()->hasRole(UserRole::SUPER_ADMIN->value);
+
         $validated = $request->validate([
-            'entity_id' => ['required', 'exists:entities,id'],
+            'entity_id' => [$isSuperAdmin ? 'required' : 'nullable', 'exists:entities,id'],
             'category_id' => ['required', 'exists:categories,id'],
             'title_ar' => ['required', 'string', 'max:255'],
             'title_fr' => ['nullable', 'string', 'max:255'],
@@ -80,6 +91,9 @@ class AdminAuctionController extends Controller
 
         $validated['status'] = AuctionStatus::DRAFT;
         $validated['created_by'] = auth()->id();
+        $validated['entity_id'] = $isSuperAdmin
+            ? $validated['entity_id']
+            : auth()->user()->entity_id;
 
         $auction = Auction::create($validated);
 
@@ -93,6 +107,8 @@ class AdminAuctionController extends Controller
 
     public function edit(Auction $auction): View
     {
+        $this->authorize('update', $auction);
+
         $categories = Category::where('is_active', true)->get();
         $wilayas = Wilaya::orderBy('code')->get();
         $entities = Entity::where('is_active', true)->get();
@@ -102,9 +118,14 @@ class AdminAuctionController extends Controller
 
     public function update(Request $request, Auction $auction): RedirectResponse
     {
+        $this->authorize('update', $auction);
+
         if ($auction->status !== AuctionStatus::DRAFT) {
             return back()->withErrors(['status' => __('admin.flash.auction_edit_only_draft')]);
         }
+
+        // Reassigning an auction to another entity is a SUPER_ADMIN-only action.
+        $isSuperAdmin = auth()->user()->hasRole(UserRole::SUPER_ADMIN->value);
 
         $validated = $request->validate([
             'entity_id' => ['sometimes', 'exists:entities,id'],
@@ -141,6 +162,10 @@ class AdminAuctionController extends Controller
             $validated['book_price'] = (int) ($validated['book_price'] * 100);
         }
 
+        if (! $isSuperAdmin) {
+            unset($validated['entity_id']);
+        }
+
         $auction->update($validated);
 
         AuditLog::log('AUCTION_UPDATED', 'Auction', $auction->id);
@@ -151,6 +176,8 @@ class AdminAuctionController extends Controller
 
     public function destroy(Auction $auction): RedirectResponse
     {
+        $this->authorize('delete', $auction);
+
         if ($auction->bids()->exists()) {
             return back()->withErrors(['delete' => __('admin.flash.auction_delete_has_bids')]);
         }
@@ -166,6 +193,8 @@ class AdminAuctionController extends Controller
 
     public function publish(Auction $auction): RedirectResponse
     {
+        $this->authorize('publish', $auction);
+
         if ($auction->status !== AuctionStatus::DRAFT) {
             return back()->withErrors(['status' => __('admin.flash.auction_publish_only_draft')]);
         }
@@ -179,6 +208,8 @@ class AdminAuctionController extends Controller
 
     public function start(Auction $auction): RedirectResponse
     {
+        $this->authorize('start', $auction);
+
         if ($auction->status !== AuctionStatus::PUBLISHED) {
             return back()->withErrors(['status' => __('admin.flash.auction_start_only_published')]);
         }
@@ -188,5 +219,49 @@ class AdminAuctionController extends Controller
         AuditLog::log('AUCTION_STARTED', 'Auction', $auction->id);
 
         return back()->with('success', __('admin.flash.auction_started'));
+    }
+
+    public function extend(Auction $auction): RedirectResponse
+    {
+        $this->authorize('extend', $auction);
+
+        if (! in_array($auction->status, [AuctionStatus::ACTIVE, AuctionStatus::EXTENDED], true)) {
+            return back()->withErrors(['status' => __('admin.flash.auction_extend_only_active')]);
+        }
+
+        $minutes = (int) setting('bidding.extension_duration_minutes', 5);
+
+        $auction->update([
+            'status' => AuctionStatus::EXTENDED,
+            'end_time' => $auction->end_time->copy()->addMinutes($minutes),
+        ]);
+
+        AuditLog::log('AUCTION_EXTENDED', 'Auction', $auction->id, null, null, [
+            'minutes' => $minutes,
+        ]);
+
+        return back()->with('success', __('admin.flash.auction_extended'));
+    }
+
+    public function cancel(Request $request, Auction $auction): RedirectResponse
+    {
+        $this->authorize('cancel', $auction);
+
+        if (in_array($auction->status, [AuctionStatus::CLOSED, AuctionStatus::CANCELLED], true)) {
+            return back()->withErrors(['status' => __('admin.flash.auction_cancel_invalid')]);
+        }
+
+        $validated = $request->validate([
+            'reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $auction->update(['status' => AuctionStatus::CANCELLED]);
+
+        // Reason is kept in the immutable audit trail (no schema column needed).
+        AuditLog::log('AUCTION_CANCELLED', 'Auction', $auction->id, null, null, [
+            'reason' => $validated['reason'] ?? null,
+        ]);
+
+        return back()->with('success', __('admin.flash.auction_cancelled'));
     }
 }

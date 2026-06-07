@@ -28,6 +28,7 @@ class RolesPermissionsSeeder extends Seeder
         'auctions.delete',
         'auctions.extend',
         'auctions.appraise',
+        'auctions.comment', // committee opinions on a file (spec §8.1 — UI in a later phase)
 
         // Bids
         'bids.place',
@@ -75,7 +76,7 @@ class RolesPermissionsSeeder extends Seeder
 
         UserRole::ENTITY_HEAD->value => [
             'auctions.viewAny', 'auctions.view', 'auctions.create', 'auctions.update',
-            'auctions.publish', 'auctions.cancel', 'auctions.extend',
+            'auctions.publish', 'auctions.cancel', 'auctions.extend', 'auctions.comment',
             'bids.viewAny',
             'documents.upload', 'documents.sign', 'documents.download',
             'payments.viewAny', 'payments.confirm',
@@ -105,9 +106,10 @@ class RolesPermissionsSeeder extends Seeder
         ],
 
         UserRole::COMMITTEE_MEMBER->value => [
-            'auctions.viewAny', 'auctions.view',
+            'auctions.viewAny', 'auctions.view', 'auctions.comment',
             'bids.viewAny',
             'documents.download',
+            'appeals.viewAny',
         ],
 
         UserRole::CITIZEN->value => [

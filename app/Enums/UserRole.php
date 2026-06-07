@@ -22,4 +22,22 @@ enum UserRole: string
     {
         return in_array($this, [self::SUPER_ADMIN, self::ENTITY_HEAD, self::CONTENT_ADMIN]);
     }
+
+    /**
+     * Any non-citizen role — i.e. a government/platform employee who belongs in
+     * the admin dashboard. Used for the admin area gate and login redirect.
+     */
+    public function isStaff(): bool
+    {
+        return ! in_array($this, [self::CITIZEN, self::PREMIUM_CITIZEN]);
+    }
+
+    /** Role values that grant access to the admin dashboard. */
+    public static function staffValues(): array
+    {
+        return array_values(array_map(
+            fn (self $r) => $r->value,
+            array_filter(self::cases(), fn (self $r) => $r->isStaff()),
+        ));
+    }
 }

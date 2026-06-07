@@ -38,4 +38,6 @@ return [
     'filter' => 'Filter',
     'none' => 'None',
     'optional' => 'Optional',
+    'active' => 'Active',
+    'inactive' => 'Inactive',
 ];

@@ -2,6 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\IdDocumentType;
+use App\Rules\NifValidation;
+use App\Rules\NisValidation;
+use App\Rules\RipValidation;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -37,7 +41,17 @@ class SubmitKycRequest extends FormRequest
             'profession' => ['nullable', 'string', 'max:100'],
             // Expected monthly income in DZD (spec §3.3) — stored as an integer.
             'expected_income' => ['nullable', 'integer', 'min:0'],
-            'rip' => ['nullable', 'string', 'max:30'],
+            // Algérie Poste account — 20 digits (spec §3.3).
+            'rip' => ['nullable', new RipValidation],
+
+            // Identity document (spec §3.2). id_number required only when a type
+            // is chosen; both optional otherwise.
+            'id_type' => ['nullable', Rule::enum(IdDocumentType::class)],
+            'id_number' => ['nullable', 'required_with:id_type', 'string', 'max:30'],
+
+            // Tax / statistical IDs — optional, for merchants & companies (§3.2).
+            'nif' => ['nullable', new NifValidation],
+            'nis' => ['nullable', new NisValidation],
         ];
     }
 

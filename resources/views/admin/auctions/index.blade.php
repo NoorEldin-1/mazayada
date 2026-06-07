@@ -8,10 +8,12 @@
 {{-- Header Actions --}}
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
     <div></div>
+    @can('auctions.create')
     <a href="{{ route('admin.auctions.create') }}" class="btn btn-primary">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         {{ __('admin.create_auction') }}
     </a>
+    @endcan
 </div>
 
 {{-- Filter Tabs --}}
@@ -67,24 +69,52 @@
                         <div style="display:flex;gap:0.375rem;flex-wrap:wrap">
                             @if($auction->status === \App\Enums\AuctionStatus::DRAFT)
                                 {{-- Publish --}}
+                                @can('publish', $auction)
                                 <form method="POST" action="{{ route('admin.auctions.publish', $auction) }}">
                                     @csrf
                                     <button type="submit" class="btn btn-primary btn-sm">{{ __('admin.auctions.publish') }}</button>
                                 </form>
+                                @endcan
                                 {{-- Edit --}}
+                                @can('update', $auction)
                                 <a href="{{ route('admin.auctions.edit', $auction) }}" class="btn btn-ghost btn-sm">{{ __('common.edit') }}</a>
+                                @endcan
                                 {{-- Delete --}}
+                                @can('delete', $auction)
                                 <form method="POST" action="{{ route('admin.auctions.destroy', $auction) }}" data-confirm="{{ __('admin.auctions.confirm_delete') }}" data-confirm-variant="danger" data-confirm-label="{{ __('common.delete') }}">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--red-600)">{{ __('common.delete') }}</button>
                                 </form>
+                                @endcan
                             @elseif($auction->status === \App\Enums\AuctionStatus::PUBLISHED)
                                 {{-- Start --}}
+                                @can('start', $auction)
                                 <form method="POST" action="{{ route('admin.auctions.start', $auction) }}">
                                     @csrf
                                     <button type="submit" class="btn btn-accent btn-sm">{{ __('admin.auctions.start') }}</button>
                                 </form>
+                                @endcan
+                                @can('cancel', $auction)
+                                <form method="POST" action="{{ route('admin.auctions.cancel', $auction) }}" data-confirm="{{ __('admin.auctions.confirm_cancel') }}" data-confirm-variant="danger">
+                                    @csrf
+                                    <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--red-600)">{{ __('admin.auctions.cancel') }}</button>
+                                </form>
+                                @endcan
+                            @elseif(in_array($auction->status, [\App\Enums\AuctionStatus::ACTIVE, \App\Enums\AuctionStatus::EXTENDED], true))
+                                <a href="{{ route('auctions.show', $auction) }}" class="btn btn-ghost btn-sm">{{ __('common.view') }}</a>
+                                @can('extend', $auction)
+                                <form method="POST" action="{{ route('admin.auctions.extend', $auction) }}" data-confirm="{{ __('admin.auctions.confirm_extend') }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-ghost btn-sm">{{ __('admin.auctions.extend') }}</button>
+                                </form>
+                                @endcan
+                                @can('cancel', $auction)
+                                <form method="POST" action="{{ route('admin.auctions.cancel', $auction) }}" data-confirm="{{ __('admin.auctions.confirm_cancel') }}" data-confirm-variant="danger">
+                                    @csrf
+                                    <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--red-600)">{{ __('admin.auctions.cancel') }}</button>
+                                </form>
+                                @endcan
                             @else
                                 <a href="{{ route('auctions.show', $auction) }}" class="btn btn-ghost btn-sm">{{ __('common.view') }}</a>
                             @endif

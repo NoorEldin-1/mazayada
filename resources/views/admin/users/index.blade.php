@@ -5,6 +5,13 @@
 
 @section('content')
 
+<div style="display:flex;justify-content:flex-end;margin-bottom:1.25rem">
+    <a href="{{ route('admin.users.blacklisted') }}" class="btn btn-ghost btn-sm" style="color:var(--red-600)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        {{ __('admin.users.blacklisted_title') }}
+    </a>
+</div>
+
 <div class="card">
     <table class="tbl">
         <thead>

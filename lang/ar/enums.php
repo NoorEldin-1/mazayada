@@ -70,4 +70,10 @@ return [
         'BOOK_PURCHASE' => 'كراسة شروط',
         'FINAL_PAYMENT' => 'دفع نهائي',
     ],
+
+    'id_document_type' => [
+        'ID_CARD' => 'بطاقة التعريف الوطنية',
+        'PASSPORT' => 'جواز السفر',
+        'LICENSE' => 'رخصة السياقة',
+    ],
 ];

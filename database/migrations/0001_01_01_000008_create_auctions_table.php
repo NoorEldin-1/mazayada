@@ -45,8 +45,11 @@ return new class extends Migration
 
             $table->foreign('category_id')->references('id')->on('categories');
             $table->foreign('winner_user_id')->references('id')->on('users')->nullOnDelete();
-            $table->foreign('created_by')->references('id')->on('entity_users')->nullOnDelete();
-            $table->foreign('appraiser_id')->references('id')->on('entity_users')->nullOnDelete();
+            // created_by / appraiser_id track the staff *User* who acted (staff are
+            // real Users with a role + entity_id). See 2026_06_07 FK-fix migration
+            // for databases created before this baseline was corrected.
+            $table->foreign('created_by')->references('id')->on('users')->nullOnDelete();
+            $table->foreign('appraiser_id')->references('id')->on('users')->nullOnDelete();
             $table->foreign('wilaya_id')->references('id')->on('wilayas');
             $table->index('status');
             $table->index(['status', 'end_time']);

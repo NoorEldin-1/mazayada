@@ -32,6 +32,10 @@ class SuspendStaleKyc extends Command
         foreach ($users as $user) {
             $user->update(['kyc_status' => KycStatus::SUSPENDED]);
 
+            // Refresh their session so the suspended state takes effect at once
+            // (they may re-login and view, but cannot bid/pay — spec §3.3/§8.4).
+            invalidate_user_sessions($user->id);
+
             AuditLog::log('KYC_SUSPENDED', 'User', $user->id, null, null, [
                 'reason' => 'kyc_grace_expired',
                 'grace_days' => $graceDays,

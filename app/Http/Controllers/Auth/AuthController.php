@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enums\AccountStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
@@ -96,6 +97,16 @@ class AuthController extends Controller
             return back()->withErrors(['nin_or_email' => __('auth.account_blocked')]);
         }
 
+        // A deactivated/suspended account (e.g. an entity staff member turned off
+        // by their head) cannot log in. NOTE: a stale-KYC suspension only sets
+        // kyc_status (account_status stays ACTIVE), so those users can still log
+        // in and view the platform — they just cannot bid/pay (spec §3.3).
+        if (in_array($user->account_status, [AccountStatus::SUSPENDED, AccountStatus::BANNED], true)) {
+            AuditLog::log('LOGIN_BLOCKED', 'User', $user->id, $user->id, null, ['reason' => 'account_'.$user->account_status->value]);
+
+            return back()->withErrors(['nin_or_email' => __('auth.account_blocked')]);
+        }
+
         // Credentials are valid but the email was never verified — route the
         // user back through the OTP screen with a fresh code instead of
         // letting them in. Closes the "register then skip verification" gap.
@@ -119,7 +130,7 @@ class AuthController extends Controller
             'ua' => substr((string) $request->userAgent(), 0, 200),
         ]);
 
-        if ($user->isAdmin()) {
+        if ($user->isStaff()) {
             return redirect()->intended(route('admin.dashboard'));
         }
 
@@ -337,10 +348,92 @@ class AuthController extends Controller
 
         $user->update(['password' => $request->password]);
 
+        // Invalidate any existing sessions so a compromised session can't
+        // survive a password reset (spec §8.4).
+        invalidate_user_sessions($user->id);
+
         Cache::forget("otp_reset_{$user->id}");
         Cache::forget($attemptsKey);
 
         AuditLog::log('PASSWORD_RESET', 'User', $user->id);
+
+        return redirect()->route('login')->with('success', __('auth.password_changed'));
+    }
+
+    public function showTwoFactorSetup(): View
+    {
+        return view('auth.two-factor-required');
+    }
+
+    public function showRecoverBySecret(): View
+    {
+        return view('auth.recover-secret');
+    }
+
+    /**
+     * Account recovery via the user's secret question (spec §8.4 option 3 —
+     * the fallback when email access is lost). Two steps: (1) NIN + email reveal
+     * the stored question, (2) a correct answer lets the user set a new password.
+     * Throttled at the route. The biometric/manual-review escalation is deferred.
+     */
+    public function recoverBySecret(Request $request): RedirectResponse
+    {
+        // ===== Step 1: identify the account and surface its question =====
+        if ((int) $request->input('step') !== 2) {
+            $request->validate([
+                'nin' => ['required', 'string'],
+                'email' => ['required', 'email'],
+            ]);
+
+            $user = User::where('nin', $request->nin)
+                ->where('email', $request->email)
+                ->whereNotNull('secret_question')
+                ->whereNotNull('secret_answer')
+                ->first();
+
+            if (! $user) {
+                return back()
+                    ->withInput($request->only('nin', 'email'))
+                    ->withErrors(['nin' => __('auth.recover_not_available')]);
+            }
+
+            return back()->with([
+                'recover_step' => 2,
+                'recover_nin' => $request->nin,
+                'recover_email' => $request->email,
+                'recover_question' => $user->secret_question,
+            ]);
+        }
+
+        // ===== Step 2: verify the answer and set a new password =====
+        $request->validate([
+            'nin' => ['required', 'string'],
+            'email' => ['required', 'email'],
+            'secret_answer' => ['required', 'string'],
+            'password' => ['required', 'string', 'confirmed', Password::defaults()],
+        ]);
+
+        $user = User::where('nin', $request->nin)
+            ->where('email', $request->email)
+            ->whereNotNull('secret_answer')
+            ->first();
+
+        if (! $user || ! Hash::check($request->secret_answer, $user->secret_answer)) {
+            return back()
+                ->withInput($request->only('nin', 'email'))
+                ->with([
+                    'recover_step' => 2,
+                    'recover_nin' => $request->nin,
+                    'recover_email' => $request->email,
+                    'recover_question' => $user?->secret_question ?? __('auth.recover_question_fallback'),
+                ])
+                ->withErrors(['secret_answer' => __('auth.recover_wrong_answer')]);
+        }
+
+        $user->update(['password' => $request->password]);
+        invalidate_user_sessions($user->id);
+
+        AuditLog::log('PASSWORD_RECOVERED_SECRET', 'User', $user->id);
 
         return redirect()->route('login')->with('success', __('auth.password_changed'));
     }
