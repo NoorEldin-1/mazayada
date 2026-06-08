@@ -226,6 +226,15 @@ html[data-theme="dark"] .auc-img { background: linear-gradient(135deg, #16211C, 
     box-shadow: var(--shadow-soft);
   }
 
+  /* Button icons sized relative to the button text — bulletproof and
+     consistent across sm/md/lg without depending on arbitrary-variant
+     extraction. Overrides any hardcoded width/height on inline SVGs. */
+  .ui-btn > svg { width: 1.15em; height: 1.15em; flex-shrink: 0; }
+  /* NB: the button *surface* (fill / border / label colour) is declared
+     UNLAYERED further down — see the ".ui-btn" cascade-fix block — because
+     mazayada.css's global button/anchor resets are unlayered and would
+     otherwise win over anything we put inside @layer. */
+
   .ui-table { width: 100%; border-collapse: collapse; }
   .ui-table th {
     text-align: start;
@@ -249,6 +258,45 @@ html[data-theme="dark"] .auc-img { background: linear-gradient(135deg, #16211C, 
 /* Premium depth + dark refinements (unlayered so they win the cascade). */
 html[data-theme="dark"] .ui-card { box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255,255,255,.03); }
 html[data-theme="dark"] .ui-table tbody tr:hover { background: var(--bg-2); }
+
+/* -------------------------------------------------------------
+   .ui-btn surface — declared UNLAYERED on purpose.
+   The dashboard loads mazayada.css for the brand variables, and that sheet
+   ships global resets that are themselves unlayered:
+       a      { color: inherit }
+       button { background: none; border: none; color: inherit }
+   By cascade-layer order an unlayered rule outranks Tailwind's *layered*
+   bg-/border-/text- utilities, so every .ui-btn rendered as <button> lost its
+   fill, border and label colour (and href buttons lost their colour). The
+   primary "create"/"add" submit then showed white text on no fill — invisible
+   in light, yet fine in dark (where the inherited --ink is light). Re-assert
+   each variant's surface here, unlayered and class-specific (0,1,0/0,2,0 > the
+   0,0,1 element resets), keyed on the exact utility classes the <x-ui.btn>
+   component already emits — so no Blade change is needed, a passed `text-*`
+   override still wins (defined last → wins equal-specificity ties), and every
+   value is token-driven so dark mode flips for free.
+   ------------------------------------------------------------- */
+/* fills */
+.ui-btn-primary {
+  background-color: var(--primary-2);
+  background-image: linear-gradient(135deg, var(--primary), var(--primary-2));
+}
+.ui-btn-primary:hover { filter: brightness(1.08); }
+.ui-btn.bg-accent      { background: var(--accent); }
+.ui-btn.bg-danger      { background: var(--danger); }
+.ui-btn.bg-surface     { background: var(--surface); }
+.ui-btn.bg-transparent { background: transparent; }
+/* borders (button{border:none} wipes the layered border utilities) */
+.ui-btn.border         { border-width: 1px; border-style: solid; }
+.ui-btn.border-line    { border-color: var(--line); }
+.ui-btn.border-primary { border-color: var(--primary); }
+/* label colours — keep `.text-ok` (a passed override) last so it wins */
+.ui-btn.text-ink          { color: var(--ink); }
+.ui-btn.text-white        { color: #fff; }
+.ui-btn.text-primary      { color: var(--primary); }
+.ui-btn.text-danger       { color: var(--danger); }
+.ui-btn.text-\[\#3a2a08\] { color: #3a2a08; }
+.ui-btn.text-ok           { color: var(--ok); }
 
 /* -------------------------------------------------------------
    Dashboard shell — responsive sidebar / off-canvas drawer.
