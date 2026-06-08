@@ -1,0 +1,281 @@
+/* =============================================================
+   Mazayada — Dashboard bundle (admin + citizen ONLY)
+   Loaded exclusively from layouts/admin.blade.php & layouts/citizen.blade.php.
+   Never referenced by public/auth layouts, so it cannot affect them.
+   ============================================================= */
+
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+
+/* Preline UI v4 — stateful variants + scan its compiled JS so the classes
+   Preline toggles at runtime are not tree-shaken out of the build. */
+@import '../../node_modules/preline/variants.css';
+@source '../../node_modules/preline/dist/*.js';
+
+/* Make sure dashboard markup is scanned (additive to auto-detection). */
+@source '../views/layouts/admin.blade.php';
+@source '../views/layouts/citizen.blade.php';
+@source '../views/admin/**/*.blade.php';
+@source '../views/citizen/**/*.blade.php';
+@source '../views/components/**/*.blade.php';
+@source '../js/dashboard.js';
+
+/* -------------------------------------------------------------
+   Dark mode via a data-attribute on <html> (server-rendered from
+   a cookie). Drives both Tailwind `dark:` utilities AND the live
+   CSS-variable palette below.
+   ------------------------------------------------------------- */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+/* Bridge the project's existing brand CSS variables (defined in
+   public/css/mazayada.css :root) into Tailwind color tokens.
+   `@theme inline` keeps the utilities referencing the live var(),
+   so flipping the variables under dark updates every utility too. */
+@theme inline {
+  --color-primary:   var(--primary);
+  --color-primary-2: var(--primary-2);
+  --color-primary-3: var(--primary-3);
+  --color-primary-4: var(--primary-4);
+  --color-accent:    var(--accent);
+  --color-accent-2:  var(--accent-2);
+  --color-accent-soft: var(--accent-soft);
+  --color-bg:        var(--bg);
+  --color-bg-2:      var(--bg-2);
+  --color-paper:     var(--paper);
+  --color-surface:   var(--surface);
+  --color-ink:       var(--ink);
+  --color-ink-2:     var(--ink-2);
+  --color-muted:     var(--muted);
+  --color-muted-2:   var(--muted-2);
+  --color-line:      var(--line);
+  --color-danger:    var(--danger);
+  --color-warn:      var(--warn);
+  --color-info:      var(--info);
+  --color-ok:        var(--ok);
+
+  --font-sans: "IBM Plex Sans Arabic", "Inter", system-ui, sans-serif;
+}
+
+/* Admin sidebar fill is decoupled from --primary so dark mode can use a
+   deep premium panel while --primary stays a vivid, usable accent. */
+html { --sidebar-bg: var(--primary); }
+
+/* Aliases for CSS variables some legacy dashboard views reference but that
+   were never defined in mazayada.css (so they rendered with no colour).
+   Defining them here (dashboard-only) fixes required-asterisks, muted text,
+   and subtle backgrounds in BOTH themes without touching each view. */
+html {
+  --red-600: var(--danger);
+  --ink-muted: var(--muted);
+  --bg-subtle: var(--bg-2);
+}
+
+/* -------------------------------------------------------------
+   Premium dark palette — same brand identity (emerald + gold)
+   but with deep, clean neutrals, a clear elevation ramp and
+   refined hairline borders for a high-end feel. Scoped to
+   dashboards only; higher specificity than :root and loaded
+   after mazayada.css, so these win. Public/auth pages never get
+   the attribute, so they stay light.
+   ------------------------------------------------------------- */
+html[data-theme="dark"] {
+  /* Neutrals — deep page, clearly-elevated surfaces, crisp lines */
+  --bg:        #0A0F0D;   /* page (deepest) */
+  --bg-2:      #121A16;   /* wells / inputs / hover */
+  --paper:     #121A16;
+  --surface:   #18221D;   /* cards — a clear step above the page */
+  --ink:       #EEF3F0;   /* crisp near-white text */
+  --ink-2:     #ABB6B1;   /* secondary text */
+  --muted:     #7A867F;
+  --muted-2:   #58635D;
+  --line:      #2A352F;   /* refined hairline border */
+
+  /* Brand — confident emerald + tasteful gold */
+  --primary:   #2F8C68;
+  --primary-2: #38A077;
+  --primary-3: #49B388;
+  --primary-4: #62C7A0;
+  --accent:    #E4BE6A;
+  --accent-2:  #CBA34C;
+  --accent-soft: #2A2517;
+
+  /* Status — legible on dark surfaces */
+  --danger:    #E87B72;
+  --warn:      #E4A94A;
+  --info:      #5BA3DE;
+  --ok:        #41AE84;
+
+  /* Deep premium sidebar panel (admin) */
+  --sidebar-bg: #0C1814;
+
+  /* Soft, layered shadows for real depth on dark */
+  --shadow:      0 10px 30px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.35);
+  --shadow-lg:   0 24px 60px rgba(0,0,0,.55), 0 8px 20px rgba(0,0,0,.40);
+  --shadow-soft: 0 2px 10px rgba(0,0,0,.35);
+  color-scheme: dark;
+}
+
+/* Smooth the light<->dark transition on the big surfaces only. */
+html[data-theme] body { transition: background-color .2s ease, color .2s ease; }
+
+/* =============================================================
+   Dark-mode compatibility for the legacy mazayada.css classes.
+   Several dashboard widgets hardcode LIGHT colors (card borders,
+   pastel chips, table header fills) which look cheap on dark.
+   These overrides (dark-scoped only) make every not-yet-migrated
+   page look premium during the migration. Light mode untouched.
+   ============================================================= */
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .tile {
+  border-color: var(--line);
+  background: var(--surface);
+  /* subtle top highlight = light-from-above = premium depth */
+  box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255,255,255,.03);
+}
+
+/* Tile icon chips — swap pastel fills for tinted-dark + vivid icon */
+html[data-theme="dark"] .ic-mint { background: color-mix(in oklab, var(--primary) 20%, transparent); color: var(--primary-4); }
+html[data-theme="dark"] .ic-gold { background: color-mix(in oklab, var(--accent) 20%, transparent);  color: var(--accent); }
+html[data-theme="dark"] .ic-blue { background: color-mix(in oklab, var(--info) 20%, transparent);    color: #9CC6EE; }
+
+/* Status chips — tinted-dark backgrounds with bright readable text */
+html[data-theme="dark"] .chip-ok     { background: color-mix(in oklab, var(--ok) 18%, transparent);     color: #8FE0C0; }
+html[data-theme="dark"] .chip-warn   { background: color-mix(in oklab, var(--warn) 20%, transparent);   color: #F2CD86; }
+html[data-theme="dark"] .chip-info   { background: color-mix(in oklab, var(--info) 20%, transparent);   color: #A9CEF0; }
+html[data-theme="dark"] .chip-danger { background: color-mix(in oklab, var(--danger) 20%, transparent); color: #F2ABA5; }
+html[data-theme="dark"] .chip-muted  { background: var(--bg-2);                                          color: var(--ink-2); }
+html[data-theme="dark"] .chip-violet { background: color-mix(in oklab, #8B6DD9 22%, transparent);        color: #C9B6F0; }
+html[data-theme="dark"] .chip-gold   { background: color-mix(in oklab, var(--accent) 20%, transparent);  color: var(--accent); }
+
+/* Tables — header fill + hover row use hardcoded light greys upstream */
+html[data-theme="dark"] .tbl th { background: var(--bg-2); }
+html[data-theme="dark"] .tbl tr.row-hover:hover { background: var(--bg-2); }
+
+/* Premium scrollbar + text selection on dark */
+html[data-theme="dark"] ::-webkit-scrollbar-thumb { background: #2E3A34; }
+html[data-theme="dark"] ::selection { background: color-mix(in oklab, var(--primary) 40%, transparent); }
+
+/* -------------------------------------------------------------
+   Form controls on dark. Both the legacy .input/.select/.textarea
+   classes and native controls (reset by @tailwindcss/forms) ship
+   hardcoded LIGHT fills, so the text was invisible on dark. Give
+   them a recessed dark "well", light text and a branded focus ring.
+   ------------------------------------------------------------- */
+html[data-theme="dark"] .input,
+html[data-theme="dark"] .select,
+html[data-theme="dark"] .textarea,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]):not([type=color]):not([type=submit]):not([type=button]) {
+  background-color: var(--bg-2);
+  border-color: var(--line);
+  color: var(--ink);
+}
+html[data-theme="dark"] .input:focus,
+html[data-theme="dark"] .select:focus,
+html[data-theme="dark"] .textarea:focus,
+html[data-theme="dark"] select:focus,
+html[data-theme="dark"] textarea:focus,
+html[data-theme="dark"] input:focus {
+  background-color: var(--bg-2);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 22%, transparent);
+  outline: none;
+}
+html[data-theme="dark"] ::placeholder { color: var(--muted); opacity: 1; }
+/* Native dropdown list items + checkboxes/radios */
+html[data-theme="dark"] select option { background-color: var(--surface); color: var(--ink); }
+html[data-theme="dark"] input[type=checkbox],
+html[data-theme="dark"] input[type=radio] { background-color: var(--bg-2); border-color: var(--muted-2); color: var(--primary); }
+
+/* -------------------------------------------------------------
+   Interactive hovers that hardcode light fills upstream — make
+   them use the dark "well" tone instead of flashing white.
+   ------------------------------------------------------------- */
+html[data-theme="dark"] .btn-ghost:hover,
+html[data-theme="dark"] .ent-cell:hover,
+html[data-theme="dark"] .ad-nav:hover,
+html[data-theme="dark"] .nav a:hover,
+html[data-theme="dark"] .hd-link:hover { background: var(--bg-2); color: var(--ink); }
+html[data-theme="dark"] .pgn-link:hover { background: var(--bg-2); border-color: var(--line); color: var(--primary-4); }
+
+/* Misc legacy widgets that hardcode light fills (tags, KYC upload box
+   + stepper) — used on not-yet-migrated dashboard pages. */
+html[data-theme="dark"] .tag { background: var(--bg-2); color: var(--ink-2); }
+html[data-theme="dark"] .upbox { background: var(--bg-2); border-color: var(--muted-2); }
+html[data-theme="dark"] .upbox .ic { background: var(--surface); border-color: var(--line); }
+html[data-theme="dark"] .steps-h .si.cur .n { background: var(--surface); }
+html[data-theme="dark"] .steps-h .si .n { background: var(--bg-2); }
+html[data-theme="dark"] .pgn-link { border-color: var(--line); }
+
+/* Auction cards (shared with public listing, but only flipped on dashboards
+   via the data-theme attribute) — fix their hardcoded light edges/footers. */
+html[data-theme="dark"] .auc-card { border-color: var(--line); }
+html[data-theme="dark"] .auc-foot { background: var(--bg-2); }
+html[data-theme="dark"] .auc-img { background: linear-gradient(135deg, #16211C, #1C2A24); }
+
+/* =============================================================
+   New dashboard component classes (used by resources/views/
+   components/ui/*). Token-driven, so premium in both themes.
+   ============================================================= */
+@layer components {
+  .ui-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .ui-table { width: 100%; border-collapse: collapse; }
+  .ui-table th {
+    text-align: start;
+    font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--muted);
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-2);
+    white-space: nowrap;
+  }
+  .ui-table td {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px; color: var(--ink); vertical-align: middle;
+  }
+  .ui-table tbody tr:last-child td { border-bottom: 0; }
+  .ui-table tbody tr.is-link { cursor: pointer; }
+  .ui-table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, transparent); }
+}
+
+/* Premium depth + dark refinements (unlayered so they win the cascade). */
+html[data-theme="dark"] .ui-card { box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255,255,255,.03); }
+html[data-theme="dark"] .ui-table tbody tr:hover { background: var(--bg-2); }
+
+/* -------------------------------------------------------------
+   Dashboard shell — responsive sidebar / off-canvas drawer.
+   A few rules that are clearer in plain CSS than utility soup,
+   and RTL-safe (the drawer hides toward the inline-start edge).
+   ------------------------------------------------------------- */
+@media (min-width: 1024px) {
+  .dash-main { margin-inline-start: 16rem; } /* desktop: offset by 256px sidebar */
+}
+@media (max-width: 1023px) {
+  .dash-side {
+    transform: translateX(-100%);
+    transition: transform .25s ease;
+  }
+  [dir="rtl"] .dash-side { transform: translateX(100%); }
+  html.drawer-open .dash-side { transform: translateX(0); }
+
+  .dash-backdrop { display: none; }
+  html.drawer-open .dash-backdrop { display: block; }
+  html.drawer-open { overflow: hidden; }
+}
+
+/* -------------------------------------------------------------
+   Dark-mode tweaks for the shared <x-lang-switcher/> (its base
+   light styling lives in mazayada.css with hardcoded greys).
+   Scoped to dashboards only, so public/auth pages are untouched.
+   ------------------------------------------------------------- */
+html[data-theme="dark"] .lang-switch { background: var(--bg-2); }
+html[data-theme="dark"] .lang-switch a { color: var(--muted); }
+html[data-theme="dark"] .lang-switch a.on { background: var(--surface); color: var(--primary-4); }

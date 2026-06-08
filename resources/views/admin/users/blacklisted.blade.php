@@ -5,44 +5,41 @@
 
 @section('content')
 
-<div class="card">
-    <div class="card-h">
-        <h3>{{ __('admin.users.blacklisted_title') }}</h3>
-        <div class="actions">
-            <a href="{{ route('admin.users.index') }}" class="btn btn-ghost btn-sm">{{ __('admin.users.all_users') }}</a>
-        </div>
-    </div>
+<div class="flex justify-end mb-5">
+    <x-ui.btn variant="ghost" size="sm" :href="route('admin.users.index')">{{ __('admin.users.all_users') }}</x-ui.btn>
+</div>
 
-    <table class="tbl">
-        <thead>
+<x-ui.table>
+    <thead>
+        <tr>
+            <th>{{ __('admin.th_name') }}</th>
+            <th>{{ __('admin.th_email') }}</th>
+            <th>{{ __('admin.users.blacklist_reason') }}</th>
+            <th>{{ __('common.actions') }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        @forelse($users as $user)
             <tr>
-                <th>{{ __('admin.th_name') }}</th>
-                <th>{{ __('admin.th_email') }}</th>
-                <th>{{ __('admin.users.blacklist_reason') }}</th>
-                <th>{{ __('common.actions') }}</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($users as $user)
-                <tr class="row-hover">
-                    <td><a href="{{ route('admin.users.show', $user) }}" style="color:var(--primary);font-weight:600;text-decoration:none">{{ $user->fullNameAr() }}</a></td>
-                    <td style="direction:ltr;text-align:start">{{ $user->email }}</td>
-                    <td>{{ $user->blacklist_reason }}</td>
-                    <td>
+                <td><a href="{{ route('admin.users.show', $user) }}" class="text-primary font-semibold hover:underline">{{ $user->fullNameAr() }}</a></td>
+                <td class="lat" dir="ltr">{{ $user->email }}</td>
+                <td>{{ $user->blacklist_reason }}</td>
+                <td>
+                    <div class="flex flex-wrap items-center gap-2">
                         <form method="POST" action="{{ route('admin.users.unblacklist', $user) }}" style="display:inline"
                               data-confirm="{{ __('admin.users.confirm_unblacklist_prompt') }}" data-confirm-label="{{ __('admin.users.unblacklist_action') }}">
                             @csrf
-                            <button type="submit" class="btn btn-ghost btn-sm" style="color:#1d6045">{{ __('admin.users.unblacklist_action') }}</button>
+                            <x-ui.btn variant="ghost" size="sm" class="text-ok">{{ __('admin.users.unblacklist_action') }}</x-ui.btn>
                         </form>
-                    </td>
-                </tr>
-            @empty
-                <tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--ink-muted)">{{ __('admin.users.no_blacklisted') }}</td></tr>
-            @endforelse
-        </tbody>
-    </table>
-</div>
+                    </div>
+                </td>
+            </tr>
+        @empty
+            <tr><td colspan="4" class="text-center text-muted py-8">{{ __('admin.users.no_blacklisted') }}</td></tr>
+        @endforelse
+    </tbody>
+</x-ui.table>
 
-<div style="margin-top:1.5rem">{{ $users->links() }}</div>
+<div class="mt-6">{{ $users->links() }}</div>
 
 @endsection

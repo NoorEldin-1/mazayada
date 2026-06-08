@@ -8,8 +8,7 @@
 <form method="POST" action="{{ route('admin.entity-staff.update', $member) }}">
     @csrf @method('PUT')
 
-    <div class="card card-pad" style="margin-bottom:1.5rem">
-        <h3 class="card-h">{{ $member->full_name ?? $member->user?->fullNameAr() }}</h3>
+    <x-ui.card :title="$member->full_name ?? $member->user?->fullNameAr()" class="mb-6">
 
         <div class="field">
             <label>{{ __('admin.entity_staff.f_username') }}</label>
@@ -22,17 +21,17 @@
         </div>
 
         <div class="field">
-            <label for="role">{{ __('admin.entity_staff.f_role') }} <span style="color:var(--red-600)">*</span></label>
+            <label for="role">{{ __('admin.entity_staff.f_role') }} <span class="text-danger">*</span></label>
             <select id="role" name="role" class="select" required>
                 @foreach($roles as $role)
                     <option value="{{ $role->value }}" {{ old('role', $member->role) === $role->value ? 'selected' : '' }}>{{ $role->label() }}</option>
                 @endforeach
             </select>
-            @error('role') <small style="color:var(--red-600)">{{ $message }}</small> @enderror
+            @error('role') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
         </div>
-    </div>
+    </x-ui.card>
 
-    <button type="submit" class="btn btn-primary btn-lg">{{ __('admin.entity_staff.submit_update') }}</button>
+    <x-ui.btn variant="primary" size="lg">{{ __('admin.entity_staff.submit_update') }}</x-ui.btn>
 </form>
 
 @endsection

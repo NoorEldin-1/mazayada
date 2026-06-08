@@ -20,6 +20,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('web', SetLocale::class);
         $middleware->appendToGroup('web', NoCacheHeaders::class);
 
+        // The dashboard light/dark theme is stored in a plain (unencrypted)
+        // cookie so JS can write it and Blade can read it back verbatim for
+        // server-rendered <html data-theme> (no flash of wrong theme).
+        $middleware->encryptCookies(except: ['theme']);
+
         $middleware->alias([
             'role'         => EnsureRole::class,
             'kyc.verified' => KycVerified::class,

@@ -6,18 +6,17 @@
 @section('content')
 
 {{-- Header Actions --}}
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
-    <div></div>
-    @can('auctions.create')
-    <a href="{{ route('admin.auctions.create') }}" class="btn btn-primary">
+@can('auctions.create')
+<div class="flex justify-end mb-5">
+    <x-ui.btn variant="primary" :href="route('admin.auctions.create')">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         {{ __('admin.create_auction') }}
-    </a>
-    @endcan
+    </x-ui.btn>
 </div>
+@endcan
 
 {{-- Filter Tabs --}}
-<div style="display:flex;gap:0.5rem;margin-bottom:1.5rem;flex-wrap:wrap">
+<div class="flex flex-wrap gap-2 mb-5">
     <a href="{{ route('admin.auctions.index') }}"
        class="chip {{ !request('status') ? 'chip-info' : 'chip-muted' }}">
         {{ __('common.all') }}
@@ -41,111 +40,109 @@
 </div>
 
 {{-- Auctions Table --}}
-<div class="card">
-    <table class="tbl">
-        <thead>
+<x-ui.table>
+    <thead>
+        <tr>
+            <th>{{ __('admin.th_title') }}</th>
+            <th>{{ __('admin.th_entity') }}</th>
+            <th>{{ __('admin.th_category') }}</th>
+            <th>{{ __('admin.th_price') }}</th>
+            <th>{{ __('admin.th_bids') }}</th>
+            <th>{{ __('admin.th_status') }}</th>
+            <th>{{ __('common.actions') }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        @forelse($auctions as $auction)
             <tr>
-                <th>{{ __('admin.th_title') }}</th>
-                <th>{{ __('admin.th_entity') }}</th>
-                <th>{{ __('admin.th_category') }}</th>
-                <th>{{ __('admin.th_price') }}</th>
-                <th>{{ __('admin.th_bids') }}</th>
-                <th>{{ __('admin.th_status') }}</th>
-                <th>{{ __('common.actions') }}</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($auctions as $auction)
-                <tr class="row-hover">
-                    <td>{{ $auction->title_ar }}</td>
-                    <td>{{ $auction->entity?->name ?? '—' }}</td>
-                    <td>{{ $auction->category?->name ?? '—' }}</td>
-                    <td class="num">{{ dzd($auction->opening_price) }}</td>
-                    <td class="num">{{ $auction->bidCount() }}</td>
-                    <td>
-                        <span class="chip {{ $auction->status->chipClass() }}">{{ $auction->status->label() }}</span>
-                    </td>
-                    <td>
-                        <div style="display:flex;gap:0.375rem;flex-wrap:wrap">
-                            {{-- §4 step 2 — condition book: generate (then download) for any pre-close auction --}}
-                            @can('documents.generate')
-                                @if(in_array($auction->status, [\App\Enums\AuctionStatus::DRAFT, \App\Enums\AuctionStatus::PUBLISHED, \App\Enums\AuctionStatus::ACTIVE, \App\Enums\AuctionStatus::EXTENDED], true))
-                                    @php $cb = $auction->documents()->where('type', 'CONDITION_BOOK')->where('is_public', true)->latest()->first(); @endphp
-                                    @if($cb)
-                                        <a href="{{ route('documents.download', $cb) }}" class="btn btn-ghost btn-sm">↓ {{ __('admin.auctions.cb_download') }}</a>
-                                    @else
-                                        <form method="POST" action="{{ route('admin.auctions.condition-book', $auction) }}">
-                                            @csrf
-                                            <button type="submit" class="btn btn-ghost btn-sm">{{ __('admin.auctions.cb_generate') }}</button>
-                                        </form>
-                                    @endif
+                <td>{{ $auction->title_ar }}</td>
+                <td>{{ $auction->entity?->name ?? '—' }}</td>
+                <td>{{ $auction->category?->name ?? '—' }}</td>
+                <td class="num">{{ dzd($auction->opening_price) }}</td>
+                <td class="num">{{ $auction->bidCount() }}</td>
+                <td>
+                    <span class="chip {{ $auction->status->chipClass() }}">{{ $auction->status->label() }}</span>
+                </td>
+                <td>
+                    <div class="flex flex-wrap items-center gap-2">
+                        {{-- §4 step 2 — condition book: generate (then download) for any pre-close auction --}}
+                        @can('documents.generate')
+                            @if(in_array($auction->status, [\App\Enums\AuctionStatus::DRAFT, \App\Enums\AuctionStatus::PUBLISHED, \App\Enums\AuctionStatus::ACTIVE, \App\Enums\AuctionStatus::EXTENDED], true))
+                                @php $cb = $auction->documents()->where('type', 'CONDITION_BOOK')->where('is_public', true)->latest()->first(); @endphp
+                                @if($cb)
+                                    <x-ui.btn variant="ghost" size="sm" :href="route('documents.download', $cb)">↓ {{ __('admin.auctions.cb_download') }}</x-ui.btn>
+                                @else
+                                    <form method="POST" action="{{ route('admin.auctions.condition-book', $auction) }}">
+                                        @csrf
+                                        <x-ui.btn variant="ghost" size="sm">{{ __('admin.auctions.cb_generate') }}</x-ui.btn>
+                                    </form>
                                 @endif
-                            @endcan
-                            @if($auction->status === \App\Enums\AuctionStatus::DRAFT)
-                                {{-- Publish --}}
-                                @can('publish', $auction)
-                                <form method="POST" action="{{ route('admin.auctions.publish', $auction) }}">
-                                    @csrf
-                                    <button type="submit" class="btn btn-primary btn-sm">{{ __('admin.auctions.publish') }}</button>
-                                </form>
-                                @endcan
-                                {{-- Edit --}}
-                                @can('update', $auction)
-                                <a href="{{ route('admin.auctions.edit', $auction) }}" class="btn btn-ghost btn-sm">{{ __('common.edit') }}</a>
-                                @endcan
-                                {{-- Delete --}}
-                                @can('delete', $auction)
-                                <form method="POST" action="{{ route('admin.auctions.destroy', $auction) }}" data-confirm="{{ __('admin.auctions.confirm_delete') }}" data-confirm-variant="danger" data-confirm-label="{{ __('common.delete') }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--red-600)">{{ __('common.delete') }}</button>
-                                </form>
-                                @endcan
-                            @elseif($auction->status === \App\Enums\AuctionStatus::PUBLISHED)
-                                {{-- Start --}}
-                                @can('start', $auction)
-                                <form method="POST" action="{{ route('admin.auctions.start', $auction) }}">
-                                    @csrf
-                                    <button type="submit" class="btn btn-accent btn-sm">{{ __('admin.auctions.start') }}</button>
-                                </form>
-                                @endcan
-                                @can('cancel', $auction)
-                                <form method="POST" action="{{ route('admin.auctions.cancel', $auction) }}" data-confirm="{{ __('admin.auctions.confirm_cancel') }}" data-confirm-variant="danger">
-                                    @csrf
-                                    <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--red-600)">{{ __('admin.auctions.cancel') }}</button>
-                                </form>
-                                @endcan
-                            @elseif(in_array($auction->status, [\App\Enums\AuctionStatus::ACTIVE, \App\Enums\AuctionStatus::EXTENDED], true))
-                                <a href="{{ route('auctions.show', $auction) }}" class="btn btn-ghost btn-sm">{{ __('common.view') }}</a>
-                                @can('extend', $auction)
-                                <form method="POST" action="{{ route('admin.auctions.extend', $auction) }}" data-confirm="{{ __('admin.auctions.confirm_extend') }}">
-                                    @csrf
-                                    <button type="submit" class="btn btn-ghost btn-sm">{{ __('admin.auctions.extend') }}</button>
-                                </form>
-                                @endcan
-                                @can('cancel', $auction)
-                                <form method="POST" action="{{ route('admin.auctions.cancel', $auction) }}" data-confirm="{{ __('admin.auctions.confirm_cancel') }}" data-confirm-variant="danger">
-                                    @csrf
-                                    <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--red-600)">{{ __('admin.auctions.cancel') }}</button>
-                                </form>
-                                @endcan
-                            @else
-                                <a href="{{ route('auctions.show', $auction) }}" class="btn btn-ghost btn-sm">{{ __('common.view') }}</a>
                             @endif
-                        </div>
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="7" style="text-align:center;padding:2rem;color:var(--ink-muted)">{{ __('admin.auctions.no_auctions') }}</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-</div>
+                        @endcan
+                        @if($auction->status === \App\Enums\AuctionStatus::DRAFT)
+                            {{-- Publish --}}
+                            @can('publish', $auction)
+                            <form method="POST" action="{{ route('admin.auctions.publish', $auction) }}">
+                                @csrf
+                                <x-ui.btn variant="primary" size="sm">{{ __('admin.auctions.publish') }}</x-ui.btn>
+                            </form>
+                            @endcan
+                            {{-- Edit --}}
+                            @can('update', $auction)
+                            <x-ui.btn variant="ghost" size="sm" :href="route('admin.auctions.edit', $auction)">{{ __('common.edit') }}</x-ui.btn>
+                            @endcan
+                            {{-- Delete --}}
+                            @can('delete', $auction)
+                            <form method="POST" action="{{ route('admin.auctions.destroy', $auction) }}" data-confirm="{{ __('admin.auctions.confirm_delete') }}" data-confirm-variant="danger" data-confirm-label="{{ __('common.delete') }}">
+                                @csrf
+                                @method('DELETE')
+                                <x-ui.btn variant="danger-ghost" size="sm">{{ __('common.delete') }}</x-ui.btn>
+                            </form>
+                            @endcan
+                        @elseif($auction->status === \App\Enums\AuctionStatus::PUBLISHED)
+                            {{-- Start --}}
+                            @can('start', $auction)
+                            <form method="POST" action="{{ route('admin.auctions.start', $auction) }}">
+                                @csrf
+                                <x-ui.btn variant="accent" size="sm">{{ __('admin.auctions.start') }}</x-ui.btn>
+                            </form>
+                            @endcan
+                            @can('cancel', $auction)
+                            <form method="POST" action="{{ route('admin.auctions.cancel', $auction) }}" data-confirm="{{ __('admin.auctions.confirm_cancel') }}" data-confirm-variant="danger">
+                                @csrf
+                                <x-ui.btn variant="danger-ghost" size="sm">{{ __('admin.auctions.cancel') }}</x-ui.btn>
+                            </form>
+                            @endcan
+                        @elseif(in_array($auction->status, [\App\Enums\AuctionStatus::ACTIVE, \App\Enums\AuctionStatus::EXTENDED], true))
+                            <x-ui.btn variant="ghost" size="sm" :href="route('auctions.show', $auction)">{{ __('common.view') }}</x-ui.btn>
+                            @can('extend', $auction)
+                            <form method="POST" action="{{ route('admin.auctions.extend', $auction) }}" data-confirm="{{ __('admin.auctions.confirm_extend') }}">
+                                @csrf
+                                <x-ui.btn variant="ghost" size="sm">{{ __('admin.auctions.extend') }}</x-ui.btn>
+                            </form>
+                            @endcan
+                            @can('cancel', $auction)
+                            <form method="POST" action="{{ route('admin.auctions.cancel', $auction) }}" data-confirm="{{ __('admin.auctions.confirm_cancel') }}" data-confirm-variant="danger">
+                                @csrf
+                                <x-ui.btn variant="danger-ghost" size="sm">{{ __('admin.auctions.cancel') }}</x-ui.btn>
+                            </form>
+                            @endcan
+                        @else
+                            <x-ui.btn variant="ghost" size="sm" :href="route('auctions.show', $auction)">{{ __('common.view') }}</x-ui.btn>
+                        @endif
+                    </div>
+                </td>
+            </tr>
+        @empty
+            <tr>
+                <td colspan="7" class="text-center text-muted py-8">{{ __('admin.auctions.no_auctions') }}</td>
+            </tr>
+        @endforelse
+    </tbody>
+</x-ui.table>
 
 {{-- Pagination --}}
-<div style="margin-top:1.5rem">
+<div class="mt-6">
     {{ $auctions->links() }}
 </div>
 

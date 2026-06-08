@@ -2,50 +2,47 @@
 @section('title', __('notifications.title'))
 @section('content')
 
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;gap:12px">
-    <h2 style="font-size:24px;font-weight:700;margin:0">{{ __('notifications.title') }}</h2>
-    <div style="display:flex;align-items:center;gap:10px">
+<x-ui.page-header :title="__('notifications.title')">
+    <x-slot:actions>
         <span class="chip chip-info"><span class="dot"></span>{{ __('notifications.unread', ['count' => $notifications->where('is_read', false)->count()]) }}</span>
         <form method="POST" action="{{ route('citizen.notifications.read-all') }}">
             @csrf
-            <button type="submit" class="btn btn-ghost btn-sm">{{ __('notifications.mark_all_read') }}</button>
+            <x-ui.btn variant="ghost" size="sm">{{ __('notifications.mark_all_read') }}</x-ui.btn>
         </form>
-    </div>
-</div>
+    </x-slot:actions>
+</x-ui.page-header>
 
-<div class="card">
-    <div class="card-pad" style="padding:0">
-        @forelse($notifications as $notif)
-        <div style="padding:16px 22px;border-bottom:1px solid var(--line);display:flex;gap:14px;align-items:flex-start;{{ !$notif->is_read ? 'background:#FAFBFD' : '' }}">
-            <div style="width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex-shrink:0;{{ !$notif->is_read ? 'background:rgba(27,77,62,.08);color:var(--primary)' : 'background:#F2F4F8;color:var(--muted)' }}">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-            </div>
-            <div style="flex:1;min-width:0">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-                    <strong style="font-size:14px;{{ !$notif->is_read ? 'color:var(--ink)' : 'color:var(--ink-2)' }}">{{ $notif->title }}</strong>
-                    <span style="font-size:11px;color:var(--muted);white-space:nowrap">{{ $notif->created_at->diffForHumans() }}</span>
-                </div>
-                <p style="margin:0;font-size:13px;color:var(--muted);line-height:1.6">{{ $notif->body }}</p>
-            </div>
-            @if(!$notif->is_read)
-            <form method="POST" action="{{ route('citizen.notifications.read', $notif) }}" style="flex-shrink:0">
-                @csrf
-                <button type="submit" title="{{ __('notifications.mark_read') }}" style="background:none;border:0;cursor:pointer;padding:4px">
-                    <span style="display:block;width:8px;height:8px;border-radius:50%;background:var(--primary)"></span>
-                </button>
-            </form>
-            @endif
+<x-ui.card :padding="false">
+    @forelse($notifications as $notif)
+    <div class="flex gap-3.5 items-start px-5 py-4 border-b border-line {{ !$notif->is_read ? 'bg-primary/5' : '' }}">
+        <div class="w-10 h-10 rounded-xl grid place-items-center shrink-0 {{ !$notif->is_read ? 'bg-primary/10 text-primary' : 'bg-bg-2 text-muted' }}">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         </div>
-        @empty
-        <div style="text-align:center;padding:48px;color:var(--muted)">
-            <p>{{ __('notifications.empty') }}</p>
+        <div class="flex-1 min-w-0">
+            <div class="flex justify-between items-center mb-1">
+                <strong class="text-sm {{ !$notif->is_read ? 'text-ink' : 'text-ink-2' }}">{{ $notif->title }}</strong>
+                <span class="text-[11px] text-muted whitespace-nowrap">{{ $notif->created_at->diffForHumans() }}</span>
+            </div>
+            <p class="m-0 text-[13px] text-muted leading-relaxed">{{ $notif->body }}</p>
         </div>
-        @endforelse
+        @if(!$notif->is_read)
+        <form method="POST" action="{{ route('citizen.notifications.read', $notif) }}" class="shrink-0">
+            @csrf
+            <button type="submit" title="{{ __('notifications.mark_read') }}" class="bg-transparent border-0 cursor-pointer p-1">
+                <span class="block w-2 h-2 rounded-full bg-primary"></span>
+            </button>
+        </form>
+        @endif
     </div>
-</div>
+    @empty
+    <div class="text-center text-muted py-12">
+        <p>{{ __('notifications.empty') }}</p>
+    </div>
+    @endforelse
+</x-ui.card>
 
 @if(method_exists($notifications, 'links'))
-<div style="margin-top:20px">{{ $notifications->links() }}</div>
+<div class="mt-5">{{ $notifications->links() }}</div>
 @endif
 
 @endsection

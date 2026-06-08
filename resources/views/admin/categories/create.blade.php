@@ -8,7 +8,7 @@
 <form method="POST" action="{{ route('admin.categories.store') }}">
     @csrf
     @include('admin.categories._form', ['category' => null])
-    <button type="submit" class="btn btn-primary btn-block btn-lg">{{ __('admin.categories.submit_create') }}</button>
+    <x-ui.btn variant="primary" size="lg" class="w-full mt-6">{{ __('admin.categories.submit_create') }}</x-ui.btn>
 </form>
 
 @endsection

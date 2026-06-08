@@ -1,30 +1,28 @@
 {{-- Shared entity create/edit form. $entity is null on create. --}}
 @php($e = $entity ?? null)
 
-<div class="card card-pad" style="margin-bottom:1.5rem">
-    <h3 class="card-h">{{ __('admin.entities.sec_identity') }}</h3>
-
+<x-ui.card :title="__('admin.entities.sec_identity')" class="mb-6">
     <div class="field">
-        <label for="name">{{ __('admin.entities.f_name_internal') }} <span style="color:var(--red-600)">*</span></label>
+        <label for="name">{{ __('admin.entities.f_name_internal') }} <span class="text-danger">*</span></label>
         <input type="text" id="name" name="name" class="input" value="{{ old('name', $e?->getRawOriginal('name')) }}" required>
-        @error('name') <small style="color:var(--red-600)">{{ $message }}</small> @enderror
+        @error('name') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
         <div class="field">
-            <label for="name_ar">{{ __('admin.entities.f_name_ar') }} <span style="color:var(--red-600)">*</span></label>
+            <label for="name_ar">{{ __('admin.entities.f_name_ar') }} <span class="text-danger">*</span></label>
             <input type="text" id="name_ar" name="name_ar" class="input" value="{{ old('name_ar', $e?->name_ar) }}" required>
-            @error('name_ar') <small style="color:var(--red-600)">{{ $message }}</small> @enderror
+            @error('name_ar') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
         </div>
         <div class="field">
             <label for="name_fr">{{ __('admin.entities.f_name_fr') }}</label>
             <input type="text" id="name_fr" name="name_fr" class="input" value="{{ old('name_fr', $e?->name_fr) }}">
-            @error('name_fr') <small style="color:var(--red-600)">{{ $message }}</small> @enderror
+            @error('name_fr') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
         </div>
     </div>
 
     <div class="field">
-        <label for="type">{{ __('admin.entities.f_type') }} <span style="color:var(--red-600)">*</span></label>
+        <label for="type">{{ __('admin.entities.f_type') }} <span class="text-danger">*</span></label>
         <select id="type" name="type" class="select" required>
             <option value="">{{ __('admin.entities.choose_type') }}</option>
             @foreach($types as $type)
@@ -33,16 +31,14 @@
                 </option>
             @endforeach
         </select>
-        @error('type') <small style="color:var(--red-600)">{{ $message }}</small> @enderror
+        @error('type') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
     </div>
-</div>
+</x-ui.card>
 
-<div class="card card-pad" style="margin-bottom:1.5rem">
-    <h3 class="card-h">{{ __('admin.entities.sec_location') }}</h3>
-
+<x-ui.card :title="__('admin.entities.sec_location')" class="mb-6">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
         <div class="field">
-            <label for="wilaya_id">{{ __('admin.entities.f_wilaya') }} <span style="color:var(--red-600)">*</span></label>
+            <label for="wilaya_id">{{ __('admin.entities.f_wilaya') }} <span class="text-danger">*</span></label>
             <select id="wilaya_id" name="wilaya_id" class="select" required data-selected-commune="{{ old('commune_id', $e?->commune_id) }}">
                 <option value="">{{ __('admin.entities.choose_wilaya') }}</option>
                 @foreach($wilayas as $wilaya)
@@ -51,33 +47,33 @@
                     </option>
                 @endforeach
             </select>
-            @error('wilaya_id') <small style="color:var(--red-600)">{{ $message }}</small> @enderror
+            @error('wilaya_id') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
         </div>
         <div class="field">
             <label for="commune_id">{{ __('admin.entities.f_commune') }}</label>
             <select id="commune_id" name="commune_id" class="select">
                 <option value="">{{ __('admin.entities.choose_commune') }}</option>
             </select>
-            @error('commune_id') <small style="color:var(--red-600)">{{ $message }}</small> @enderror
+            @error('commune_id') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
         </div>
     </div>
 
     <div class="field">
         <label for="address">{{ __('admin.entities.f_address') }}</label>
         <input type="text" id="address" name="address" class="input" value="{{ old('address', $e?->address) }}">
-        @error('address') <small style="color:var(--red-600)">{{ $message }}</small> @enderror
+        @error('address') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
         <div class="field">
             <label for="phone">{{ __('admin.entities.f_phone') }}</label>
             <input type="text" id="phone" name="phone" class="input" value="{{ old('phone', $e?->phone) }}" style="direction:ltr">
-            @error('phone') <small style="color:var(--red-600)">{{ $message }}</small> @enderror
+            @error('phone') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
         </div>
         <div class="field">
             <label for="email">{{ __('admin.entities.f_email') }}</label>
             <input type="email" id="email" name="email" class="input" value="{{ old('email', $e?->email) }}" style="direction:ltr">
-            @error('email') <small style="color:var(--red-600)">{{ $message }}</small> @enderror
+            @error('email') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
         </div>
     </div>
 
@@ -87,7 +83,7 @@
             {{ __('admin.entities.f_active') }}
         </label>
     </div>
-</div>
+</x-ui.card>
 
 @push('scripts')
 <script>

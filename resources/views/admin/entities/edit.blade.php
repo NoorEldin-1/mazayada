@@ -8,7 +8,7 @@
 <form method="POST" action="{{ route('admin.entities.update', $entity) }}">
     @csrf @method('PUT')
     @include('admin.entities._form', ['entity' => $entity])
-    <button type="submit" class="btn btn-primary btn-block btn-lg">{{ __('admin.entities.submit_update') }}</button>
+    <x-ui.btn variant="primary" size="lg" class="w-full mt-6">{{ __('admin.entities.submit_update') }}</x-ui.btn>
 </form>
 
 @endsection

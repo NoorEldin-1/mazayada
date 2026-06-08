@@ -12,8 +12,14 @@
 #     bash scripts/manual-deploy.sh
 #
 #  Every step is idempotent — safe to run on every deploy.
-#  No `npm build` is needed: the site uses a static CSS file,
-#  not Vite-built assets.
+#
+#  NO `npm`/Vite build runs on the server. The dashboards' Vite
+#  assets (public/build — dashboard.css/js + ApexCharts/Preline) are
+#  pre-built locally and COMMITTED to git, so `git reset --hard`
+#  (step 1) ships them. The public/auth pages still use the static
+#  /css/mazayada.css. ❗ If you changed any dashboard CSS/JS, run
+#  `npm run build` locally and commit public/build BEFORE deploying,
+#  otherwise the dashboards will 500 (missing Vite manifest).
 # ============================================================
 
 set -euo pipefail
@@ -27,10 +33,20 @@ deploy() {
 
   # ── 1/8  Pull latest code ─────────────────────────────────
   #   reset --hard syncs tracked files to origin/main. It never
-  #   touches .env, vendor/, public/build/ or storage/ (gitignored).
+  #   touches .env, vendor/ or storage/ (gitignored). public/build IS
+  #   tracked now, so the pre-built Vite assets are synced with it.
   echo "⤵️  [1/8] Pulling latest code from GitHub (main)..."
   git fetch origin main
   git reset --hard origin/main
+
+  #   Fail fast if the committed Vite manifest is missing — the
+  #   dashboard layouts use @vite() and would 500 without it.
+  if [ ! -f public/build/manifest.json ]; then
+    echo "❌ public/build/manifest.json is missing — the dashboard Vite assets"
+    echo "   were not committed. Locally run 'npm run build', commit public/build,"
+    echo "   push to main, then re-run this deploy. Aborting before any changes."
+    exit 1
+  fi
 
   # ── 2/8  PHP dependencies (production) ────────────────────
   #   Needed when composer.json/lock changed; also refreshes the

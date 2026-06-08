@@ -19,6 +19,7 @@ return [
     'back' => 'Back',
     'loading' => 'Loading...',
     'general' => 'General',
+    'toggle_theme' => 'Toggle theme',
 
     // Generic verbs / labels reused across admin tables, forms and lists.
     'edit' => 'Edit',

@@ -2,12 +2,12 @@
 @section('title', __('dashboard.nav_my_auctions'))
 @section('content')
 
-<h2 style="font-size:24px;font-weight:700;margin:0 0 20px">{{ __('dashboard.nav_my_auctions') }}</h2>
+<x-ui.page-header :title="__('dashboard.nav_my_auctions')" />
 
 @php $tab = request('tab', 'active'); @endphp
-<div style="display:flex;gap:8px;margin-bottom:24px">
+<div class="flex flex-wrap gap-2 mb-6">
     @foreach(['active' => __('dashboard.tab_active'), 'won' => __('dashboard.tab_won'), 'lost' => __('dashboard.tab_lost'), 'upcoming' => __('dashboard.tab_upcoming')] as $key => $label)
-    <a href="?tab={{ $key }}" class="btn {{ $tab === $key ? 'btn-primary' : 'btn-ghost' }}" style="font-size:13px;padding:8px 16px">{{ $label }}</a>
+    <x-ui.btn :variant="$tab === $key ? 'primary' : 'ghost'" size="sm" :href="'?tab='.$key">{{ $label }}</x-ui.btn>
     @endforeach
 </div>
 
@@ -37,7 +37,7 @@
         </div>
     </a>
     @empty
-    <div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--muted)">
+    <div class="col-span-full text-center text-muted py-12">
         <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="opacity:.2;margin-bottom:12px"><path d="m14.5 17.5 3 3 3-3"/><path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
         <p>{{ __('dashboard.no_auctions_section') }}</p>
     </div>

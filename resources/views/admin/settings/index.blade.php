@@ -8,11 +8,10 @@
 <form method="POST" action="{{ route('admin.settings.update') }}">
     @csrf @method('PUT')
 
-    <p style="font-size:0.9rem;color:var(--ink-muted);margin-bottom:1rem">{{ __('admin.settings.intro') }}</p>
+    <p class="text-sm text-muted mb-4">{{ __('admin.settings.intro') }}</p>
 
     @foreach($settings as $group => $rows)
-        <div class="card card-pad" style="margin-bottom:1.5rem">
-            <h3 class="card-h">{{ __('admin.settings.group_'.$group) }}</h3>
+        <x-ui.card :title="__('admin.settings.group_'.$group)" class="mb-6">
 
             @foreach($rows as $setting)
                 {{-- Label + technical key grouped ABOVE the input so each field
@@ -40,10 +39,10 @@
                     @endif
                 </div>
             @endforeach
-        </div>
+        </x-ui.card>
     @endforeach
 
-    <button type="submit" class="btn btn-primary btn-lg">{{ __('admin.settings.submit') }}</button>
+    <x-ui.btn variant="primary" size="lg">{{ __('admin.settings.submit') }}</x-ui.btn>
 </form>
 
 @endsection

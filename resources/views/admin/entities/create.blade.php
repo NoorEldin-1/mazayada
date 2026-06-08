@@ -8,7 +8,7 @@
 <form method="POST" action="{{ route('admin.entities.store') }}">
     @csrf
     @include('admin.entities._form', ['entity' => null])
-    <button type="submit" class="btn btn-primary btn-block btn-lg">{{ __('admin.entities.submit_create') }}</button>
+    <x-ui.btn variant="primary" size="lg" class="w-full mt-6">{{ __('admin.entities.submit_create') }}</x-ui.btn>
 </form>
 
 @endsection
