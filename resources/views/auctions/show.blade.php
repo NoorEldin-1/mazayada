@@ -34,31 +34,49 @@
     <div class="ad-grid">
         {{-- Left Column (Main) --}}
         <div>
-            {{-- Gallery — swipeable photo carousel when present, placeholder otherwise (spec §4 step 1) --}}
-            @php $photoUrls = $auction->photoUrls(); $photoCount = count($photoUrls); @endphp
-            @if($photoCount)
+            {{-- Gallery — swipeable media carousel (photos + one short video), placeholder otherwise (spec §4 step 1) --}}
+            @php
+                $photoUrls = $auction->photoUrls();
+                $videoUrl = $auction->videoUrl();
+                // Unified media list: photos first, the single short video last.
+                $media = array_map(fn ($u) => ['type' => 'image', 'url' => $u], $photoUrls);
+                if ($videoUrl) { $media[] = ['type' => 'video', 'url' => $videoUrl]; }
+                $mediaCount = count($media);
+            @endphp
+            @if($mediaCount)
                 <div class="ad-gallery" data-gallery>
                     <div class="ad-hero">
                         <div class="ad-hero-track" data-gtrack>
-                            @foreach($photoUrls as $url)
-                                <div class="ad-hero-slide"><img src="{{ $url }}" alt="{{ $auction->title_ar }}"></div>
+                            @foreach($media as $m)
+                                <div class="ad-hero-slide">
+                                    @if($m['type'] === 'video')
+                                        <video controls preload="metadata" playsinline src="{{ $m['url'] }}"></video>
+                                    @else
+                                        <img src="{{ $m['url'] }}" alt="{{ $auction->title_ar }}">
+                                    @endif
+                                </div>
                             @endforeach
                         </div>
-                        @if($photoCount > 1)
+                        @if($mediaCount > 1)
                             <button type="button" class="ad-nav ad-nav-prev" data-gprev aria-label="{{ __('auctions.show.gallery_prev') }}">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                             </button>
                             <button type="button" class="ad-nav ad-nav-next" data-gnext aria-label="{{ __('auctions.show.gallery_next') }}">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                             </button>
-                            <span class="ad-hero-count num" data-gcount>1 / {{ $photoCount }}</span>
+                            <span class="ad-hero-count num" data-gcount>1 / {{ $mediaCount }}</span>
                         @endif
                     </div>
-                    @if($photoCount > 1)
+                    @if($mediaCount > 1)
                         <div class="ad-thumbs">
-                            @foreach($photoUrls as $i => $url)
-                                <div class="ad-thumb {{ $i === 0 ? 'on' : '' }}" data-gthumb="{{ $i }}">
-                                    <img src="{{ $url }}" alt="" loading="lazy">
+                            @foreach($media as $i => $m)
+                                <div class="ad-thumb {{ $i === 0 ? 'on' : '' }} {{ $m['type'] === 'video' ? 'is-video' : '' }}" data-gthumb="{{ $i }}">
+                                    @if($m['type'] === 'video')
+                                        <video src="{{ $m['url'] }}#t=0.1" muted preload="metadata"></video>
+                                        <span class="play" aria-label="{{ __('auctions.show.media_video') }}"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
+                                    @else
+                                        <img src="{{ $m['url'] }}" alt="" loading="lazy">
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
@@ -127,40 +145,124 @@
                 </div>
             </div>
 
-            {{-- Tab: Specs (Facts Grid) --}}
+            {{-- Tab: Specs — full, grouped detail --}}
             <div id="tab-specs" style="display:none">
-                <div class="facts" style="margin-bottom:24px">
-                    <div>
-                        <div class="l">{{ __('auctions.show.spec_opening') }}</div>
-                        <div class="v">{{ dzd($auction->opening_price) }}</div>
+                {{-- Group: pricing --}}
+                <div class="spec-group">
+                    <h4 class="spec-h">{{ __('auctions.show.specs_group_pricing') }}</h4>
+                    <div class="facts">
+                        <div>
+                            <div class="l">{{ __('auctions.show.spec_opening') }}</div>
+                            <div class="v"><x-money :centimes="$auction->opening_price" /></div>
+                        </div>
+                        <div>
+                            <div class="l">{{ __('auctions.show.spec_deposit') }}</div>
+                            <div class="v">{{ $auction->deposit_amount ? null : '--' }}@if($auction->deposit_amount)<x-money :centimes="$auction->deposit_amount" />@endif</div>
+                        </div>
+                        <div>
+                            <div class="l">{{ __('auctions.show.spec_entry') }}</div>
+                            <div class="v">{{ $auction->entry_fee ? null : '--' }}@if($auction->entry_fee)<x-money :centimes="$auction->entry_fee" />@endif</div>
+                        </div>
+                        <div>
+                            <div class="l">{{ __('auctions.show.spec_book') }}</div>
+                            <div class="v">{{ $auction->book_price ? null : '--' }}@if($auction->book_price)<x-money :centimes="$auction->book_price" />@endif</div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="l">{{ __('auctions.show.spec_deposit') }}</div>
-                        <div class="v">{{ $auction->deposit_amount ? dzd($auction->deposit_amount) : '--' }}</div>
+                </div>
+
+                {{-- Group: the asset --}}
+                <div class="spec-group">
+                    <h4 class="spec-h">{{ __('auctions.show.specs_group_asset') }}</h4>
+                    <div class="facts">
+                        <div>
+                            <div class="l">{{ __('auctions.show.spec_category') }}</div>
+                            <div class="v">{{ $auction->category->name ?? '--' }}</div>
+                        </div>
+                        <div>
+                            <div class="l">{{ __('auctions.show.spec_type') }}</div>
+                            <div class="v">{{ $auction->auction_type->label() }}</div>
+                        </div>
+                        <div>
+                            <div class="l">{{ __('auctions.show.spec_asset_class') }}</div>
+                            <div class="v">{{ $auction->asset_class?->label() ?? '--' }}</div>
+                        </div>
+                        <div>
+                            <div class="l">{{ __('auctions.show.spec_condition') }}</div>
+                            <div class="v">{{ $auction->condition ? $auction->condition->label() : '--' }}</div>
+                        </div>
+                        <div>
+                            <div class="l">{{ __('auctions.show.spec_units') }}</div>
+                            <div class="v num">{{ $auction->unit_count ?? 1 }}</div>
+                        </div>
+                        <div>
+                            <div class="l">{{ __('auctions.show.spec_requires_cr') }}</div>
+                            <div class="v">{{ $auction->requires_commerce_register ? __('common.yes') : __('common.no') }}</div>
+                        </div>
+                        @if($auction->asset_location)
+                            <div>
+                                <div class="l">{{ __('auctions.show.spec_location') }}</div>
+                                <div class="v">{{ $auction->asset_location }}</div>
+                            </div>
+                        @endif
                     </div>
-                    <div>
-                        <div class="l">{{ __('auctions.show.spec_entry') }}</div>
-                        <div class="v">{{ $auction->entry_fee ? dzd($auction->entry_fee) : '--' }}</div>
+                </div>
+
+                {{-- Group: location & organizing entity --}}
+                <div class="spec-group">
+                    <h4 class="spec-h">{{ __('auctions.show.specs_group_location') }}</h4>
+                    <div class="facts">
+                        <div>
+                            <div class="l">{{ __('auctions.show.spec_wilaya') }}</div>
+                            <div class="v">{{ $auction->wilaya->name ?? '--' }}</div>
+                        </div>
+                        @if($auction->commune)
+                            <div>
+                                <div class="l">{{ __('auctions.show.spec_commune') }}</div>
+                                <div class="v">{{ $auction->commune->name }}</div>
+                            </div>
+                        @endif
+                        @if($auction->mayor_name)
+                            <div>
+                                <div class="l">{{ __('auctions.show.spec_mayor') }}</div>
+                                <div class="v">{{ $auction->mayor_name }}</div>
+                            </div>
+                        @endif
+                        <div>
+                            <div class="l">{{ __('auctions.show.spec_entity') }}</div>
+                            <div class="v">{{ $auction->entity->name ?? '--' }}</div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="l">{{ __('auctions.show.spec_book') }}</div>
-                        <div class="v">{{ $auction->book_price ? dzd($auction->book_price) : '--' }}</div>
+                </div>
+
+                {{-- Group: lease terms (LEASE only) --}}
+                @if($auction->auction_type === \App\Enums\AuctionType::LEASE)
+                    <div class="spec-group">
+                        <h4 class="spec-h">{{ __('auctions.show.specs_group_lease') }}</h4>
+                        <div class="facts">
+                            <div>
+                                <div class="l">{{ __('auctions.show.spec_lease_duration') }}</div>
+                                <div class="v num">{{ $auction->lease_duration_years ?? '--' }}</div>
+                            </div>
+                            <div>
+                                <div class="l">{{ __('auctions.show.spec_lease_renewals') }}</div>
+                                <div class="v num">{{ $auction->lease_renewals ?? '--' }}</div>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="l">{{ __('auctions.show.spec_units') }}</div>
-                        <div class="v">{{ $auction->unit_count ?? 1 }}</div>
-                    </div>
-                    <div>
-                        <div class="l">{{ __('auctions.show.spec_wilaya') }}</div>
-                        <div class="v">{{ $auction->wilaya->name ?? '--' }}</div>
-                    </div>
-                    <div>
-                        <div class="l">{{ __('auctions.show.spec_condition') }}</div>
-                        <div class="v">{{ $auction->condition ? $auction->condition->label() : '--' }}</div>
-                    </div>
-                    <div>
-                        <div class="l">{{ __('auctions.show.spec_type') }}</div>
-                        <div class="v">{{ $auction->auction_type->label() }}</div>
+                @endif
+
+                {{-- Group: schedule --}}
+                <div class="spec-group">
+                    <h4 class="spec-h">{{ __('auctions.show.specs_group_schedule') }}</h4>
+                    <div class="facts">
+                        <div>
+                            <div class="l">{{ __('auctions.show.spec_start') }}</div>
+                            <div class="v num">{{ $auction->start_time?->format('Y-m-d H:i') ?? '--' }}</div>
+                        </div>
+                        <div>
+                            <div class="l">{{ __('auctions.show.spec_end') }}</div>
+                            <div class="v num">{{ $auction->end_time?->format('Y-m-d H:i') ?? '--' }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -200,9 +302,10 @@
 
                         {{-- Condition book download (§4 step 2) --}}
                         @if($conditionBook)
-                            <a href="{{ route('documents.download', $conditionBook) }}" class="btn btn-ghost" style="margin-top:16px;display:inline-flex;align-items:center;gap:8px;text-decoration:none">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <a href="{{ route('documents.download', $conditionBook) }}" class="doc-dl" style="margin-top:16px;max-width:340px">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                                 {{ __('auctions.show.read_condition_book') }}
+                                <span class="pdf">PDF</span>
                             </a>
                         @endif
                     </div>
@@ -271,7 +374,7 @@
                                 @foreach($bids as $bid)
                                     <tr>
                                         <td style="font-weight:600">{{ $bid->bidderAlias() }}</td>
-                                        <td><span class="num" style="font-weight:700;color:var(--primary)">{{ dzd($bid->amount) }}</span></td>
+                                        <td><x-money :centimes="$bid->amount" style="font-weight:700;color:var(--primary)" /></td>
                                         <td style="color:var(--muted);font-size:12px">{{ $bid->bid_time->diffForHumans() }}</td>
                                     </tr>
                                 @endforeach
@@ -298,7 +401,7 @@
                 @endif
 
                 <div class="cur-l">{{ __('auctions.current_price') }}</div>
-                <div class="cur-v num">{{ dzd($auction->currentPrice()) }}</div>
+                <div class="cur-v"><x-money :centimes="$auction->currentPrice()" /></div>
                 <div class="cur-s"><span class="num">{{ $auction->bidCount() }}</span> {{ __('auctions.show.bids_so_far') }}</div>
 
                 {{-- Countdown --}}
@@ -409,7 +512,7 @@
                         <div style="font-size:12px;opacity:.8;margin-bottom:6px">{{ __('auctions.show.closed') }}</div>
                         @if($auction->winner)
                             <div style="font-size:14px;font-weight:600;color:var(--accent)">{{ __('auctions.show.winner_label') }} {{ $auction->winner->fullNameAr() }}</div>
-                            <div class="num" style="font-size:20px;font-weight:700;color:var(--accent);margin-top:4px">{{ dzd($auction->final_price ?? $auction->currentPrice()) }}</div>
+                            <div style="font-size:20px;font-weight:700;color:var(--accent);margin-top:4px"><x-money :centimes="$auction->final_price ?? $auction->currentPrice()" /></div>
                             {{-- §4 step 7 — the winner pays the final amount within the legal deadline --}}
                             @auth
                                 @if(auth()->id() === $auction->winner_user_id)
@@ -441,6 +544,22 @@
                 @endif
             </div>
 
+            {{-- Documents — condition book, prominent & always visible (§4 step 2) --}}
+            @if($conditionBook)
+                <div class="doc-card">
+                    <div class="doc-t">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        {{ __('auctions.show.documents_title') }}
+                    </div>
+                    <p class="doc-s">{{ __('auctions.show.condition_book_hint') }}</p>
+                    <a href="{{ route('documents.download', $conditionBook) }}" class="doc-dl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        {{ __('auctions.show.read_condition_book') }}
+                        <span class="pdf">PDF</span>
+                    </a>
+                </div>
+            @endif
+
             {{-- Bid History (Sidebar) --}}
             <div class="card">
                 <div class="card-h">
@@ -457,7 +576,7 @@
                                     <div style="font-size:13px;font-weight:600">{{ $bid->bidderAlias() }}</div>
                                     <div style="font-size:11px;color:var(--muted)">{{ $bid->bid_time->diffForHumans() }}</div>
                                 </div>
-                                <div class="num" style="font-weight:700;font-size:14px;color:var(--primary)">{{ dzd($bid->amount) }}</div>
+                                <div style="font-weight:700;font-size:14px;color:var(--primary)"><x-money :centimes="$bid->amount" /></div>
                             </div>
                         @endforeach
                     </div>
@@ -511,6 +630,11 @@ function addBid(amount) {
         track.style.transform = 'translateX(' + (isRtl() ? pct : -pct) + '%)';
         for (let i = 0; i < thumbs.length; i++) {
             thumbs[i].classList.toggle('on', i === index);
+        }
+        // Pause any video on a slide we're leaving so its audio stops.
+        for (let i = 0; i < slides.length; i++) {
+            const v = slides[i].querySelector('video');
+            if (v && i !== index) v.pause();
         }
         if (counter) counter.textContent = (index + 1) + ' / ' + count;
     }

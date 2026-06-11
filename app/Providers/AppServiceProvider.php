@@ -2,12 +2,15 @@
 
 namespace App\Providers;
 
+use App\Enums\KycStatus;
+use App\Models\User;
 use App\Services\Payments\CibWebGateway;
 use App\Services\Payments\MockPaymentGateway;
 use App\Services\Payments\PaymentGatewayInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -44,5 +47,16 @@ class AppServiceProvider extends ServiceProvider
 
         Paginator::defaultView('vendor.pagination.mazayada');
         Paginator::defaultSimpleView('vendor.pagination.mazayada-simple');
+
+        // Sidebar badge: number of KYC submissions awaiting review. Only queried
+        // for reviewers; a single indexed COUNT (no cache) so the badge drops the
+        // moment a request is approved/rejected.
+        View::composer('layouts.admin', function ($view) {
+            $count = auth()->user()?->can('kyc.review')
+                ? User::where('kyc_status', KycStatus::UNDER_REVIEW)->count()
+                : 0;
+
+            $view->with('kycPendingCount', $count);
+        });
     }
 }

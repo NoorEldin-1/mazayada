@@ -45,6 +45,12 @@
             @error('nin') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
         </div>
 
+        <div class="field">
+            <label for="professional_id_no">{{ __('admin.entity_staff.f_professional_id') }} <span class="text-danger">*</span></label>
+            <input type="text" id="professional_id_no" name="professional_id_no" class="input" value="{{ old('professional_id_no') }}" maxlength="20" style="direction:ltr" required>
+            @error('professional_id_no') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
+        </div>
+
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
             <div class="field">
                 <label for="first_name_ar">{{ __('admin.entity_staff.f_first_name_ar') }} <span class="text-danger">*</span></label>

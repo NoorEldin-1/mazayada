@@ -135,6 +135,8 @@ Route::middleware(['auth', 'admin.2fa', 'role:SUPER_ADMIN,ENTITY_HEAD,CONTENT_AD
     Route::get('/entities/{entity}/edit', [AdminEntityController::class, 'edit'])->name('entities.edit');
     Route::put('/entities/{entity}', [AdminEntityController::class, 'update'])->name('entities.update');
     Route::delete('/entities/{entity}', [AdminEntityController::class, 'destroy'])->name('entities.destroy');
+    // Active staff of an entity (JSON) — feeds the cascading staff select on the auction form.
+    Route::get('/entities/{entity}/staff', [AdminEntityStaffController::class, 'staff'])->name('entities.staff');
 
     // Entity-staff management (SUPER_ADMIN + ENTITY_HEAD via entities.members.manage)
     Route::get('/entity-staff', [AdminEntityStaffController::class, 'index'])->name('entity-staff.index');

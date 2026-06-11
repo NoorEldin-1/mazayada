@@ -29,7 +29,10 @@ html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:"
 /* In LTR locales (FR/EN) lead with the Latin face. Arabic stays the default. */
 html[dir="ltr"] body{font-family:"Inter","IBM Plex Sans Arabic",system-ui,sans-serif}
 img{max-width:100%;height:auto;display:block}
-.num,.lat{font-family:"Inter","IBM Plex Sans Arabic",sans-serif;font-feature-settings:"tnum"}
+/* Numbers always read left-to-right: direction:ltr keeps space-grouped figures
+   like "144 000" from reversing to "000 144" inside an RTL (Arabic) page, while
+   unicode-bidi:isolate still places the run correctly within the surrounding text. */
+.num,.lat{font-family:"Inter","IBM Plex Sans Arabic",sans-serif;font-feature-settings:"tnum";direction:ltr;unicode-bidi:isolate;white-space:nowrap}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
 input,select,textarea{font-family:inherit;font-size:14px}
 a{color:inherit;text-decoration:none}
@@ -426,7 +429,7 @@ html[dir="rtl"] .auth-carousel-arrow svg{transform:scaleX(-1)}
 .bid-panel .live{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:700;background:#D9544E;padding:4px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:18px}
 .bid-panel .live .d{width:6px;height:6px;border-radius:50%;background:#fff;animation:pulse 1.2s infinite}
 .bid-panel .cur-l{font-size:11px;opacity:.7;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
-.bid-panel .cur-v{font-family:"Inter";font-size:38px;font-weight:700;color:var(--accent);letter-spacing:-1px;line-height:1;margin:6px 0 4px}
+.bid-panel .cur-v{font-family:"Inter";font-size:38px;font-weight:700;color:var(--accent);letter-spacing:-.3px;line-height:1.05;margin:6px 0 4px}
 .bid-panel .cur-s{font-size:13px;opacity:.7}
 .bid-panel .countdown{display:flex;gap:8px;margin:18px 0;padding:14px;background:rgba(0,0,0,.2);border-radius:12px;border:1px solid rgba(255,255,255,.08)}
 .bid-panel .cd-i{flex:1;text-align:center}
@@ -815,3 +818,58 @@ html[dir="rtl"] .legal-related-card .arr{transform:scaleX(-1)}
   .legal-section p{font-size:14px}
   .legal-related-grid{grid-template-columns:1fr}
 }
+
+/* ============================================================
+   Premium refinements — public auctions (cards, money, media
+   gallery video, grouped specs, condition-book documents).
+   Colors use existing CSS variables; logical props keep RTL.
+   ============================================================ */
+
+/* --- Money: amount + currency unit, isolated so RTL never reorders/splits --- */
+.money{direction:ltr;unicode-bidi:isolate;white-space:nowrap;display:inline-flex;align-items:baseline;gap:.28em;font-family:"Inter","IBM Plex Sans Arabic",sans-serif;font-feature-settings:"tnum"}
+.money .cur{font-size:.7em;font-weight:600;color:var(--muted);letter-spacing:0}
+/* On the dark bid panel / coloured footers the muted grey is illegible. */
+.bid-panel .money .cur,.auc-foot .money .cur{color:currentColor;opacity:.6}
+
+/* --- Premium auction cards (index) --- */
+.auc-card{border-radius:20px;box-shadow:var(--shadow-soft);transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease}
+.auc-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--primary-4)}
+.auc-img img{transition:transform .5s ease}
+.auc-card:hover .auc-img img{transform:scale(1.06)}
+.auc-img::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(to top,rgba(15,30,43,.30),transparent 42%);opacity:0;transition:opacity .22s}
+.auc-card:hover .auc-img::before{opacity:1}
+.auc-media{position:absolute;top:12px;inset-inline-end:12px;z-index:2;display:inline-flex;align-items:center;gap:5px;background:rgba(0,0,0,.62);color:#fff;backdrop-filter:blur(8px);padding:4px 9px;border-radius:8px;font-size:11px;font-weight:600}
+.auc-media svg{width:13px;height:13px}
+.auc-media .sep{opacity:.45}
+.auc-type{align-self:flex-start;display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:999px;letter-spacing:.03em}
+.auc-type.sale{background:rgba(58,134,199,.12);color:#2f6da0}
+.auc-type.lease{background:rgba(126,87,194,.14);color:#6a45b0}
+.auc-ttl{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.8em}
+.auc-foot .pr .pv{font-size:19px}
+.auc-foot .bids{display:inline-flex;flex-direction:column;align-items:center;gap:1px;background:var(--accent-soft);color:var(--accent-2);padding:6px 13px;border-radius:11px;text-align:center}
+.auc-foot .bids .n{font-size:16px;line-height:1.1}
+.auc-foot .bids .w{font-size:10px;font-weight:600;opacity:.85}
+
+/* --- Media gallery: video slide + thumbnail play badge --- */
+.ad-hero-slide video{width:100%;height:100%;object-fit:contain;background:#0b0b0b;display:block}
+.ad-thumb{position:relative}
+.ad-thumb video{width:100%;height:100%;object-fit:cover;border-radius:7px;display:block}
+.ad-thumb.is-video::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.32);border-radius:inherit;z-index:1}
+.ad-thumb.is-video .play{position:absolute;inset:0;z-index:2;display:grid;place-items:center;color:#fff}
+.ad-thumb.is-video .play svg{width:22px;height:22px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.55))}
+
+/* --- Specifications: grouped sections --- */
+.spec-group{margin-bottom:20px}
+.spec-group:last-child{margin-bottom:0}
+.spec-h{font-size:12px;font-weight:700;color:var(--ink-2);text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px;display:flex;align-items:center;gap:10px}
+.spec-h::after{content:"";flex:1;height:1px;background:var(--line)}
+
+/* --- Documents card + prominent condition-book download --- */
+.doc-card{background:linear-gradient(135deg,var(--accent-soft),var(--surface));border:1px solid var(--accent);border-radius:16px;padding:18px;margin-bottom:14px}
+.doc-card .doc-t{font-size:13px;font-weight:700;color:var(--ink);margin:0 0 4px;display:flex;align-items:center;gap:8px}
+.doc-card .doc-t svg{width:16px;height:16px;color:var(--accent-2);flex-shrink:0}
+.doc-card .doc-s{font-size:12px;color:var(--ink-2);margin:0 0 14px;line-height:1.6}
+.doc-dl{display:flex;align-items:center;gap:9px;width:100%;background:var(--accent);color:#3a2a08;padding:13px 16px;border-radius:12px;font-weight:700;font-size:14px;text-decoration:none;transition:background .15s,transform .12s;box-shadow:0 6px 16px rgba(212,168,67,.35)}
+.doc-dl:hover{background:#E6BB52;transform:translateY(-1px)}
+.doc-dl svg{width:18px;height:18px;flex-shrink:0}
+.doc-dl .pdf{margin-inline-start:auto;font-size:10px;font-weight:800;background:rgba(58,42,8,.16);padding:2px 7px;border-radius:6px;letter-spacing:.04em}

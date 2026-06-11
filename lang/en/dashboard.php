@@ -21,6 +21,13 @@ return [
     'kyc_complete_button' => 'Complete verification',
     'kyc_verified_text' => 'Your identity has been verified successfully. You can now take part in auctions.',
 
+    // ===== Forced verification modal (dashboard) =====
+    'verify_modal_title' => 'Alert: your account is not verified',
+    'verify_modal_body_pending' => 'You cannot take part in any auction until your identity is verified. Complete verification now to activate your account.',
+    'verify_modal_body_rejected' => 'Your verification request was rejected. Fix your data and resubmit to take part in auctions.',
+    'verify_modal_confirm' => 'Verify account',
+    'verify_modal_dismiss' => 'Later',
+
     // ===== Won auctions =====
     'won_auctions_title' => 'Auctions you have won',
     'no_won_auctions' => 'You haven’t won any auction yet',

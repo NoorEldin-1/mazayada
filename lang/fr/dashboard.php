@@ -21,6 +21,13 @@ return [
     'kyc_complete_button' => 'Compléter la vérification',
     'kyc_verified_text' => 'Votre identité a été vérifiée avec succès. Vous pouvez participer aux enchères.',
 
+    // ===== Forced verification modal (dashboard) =====
+    'verify_modal_title' => 'Alerte : compte non vérifié',
+    'verify_modal_body_pending' => 'Vous ne pourrez participer à aucune enchère avant de vérifier votre identité. Complétez la vérification maintenant pour activer votre compte.',
+    'verify_modal_body_rejected' => 'Votre demande de vérification a été rejetée. Corrigez vos données et renvoyez-la pour participer aux enchères.',
+    'verify_modal_confirm' => 'Vérifier le compte',
+    'verify_modal_dismiss' => 'Plus tard',
+
     // ===== Won auctions =====
     'won_auctions_title' => 'Enchères que vous avez gagnées',
     'no_won_auctions' => 'Vous n’avez encore gagné aucune enchère',

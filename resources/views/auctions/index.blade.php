@@ -79,9 +79,13 @@
     @if($auctions->count())
         <div class="auc-grid">
             @foreach($auctions as $auction)
+                @php
+                    $cover = $auction->coverPhotoUrl();
+                    $mediaCount = count($auction->photoUrls());
+                    $hasVideo = (bool) $auction->video;
+                @endphp
                 <a href="{{ route('auctions.show', $auction) }}" class="auc-card">
                     <div class="auc-img">
-                        @php $cover = $auction->coverPhotoUrl(); @endphp
                         @if($cover)
                             <img src="{{ $cover }}" alt="{{ $auction->title_ar }}" loading="lazy">
                         @else
@@ -92,8 +96,21 @@
                         @else
                             <span class="auc-tag">{{ $auction->status->label() }}</span>
                         @endif
+                        @if($mediaCount || $hasVideo)
+                            <span class="auc-media">
+                                @if($mediaCount)
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                    <span class="num">{{ $mediaCount }}</span>
+                                @endif
+                                @if($hasVideo)
+                                    @if($mediaCount)<span class="sep">·</span>@endif
+                                    <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                @endif
+                            </span>
+                        @endif
                     </div>
                     <div class="auc-body">
+                        <span class="auc-type {{ $auction->auction_type === \App\Enums\AuctionType::SALE ? 'sale' : 'lease' }}">{{ $auction->auction_type->label() }}</span>
                         <span class="auc-cat">{{ $auction->category->name ?? '' }}</span>
                         <span class="auc-ttl">{{ $auction->title_ar }}</span>
                         <span class="auc-loc">
@@ -104,11 +121,11 @@
                     <div class="auc-foot">
                         <div class="pr">
                             <div class="lbl">{{ __('auctions.current_price') }}</div>
-                            <div class="pv num">{{ dzd($auction->currentPrice()) }}</div>
+                            <div class="pv"><x-money :centimes="$auction->currentPrice()" /></div>
                         </div>
                         <div class="bids">
                             <div class="n num">{{ $auction->bidCount() }}</div>
-                            {{ __('auctions.bids_word') }}
+                            <span class="w">{{ __('auctions.bids_word') }}</span>
                         </div>
                     </div>
                 </a>

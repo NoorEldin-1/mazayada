@@ -15,6 +15,7 @@
         <tr>
             <th>{{ __('admin.entity_staff.f_full_name') }}</th>
             <th>{{ __('admin.entity_staff.f_username') }}</th>
+            <th>{{ __('admin.entity_staff.f_professional_id') }}</th>
             <th>{{ __('admin.entity_staff.col_entity') }}</th>
             <th>{{ __('admin.entity_staff.f_role') }}</th>
             <th>{{ __('admin.entity_staff.col_status') }}</th>
@@ -26,6 +27,7 @@
             <tr>
                 <td class="font-semibold text-ink">{{ $member->full_name ?? $member->user?->fullNameAr() }}</td>
                 <td style="direction:ltr;text-align:start">{{ $member->username }}</td>
+                <td style="direction:ltr;text-align:start">{{ $member->user?->professional_id_no ?? '—' }}</td>
                 <td>{{ $member->entity?->name ?? '—' }}</td>
                 <td><span class="chip chip-info">{{ \App\Enums\UserRole::tryFrom($member->role)?->label() ?? $member->role }}</span></td>
                 <td>
@@ -47,7 +49,7 @@
                 </td>
             </tr>
         @empty
-            <tr><td colspan="6" class="text-center text-muted py-8">{{ __('admin.entity_staff.empty') }}</td></tr>
+            <tr><td colspan="7" class="text-center text-muted py-8">{{ __('admin.entity_staff.empty') }}</td></tr>
         @endforelse
     </tbody>
 </x-ui.table>

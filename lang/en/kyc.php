@@ -21,6 +21,11 @@ return [
     'step3_title' => 'Submission & review',
     'step3_hint' => 'Review your details and documents, then submit the request for review by the administration.',
 
+    // Document sub-sections (step 1 split into two cards)
+    'sec_biometric_title' => 'Biometric photo',
+    'sec_id_card_title' => 'ID card documents',
+    'subsec_selfie_title' => 'Selfie with ID card',
+
     // ===== Status banners =====
     'banner_pending_text' => 'You haven’t completed your identity verification yet — complete it to take part in auctions.',
     'banner_cta' => 'Complete verification',
@@ -47,10 +52,12 @@ return [
     'req_size' => 'Maximum size: 2 MB per file',
     'req_formats' => 'Accepted formats: JPG, PNG',
 
-    'f_first_name_fr' => 'First name (French)',
-    'f_last_name_fr' => 'Last name (French)',
+    'f_first_name_fr' => 'First name (Latin)',
+    'f_last_name_fr' => 'Last name (Latin)',
     'f_father_name' => 'Father’s name',
     'f_mother_fullname' => 'Mother’s full name',
+    'f_mother_name' => 'Mother’s first name',
+    'f_mother_surname' => 'Mother’s last name',
     'f_wilaya' => 'Wilaya',
     'f_commune' => 'Commune',
     'f_full_address' => 'Full address',

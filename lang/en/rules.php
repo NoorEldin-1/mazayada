@@ -6,5 +6,6 @@ return [
     'nin_invalid' => 'The national ID number is invalid.',
     'nif_invalid' => 'The tax ID (NIF) must be 15 digits.',
     'nis_invalid' => 'The statistical ID (NIS) must be 9 or 18 digits.',
+    'professional_id_invalid' => 'The professional ID number must be 6 to 20 digits.',
     'rip_invalid' => 'The postal account (RIP) must be 20 digits.',
 ];

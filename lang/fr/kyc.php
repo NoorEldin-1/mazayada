@@ -21,6 +21,11 @@ return [
     'step3_title' => 'Envoi et examen',
     'step3_hint' => 'Vérifiez vos informations et documents, puis envoyez la demande pour examen par l’administration.',
 
+    // Document sub-sections (step 1 split into two cards)
+    'sec_biometric_title' => 'Photo biométrique',
+    'sec_id_card_title' => 'Documents de la carte d’identité',
+    'subsec_selfie_title' => 'Selfie avec la carte',
+
     // ===== Status banners =====
     'banner_pending_text' => 'Vous n’avez pas encore complété votre vérification d’identité — complétez-la pour participer aux enchères.',
     'banner_cta' => 'Compléter la vérification',
@@ -47,10 +52,12 @@ return [
     'req_size' => 'Taille maximale : 2 Mo par fichier',
     'req_formats' => 'Formats acceptés : JPG, PNG',
 
-    'f_first_name_fr' => 'Prénom (en français)',
-    'f_last_name_fr' => 'Nom (en français)',
+    'f_first_name_fr' => 'Prénom (en latin)',
+    'f_last_name_fr' => 'Nom (en latin)',
     'f_father_name' => 'Nom du père',
     'f_mother_fullname' => 'Nom complet de la mère',
+    'f_mother_name' => 'Prénom de la mère',
+    'f_mother_surname' => 'Nom de la mère',
     'f_wilaya' => 'Wilaya',
     'f_commune' => 'Commune',
     'f_full_address' => 'Adresse complète',

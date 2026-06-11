@@ -52,7 +52,7 @@ class AuctionController extends Controller
 
     public function show(Auction $auction): View
     {
-        $auction->load(['entity', 'category', 'wilaya']);
+        $auction->load(['entity', 'category', 'wilaya', 'commune']);
 
         $bids = $auction->bids()
             ->where('is_valid', true)

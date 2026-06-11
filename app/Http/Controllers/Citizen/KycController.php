@@ -88,7 +88,7 @@ class KycController extends Controller
 
         $user->update([
             ...$request->safe()->only([
-                'first_name_fr', 'last_name_fr', 'father_name', 'mother_fullname',
+                'first_name_fr', 'last_name_fr', 'father_name', 'mother_name', 'mother_surname',
                 'profession', 'address', 'commune_id', 'postal_code', 'rip', 'expected_income',
                 'nif', 'nis',
             ]),

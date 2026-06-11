@@ -11,4 +11,6 @@ return [
     'my_account' => 'Mon compte',
     'logout' => 'Déconnexion',
     'menu' => 'Menu',
+    'logout_confirm_title' => 'Confirmer la déconnexion',
+    'logout_confirm_message' => 'Voulez-vous vraiment vous déconnecter ?',
 ];

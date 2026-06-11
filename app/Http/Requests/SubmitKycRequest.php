@@ -27,7 +27,8 @@ class SubmitKycRequest extends FormRequest
             'first_name_fr' => ['required', 'string', 'max:100'],
             'last_name_fr' => ['required', 'string', 'max:100'],
             'father_name' => ['required', 'string', 'max:100'],
-            'mother_fullname' => ['required', 'string', 'max:200'],
+            'mother_name' => ['required', 'string', 'max:100'],
+            'mother_surname' => ['required', 'string', 'max:100'],
             'address' => ['required', 'string', 'max:255'],
             'wilaya_id' => ['required', 'integer', 'exists:wilayas,id'],
             // The commune must exist AND belong to the chosen wilaya — prevents

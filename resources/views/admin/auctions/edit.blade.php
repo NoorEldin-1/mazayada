@@ -54,13 +54,27 @@
 
             <div class="field">
                 <label for="wilaya_id">{{ __('admin.auctions.f_wilaya') }} <span class="text-danger">*</span></label>
-                <select id="wilaya_id" name="wilaya_id" class="select" required>
+                <select id="wilaya_id" name="wilaya_id" class="select" required data-selected-commune="{{ old('commune_id', $auction->commune_id) }}">
                     <option value="">{{ __('admin.auctions.choose_wilaya') }}</option>
                     @foreach($wilayas as $wilaya)
                         <option value="{{ $wilaya->id }}" {{ old('wilaya_id', $auction->wilaya_id) == $wilaya->id ? 'selected' : '' }}>{{ $wilaya->code }} - {{ $wilaya->name }}</option>
                     @endforeach
                 </select>
                 @error('wilaya_id') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
+            </div>
+
+            <div class="field">
+                <label for="commune_id">{{ __('admin.auctions.f_commune') }}</label>
+                <select id="commune_id" name="commune_id" class="select">
+                    <option value="">{{ __('admin.auctions.choose_commune') }}</option>
+                </select>
+                @error('commune_id') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
+            </div>
+
+            <div class="field">
+                <label for="mayor_name">{{ __('admin.auctions.f_mayor_name') }}</label>
+                <input type="text" id="mayor_name" name="mayor_name" class="input" value="{{ old('mayor_name', $auction->mayor_name) }}">
+                @error('mayor_name') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
             </div>
 
             <div class="field">
@@ -157,10 +171,12 @@
         </div>
     </x-ui.card>
 
-    {{-- Section 2c: Photos (spec §4 step 1) --}}
+    {{-- Section 2c: Photos + short video (spec §4 step 1) --}}
     <x-ui.card :title="__('admin.auctions.sec_photos')" class="mb-6">
+        {{-- Sub-section: images --}}
+        <h3 style="font-size:0.9rem;font-weight:600;color:var(--ink);margin-block-end:0.75rem">{{ __('admin.auctions.sec_photos_images') }}</h3>
         @if($auction->photosArray())
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-block-end:12px">
                 @foreach($auction->photosArray() as $p)
                     <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($p) }}" style="width:90px;height:90px;object-fit:cover;border-radius:8px;border:1px solid var(--line)">
                 @endforeach
@@ -171,6 +187,27 @@
             <input type="file" id="photos" name="photos[]" class="input" accept="image/jpeg,image/png,image/webp" multiple>
             <small style="color:var(--ink-muted)">{{ __('admin.auctions.photos_hint') }}</small>
             @error('photos.*') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
+        </div>
+        <div id="photos-preview" style="display:flex;gap:8px;flex-wrap:wrap;margin-block-start:12px"></div>
+
+        {{-- Sub-section: a single short asset video (1–2 min, MP4, ≤50 MB) --}}
+        <hr style="border:0;border-top:1px solid var(--line);margin-block:1.25rem">
+        <h3 style="font-size:0.9rem;font-weight:600;color:var(--ink);margin-block-end:0.75rem">{{ __('admin.auctions.sec_photos_video') }}</h3>
+        @if($auction->videoUrl())
+            <video controls src="{{ $auction->videoUrl() }}" style="max-width:320px;width:100%;border-radius:8px;border:1px solid var(--line);margin-block-end:12px"></video>
+        @endif
+        <div class="field">
+            <label for="video">{{ __('admin.auctions.f_video') }}</label>
+            <input type="file" id="video" name="video" class="input" accept="video/mp4"
+                   data-err-type="{{ __('admin.auctions.video_err_type') }}"
+                   data-err-size="{{ __('admin.auctions.video_err_size') }}"
+                   data-err-duration="{{ __('admin.auctions.video_err_duration') }}">
+            <small style="color:var(--ink-muted)">{{ __('admin.auctions.video_hint') }}</small>
+            <small id="video-error" class="text-danger text-xs mt-1" style="display:none"></small>
+            @error('video') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
+        </div>
+        <div id="video-preview" style="margin-block-start:12px;display:none">
+            <video controls style="max-width:320px;width:100%;border-radius:8px;border:1px solid var(--line)"></video>
         </div>
     </x-ui.card>
 
@@ -223,12 +260,13 @@
         </div>
     </x-ui.card>
 
-    {{-- Entity — only a SUPER_ADMIN may reassign; entity staff cannot move it. --}}
-    @if(auth()->user()->hasRole('SUPER_ADMIN'))
+    {{-- Entity & responsible staff. Only a SUPER_ADMIN may reassign the entity;
+         entity staff cannot move it but may still tag a responsible colleague. --}}
     <x-ui.card :title="__('admin.auctions.sec_entity')" class="mb-6">
+        @if(auth()->user()->hasRole('SUPER_ADMIN'))
         <div class="field">
             <label for="entity_id">{{ __('admin.auctions.f_entity') }} <span class="text-danger">*</span></label>
-            <select id="entity_id" name="entity_id" class="select" required>
+            <select id="entity_id" name="entity_id" class="select" required data-selected-staff="{{ old('entity_user_id', $auction->entity_user_id) }}">
                 <option value="">{{ __('admin.auctions.choose_entity') }}</option>
                 @foreach($entities as $entity)
                     <option value="{{ $entity->id }}" {{ old('entity_id', $auction->entity_id) == $entity->id ? 'selected' : '' }}>{{ $entity->name }}</option>
@@ -236,8 +274,27 @@
             </select>
             @error('entity_id') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
         </div>
+
+        <div class="field">
+            <label for="entity_user_id">{{ __('admin.auctions.f_entity_user') }}</label>
+            <select id="entity_user_id" name="entity_user_id" class="select">
+                <option value="">{{ __('admin.auctions.choose_entity_user') }}</option>
+            </select>
+            @error('entity_user_id') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
+        </div>
+        @else
+        <div class="field">
+            <label for="entity_user_id">{{ __('admin.auctions.f_entity_user') }}</label>
+            <select id="entity_user_id" name="entity_user_id" class="select">
+                <option value="">{{ __('admin.auctions.choose_entity_user') }}</option>
+                @foreach($entityUsers as $staff)
+                    <option value="{{ $staff->id }}" {{ old('entity_user_id', $auction->entity_user_id) == $staff->id ? 'selected' : '' }}>{{ $staff->full_name }}</option>
+                @endforeach
+            </select>
+            @error('entity_user_id') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
+        </div>
+        @endif
     </x-ui.card>
-    @endif
 
     {{-- Submit --}}
     <x-ui.btn variant="primary" size="lg" class="w-full">{{ __('admin.auctions.submit_edit') }}</x-ui.btn>
@@ -266,15 +323,140 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // --- Lease fields toggle ---
         var typeSelect = document.getElementById('auction_type');
         var leaseFields = document.getElementById('lease-fields');
-
         function toggleLease() {
             leaseFields.style.display = typeSelect.value === 'LEASE' ? 'block' : 'none';
         }
-
         typeSelect.addEventListener('change', toggleLease);
         toggleLease();
+
+        // --- Wilaya → Commune cascade ---
+        var wilaya = document.getElementById('wilaya_id');
+        var commune = document.getElementById('commune_id');
+        if (wilaya && commune) {
+            var preselectCommune = wilaya.getAttribute('data-selected-commune');
+            async function loadCommunes(selected) {
+                commune.innerHTML = '<option value="">{{ __('admin.auctions.choose_commune') }}</option>';
+                if (!wilaya.value) return;
+                try {
+                    var res = await fetch('/api/v1/wilayas/' + wilaya.value + '/communes');
+                    var data = await res.json();
+                    (data.data ?? data).forEach(function (c) {
+                        var opt = document.createElement('option');
+                        opt.value = c.id;
+                        opt.textContent = (c.name_ar ?? c.name) + (c.postal_code ? ' (' + c.postal_code + ')' : '');
+                        if (selected && String(selected) === String(c.id)) opt.selected = true;
+                        commune.appendChild(opt);
+                    });
+                } catch (e) { /* network error — leave commune empty */ }
+            }
+            wilaya.addEventListener('change', function () { loadCommunes(null); });
+            if (wilaya.value) loadCommunes(preselectCommune);
+        }
+
+        // --- Image preview (newly chosen files) ---
+        var photos = document.getElementById('photos');
+        var photosPreview = document.getElementById('photos-preview');
+        if (photos && photosPreview) {
+            photos.addEventListener('change', function () {
+                photosPreview.innerHTML = '';
+                Array.prototype.forEach.call(photos.files, function (file) {
+                    if (!file.type.startsWith('image/')) return;
+                    var img = document.createElement('img');
+                    img.src = URL.createObjectURL(file);
+                    img.onload = function () { URL.revokeObjectURL(img.src); };
+                    img.style.cssText = 'width:90px;height:90px;object-fit:cover;border-radius:8px;border:1px solid var(--line)';
+                    photosPreview.appendChild(img);
+                });
+            });
+        }
+
+        // --- Single short video: strict type/size + 1–2 min duration (client gate) ---
+        var video = document.getElementById('video');
+        var videoError = document.getElementById('video-error');
+        var videoPreview = document.getElementById('video-preview');
+        var videoValid = true;
+        if (video) {
+            var MAX_BYTES = 50 * 1024 * 1024; // 50 MB
+            var MAX_SEC = 120; // up to 2 minutes; any shorter length is fine
+            function showVideoError(msg) {
+                videoValid = false;
+                video.value = '';
+                if (videoPreview) videoPreview.style.display = 'none';
+                videoError.textContent = msg;
+                videoError.style.display = 'block';
+            }
+            function clearVideoError() {
+                videoValid = true;
+                videoError.textContent = '';
+                videoError.style.display = 'none';
+            }
+            video.addEventListener('change', function () {
+                clearVideoError();
+                var file = video.files[0];
+                if (!file) { if (videoPreview) videoPreview.style.display = 'none'; return; }
+                if (file.type !== 'video/mp4') { showVideoError(video.dataset.errType); return; }
+                if (file.size > MAX_BYTES) { showVideoError(video.dataset.errSize); return; }
+                var url = URL.createObjectURL(file);
+                var probe = document.createElement('video');
+                probe.preload = 'metadata';
+                probe.onloadedmetadata = function () {
+                    var dur = probe.duration;
+                    if (!isNaN(dur) && dur > MAX_SEC) {
+                        URL.revokeObjectURL(url);
+                        showVideoError(video.dataset.errDuration);
+                        return;
+                    }
+                    if (videoPreview) {
+                        videoPreview.querySelector('video').src = url;
+                        videoPreview.style.display = 'block';
+                    }
+                };
+                probe.onerror = function () {
+                    URL.revokeObjectURL(url);
+                    showVideoError(video.dataset.errType);
+                };
+                probe.src = url;
+            });
+        }
+
+        // --- Entity → staff cascade (SUPER_ADMIN only; others are server-rendered) ---
+        var entity = document.getElementById('entity_id');
+        var entityUser = document.getElementById('entity_user_id');
+        if (entity && entityUser) {
+            var preselectStaff = entity.getAttribute('data-selected-staff');
+            async function loadStaff(selected) {
+                entityUser.innerHTML = '<option value="">{{ __('admin.auctions.choose_entity_user') }}</option>';
+                if (!entity.value) return;
+                try {
+                    var res = await fetch('/admin/entities/' + entity.value + '/staff');
+                    if (!res.ok) return;
+                    var data = await res.json();
+                    (data.data ?? data).forEach(function (s) {
+                        var opt = document.createElement('option');
+                        opt.value = s.id;
+                        opt.textContent = s.full_name;
+                        if (selected && String(selected) === String(s.id)) opt.selected = true;
+                        entityUser.appendChild(opt);
+                    });
+                } catch (e) { /* network error — leave staff empty */ }
+            }
+            entity.addEventListener('change', function () { loadStaff(null); });
+            if (entity.value) loadStaff(preselectStaff);
+        }
+
+        // --- Block submit while the chosen video is invalid ---
+        var form = video ? video.closest('form') : null;
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                if (!videoValid) {
+                    e.preventDefault();
+                    if (videoError) videoError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+        }
     });
 </script>
 @endpush

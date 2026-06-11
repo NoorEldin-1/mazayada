@@ -35,7 +35,8 @@ class Auction extends Model
         'max_extensions', 'extension_count', 'original_owner_nin',
         'closed_at', 'settled_at',
         'created_by', 'appraiser_id',
-        'wilaya_id', 'photos',
+        'wilaya_id', 'commune_id', 'mayor_name', 'photos', 'video',
+        'entity_user_id',
     ];
 
     protected function casts(): array
@@ -87,6 +88,17 @@ class Auction extends Model
     public function wilaya(): BelongsTo
     {
         return $this->belongsTo(Wilaya::class);
+    }
+
+    public function commune(): BelongsTo
+    {
+        return $this->belongsTo(Commune::class);
+    }
+
+    /** Entity staff member (موظف الجهة) responsible for this auction, if any. */
+    public function entityUser(): BelongsTo
+    {
+        return $this->belongsTo(EntityUser::class);
     }
 
     public function winner(): BelongsTo
@@ -201,6 +213,16 @@ class Auction extends Model
     public function coverPhotoUrl(): ?string
     {
         return $this->photoUrls()[0] ?? null;
+    }
+
+    /**
+     * Public URL for the single short asset video, or null when none uploaded.
+     */
+    public function videoUrl(): ?string
+    {
+        return $this->video
+            ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->video)
+            : null;
     }
 
     public function formatPrice(int $centimes): string

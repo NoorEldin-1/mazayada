@@ -17,25 +17,6 @@
     </x-ui.stat-tile>
 </div>
 
-{{-- KYC status card --}}
-<x-ui.card class="mb-5">
-    <x-slot:header>
-        <svg class="size-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
-        <h3 class="text-base font-semibold text-ink">{{ __('dashboard.kyc_card_title') }}</h3>
-        <span class="ms-auto chip {{ auth()->user()->kyc_status->chipClass() }}"><span class="dot"></span>{{ auth()->user()->kyc_status->label() }}</span>
-    </x-slot:header>
-
-    @if(!auth()->user()->isKycComplete())
-        <p class="text-sm text-ink-2 mb-4">{{ __('dashboard.kyc_incomplete_text') }}</p>
-        <x-ui.btn :href="route('citizen.kyc')" variant="primary" size="sm">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="rtl:-scale-x-100"><polyline points="9 18 15 12 9 6"/></svg>
-            {{ __('dashboard.kyc_complete_button') }}
-        </x-ui.btn>
-    @else
-        <p class="text-sm text-ok font-medium m-0">{{ __('dashboard.kyc_verified_text') }}</p>
-    @endif
-</x-ui.card>
-
 {{-- Won auctions --}}
 <x-ui.card :padding="false" class="mb-5">
     <x-slot:header>
@@ -86,5 +67,8 @@
         <svg class="size-[18px] text-muted shrink-0 rtl:-scale-x-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
     </a>
 </div>
+
+{{-- Forced verification modal — auto-opens for not-verified (PENDING) / rejected users. --}}
+<x-kyc-verify-modal />
 
 @endsection

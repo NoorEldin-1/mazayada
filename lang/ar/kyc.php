@@ -21,6 +21,11 @@ return [
     'step3_title' => 'الإرسال والمراجعة',
     'step3_hint' => 'راجع بياناتك ووثائقك ثم أرسل الطلب للمراجعة من قبل الإدارة.',
 
+    // Document sub-sections (step 1 split into two cards)
+    'sec_biometric_title' => 'الصورة البيومترية',
+    'sec_id_card_title' => 'وثائق بطاقة الهوية',
+    'subsec_selfie_title' => 'السيلفي مع البطاقة',
+
     // ===== Status banners =====
     'banner_pending_text' => 'لم تكمل التحقق من هويتك بعد — أكمله للمشاركة في المزايدات.',
     'banner_cta' => 'إكمال التحقق',
@@ -47,10 +52,12 @@ return [
     'req_size' => 'الحجم الأقصى: 2 ميغابايت لكل ملف',
     'req_formats' => 'الصيغ المقبولة: JPG، PNG',
 
-    'f_first_name_fr' => 'الاسم بالفرنسية',
-    'f_last_name_fr' => 'اللقب بالفرنسية',
+    'f_first_name_fr' => 'الاسم باللاتينية',
+    'f_last_name_fr' => 'اللقب باللاتينية',
     'f_father_name' => 'اسم الأب',
     'f_mother_fullname' => 'اسم الأم الكامل',
+    'f_mother_name' => 'اسم الأم',
+    'f_mother_surname' => 'لقب الأم',
     'f_wilaya' => 'الولاية',
     'f_commune' => 'البلدية',
     'f_full_address' => 'العنوان الكامل',

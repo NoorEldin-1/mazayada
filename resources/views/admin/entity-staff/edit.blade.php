@@ -21,6 +21,11 @@
         </div>
 
         <div class="field">
+            <label>{{ __('admin.entity_staff.f_professional_id') }}</label>
+            <input type="text" class="input" value="{{ $member->user?->professional_id_no }}" style="direction:ltr" disabled>
+        </div>
+
+        <div class="field">
             <label for="role">{{ __('admin.entity_staff.f_role') }} <span class="text-danger">*</span></label>
             <select id="role" name="role" class="select" required>
                 @foreach($roles as $role)

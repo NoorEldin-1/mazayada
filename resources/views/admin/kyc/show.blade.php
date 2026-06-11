@@ -13,7 +13,7 @@
         'kyc.f_last_name_fr' => $user->last_name_fr,
         'admin.kyc.f_name_ar' => $user->fullNameAr(),
         'kyc.f_father_name' => $user->father_name,
-        'kyc.f_mother_fullname' => $user->mother_fullname,
+        'kyc.f_mother_fullname' => $user->motherFullName() ?: null,
         'admin.kyc.f_birth_date' => $user->birth_date?->format('Y-m-d'),
         'kyc.f_wilaya' => $user->commune?->wilaya?->name,
         'kyc.f_commune' => $user->commune?->name,

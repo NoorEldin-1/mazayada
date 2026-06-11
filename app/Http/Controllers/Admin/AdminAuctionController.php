@@ -9,9 +9,12 @@ use App\Models\Auction;
 use App\Models\AuditLog;
 use App\Models\Category;
 use App\Models\Entity;
+use App\Models\EntityUser;
 use App\Models\Wilaya;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class AdminAuctionController extends Controller
@@ -46,8 +49,11 @@ class AdminAuctionController extends Controller
         $categories = Category::where('is_active', true)->get();
         $wilayas = Wilaya::orderBy('code')->get();
         $entities = Entity::where('is_active', true)->get();
+        // A SUPER_ADMIN picks the entity (and the staff list is fetched live);
+        // other staff are pinned to their own entity, so we pre-render its roster.
+        $entityUsers = $this->staffForForm();
 
-        return view('admin.auctions.create', compact('categories', 'wilayas', 'entities'));
+        return view('admin.auctions.create', compact('categories', 'wilayas', 'entities', 'entityUsers'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -60,6 +66,7 @@ class AdminAuctionController extends Controller
 
         $validated = $request->validate([
             'entity_id' => [$isSuperAdmin ? 'required' : 'nullable', 'exists:entities,id'],
+            'entity_user_id' => ['nullable', 'exists:entity_users,id'],
             'category_id' => ['required', 'exists:categories,id'],
             'title_ar' => ['required', 'string', 'max:255'],
             'title_fr' => ['nullable', 'string', 'max:255'],
@@ -74,10 +81,15 @@ class AdminAuctionController extends Controller
             'start_time' => ['required', 'date', 'after:now'],
             'end_time' => ['required', 'date', 'after:start_time'],
             'wilaya_id' => ['required', 'exists:wilayas,id'],
+            // Commune must belong to the chosen wilaya; mayor name is free text.
+            'commune_id' => ['nullable', Rule::exists('communes', 'id')->where('wilaya_id', $request->wilaya_id)],
+            'mayor_name' => ['nullable', 'string', 'max:255'],
             'asset_location' => ['nullable', 'string', 'max:255'],
             // Asset photos (spec §4 step 1).
             'photos' => ['nullable', 'array', 'max:10'],
             'photos.*' => ['image', 'mimes:jpeg,png,webp', 'max:4096'],
+            // A single short asset video — MP4, max 50 MB (duration is gated client-side).
+            'video' => ['nullable', 'file', 'mimetypes:video/mp4', 'mimes:mp4', 'max:51200'],
             // Lifecycle fields (spec §2, §4).
             'asset_class' => ['nullable', 'string', 'in:MOVABLE,REAL_ESTATE,CUSTOMS'],
             'requires_commerce_register' => ['nullable', 'boolean'],
@@ -122,13 +134,21 @@ class AdminAuctionController extends Controller
             ? $validated['entity_id']
             : auth()->user()->entity_id;
 
-        // Uploaded files are handled separately (storePhotos) — never mass-assign.
-        unset($validated['photos']);
+        // A chosen staff member must belong to the auction's owning entity —
+        // never trust a client-supplied id that points at another entity.
+        $this->assertStaffBelongsToEntity($validated['entity_user_id'] ?? null, $validated['entity_id']);
+
+        // Uploaded files are handled separately (storePhotos/storeVideo) — never mass-assign.
+        unset($validated['photos'], $validated['video']);
 
         $auction = Auction::create($validated);
 
         if ($request->hasFile('photos')) {
             $auction->update(['photos' => $this->storePhotos($request, $auction)]);
+        }
+
+        if ($request->hasFile('video')) {
+            $auction->update(['video' => $this->storeVideo($request, $auction)]);
         }
 
         AuditLog::log('AUCTION_CREATED', 'Auction', $auction->id, null, null, [
@@ -146,8 +166,9 @@ class AdminAuctionController extends Controller
         $categories = Category::where('is_active', true)->get();
         $wilayas = Wilaya::orderBy('code')->get();
         $entities = Entity::where('is_active', true)->get();
+        $entityUsers = $this->staffForForm();
 
-        return view('admin.auctions.edit', compact('auction', 'categories', 'wilayas', 'entities'));
+        return view('admin.auctions.edit', compact('auction', 'categories', 'wilayas', 'entities', 'entityUsers'));
     }
 
     public function update(Request $request, Auction $auction): RedirectResponse
@@ -163,6 +184,7 @@ class AdminAuctionController extends Controller
 
         $validated = $request->validate([
             'entity_id' => ['sometimes', 'exists:entities,id'],
+            'entity_user_id' => ['nullable', 'exists:entity_users,id'],
             'category_id' => ['sometimes', 'exists:categories,id'],
             'title_ar' => ['sometimes', 'string', 'max:255'],
             'title_fr' => ['nullable', 'string', 'max:255'],
@@ -177,9 +199,12 @@ class AdminAuctionController extends Controller
             'start_time' => ['sometimes', 'date'],
             'end_time' => ['sometimes', 'date'],
             'wilaya_id' => ['sometimes', 'exists:wilayas,id'],
+            'commune_id' => ['nullable', Rule::exists('communes', 'id')->where('wilaya_id', $request->input('wilaya_id', $auction->wilaya_id))],
+            'mayor_name' => ['nullable', 'string', 'max:255'],
             'asset_location' => ['nullable', 'string', 'max:255'],
             'photos' => ['nullable', 'array', 'max:10'],
             'photos.*' => ['image', 'mimes:jpeg,png,webp', 'max:4096'],
+            'video' => ['nullable', 'file', 'mimetypes:video/mp4', 'mimes:mp4', 'max:51200'],
             'asset_class' => ['nullable', 'string', 'in:MOVABLE,REAL_ESTATE,CUSTOMS'],
             'requires_commerce_register' => ['nullable', 'boolean'],
             'inspection_start' => ['nullable', 'date'],
@@ -233,8 +258,16 @@ class AdminAuctionController extends Controller
             unset($validated['entity_id']);
         }
 
-        // Uploaded files are handled separately (storePhotos) — never mass-assign.
-        unset($validated['photos']);
+        // A chosen staff member must belong to the auction's (possibly new) entity.
+        if (array_key_exists('entity_user_id', $validated)) {
+            $this->assertStaffBelongsToEntity(
+                $validated['entity_user_id'],
+                $validated['entity_id'] ?? $auction->entity_id,
+            );
+        }
+
+        // Uploaded files are handled separately (storePhotos/storeVideo) — never mass-assign.
+        unset($validated['photos'], $validated['video']);
 
         $auction->update($validated);
 
@@ -242,6 +275,14 @@ class AdminAuctionController extends Controller
         if ($request->hasFile('photos')) {
             $existing = $auction->photos ? $auction->photos.';' : '';
             $auction->update(['photos' => $existing.$this->storePhotos($request, $auction)]);
+        }
+
+        // The asset video is a single file — a new upload replaces the old one.
+        if ($request->hasFile('video')) {
+            if ($auction->video) {
+                Storage::disk('public')->delete($auction->video);
+            }
+            $auction->update(['video' => $this->storeVideo($request, $auction)]);
         }
 
         AuditLog::log('AUCTION_UPDATED', 'Auction', $auction->id);
@@ -331,6 +372,50 @@ class AdminAuctionController extends Controller
         }
 
         return implode(';', $paths);
+    }
+
+    /**
+     * Store the single asset video on the PUBLIC disk and return its path for
+     * the auctions.video column.
+     */
+    private function storeVideo(Request $request, Auction $auction): string
+    {
+        return $request->file('video')->store('auctions/'.$auction->id.'/video', 'public');
+    }
+
+    /**
+     * Pre-rendered staff roster for the form. A SUPER_ADMIN picks the entity and
+     * the list is fetched live (admin.entities.staff), so we return an empty set;
+     * other staff are pinned to their own entity, so we hand back its roster.
+     *
+     * @return \Illuminate\Support\Collection<int, EntityUser>
+     */
+    private function staffForForm(): \Illuminate\Support\Collection
+    {
+        if (auth()->user()->hasRole(UserRole::SUPER_ADMIN->value)) {
+            return collect();
+        }
+
+        return EntityUser::where('entity_id', auth()->user()->entity_id)
+            ->where('is_active', true)
+            ->orderBy('full_name')
+            ->get();
+    }
+
+    /**
+     * Guard: a chosen entity staff member must belong to the auction's owning
+     * entity. A null staff id (the field is optional) is always allowed.
+     */
+    private function assertStaffBelongsToEntity(?string $entityUserId, ?string $entityId): void
+    {
+        if (empty($entityUserId)) {
+            return;
+        }
+
+        abort_unless(
+            EntityUser::where('id', $entityUserId)->where('entity_id', $entityId)->exists(),
+            422,
+        );
     }
 
     /**

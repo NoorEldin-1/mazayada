@@ -16,7 +16,7 @@
         'admin.users.f_phone' => $user->phone,
         'admin.kyc.f_birth_date' => $user->birth_date?->format('Y-m-d'),
         'kyc.f_father_name' => $user->father_name,
-        'kyc.f_mother_fullname' => $user->mother_fullname,
+        'kyc.f_mother_fullname' => $user->motherFullName() ?: null,
     ];
     $location = [
         'kyc.f_wilaya' => $user->commune?->wilaya?->name,
@@ -62,6 +62,9 @@
     </x-slot:header>
     <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted">
         <span>NIN: <strong class="text-ink lat" dir="ltr">{{ $user->nin }}</strong></span>
+        @if($user->professional_id_no)
+            <span>{{ __('admin.users.f_professional_id') }}: <strong class="text-ink lat" dir="ltr">{{ $user->professional_id_no }}</strong></span>
+        @endif
         <span>{{ __('admin.users.stat_participations') }}: <strong class="text-ink">{{ $user->participations_count }}</strong></span>
         <span>{{ __('admin.users.stat_bids') }}: <strong class="text-ink">{{ $user->bids_count }}</strong></span>
         <span>{{ __('admin.users.stat_won') }}: <strong class="text-ink">{{ $user->won_auctions_count }}</strong></span>

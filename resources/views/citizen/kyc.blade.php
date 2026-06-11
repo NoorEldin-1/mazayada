@@ -13,7 +13,7 @@
     $hasAllDocs = $user->hasAllKycDocuments();
     $selectedWilaya = $user->commune?->wilaya_id;
     $selectedCommune = $user->commune_id;
-    $docs = ['id-front' => __('kyc.doc_id_front'), 'id-back' => __('kyc.doc_id_back'), 'selfie-with-id' => __('kyc.doc_selfie')];
+    $cardDocs = ['id-front' => __('kyc.doc_id_front'), 'id-back' => __('kyc.doc_id_back')];
     $s1done = $hasAllDocs;
     $s2done = $isUnderReview || $isComplete;
     $s3done = $isComplete;
@@ -86,10 +86,36 @@
 </div>
 @endif
 
-{{-- Step 1: Document Upload --}}
-<x-ui.card :title="__('kyc.step1_title')" class="mb-5">
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            @foreach($docs as $type => $label)
+{{-- Step 1a: Standalone biometric photo (spec §3.2) — separate cap (120KB). --}}
+@php $bioPhotoUploaded = $bio && $bio->photo_biometric_path; @endphp
+<x-ui.card :title="__('kyc.sec_biometric_title')" class="mb-5">
+        <div style="max-width:240px">
+            <form action="{{ route('citizen.kyc.upload', 'photo-biometric') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="upbox {{ $bioPhotoUploaded ? 'done' : '' }}" @if($canSubmit) onclick="this.querySelector('input[type=file]')?.click()" style="cursor:pointer" @endif>
+                    @if($bioPhotoUploaded)
+                        <img src="{{ route('citizen.kyc.document', 'photo-biometric') }}" alt="{{ __('kyc.doc_photo_biometric') }}" style="width:100%;max-height:96px;object-fit:cover;border-radius:10px;margin-bottom:8px">
+                        <div class="t">{{ __('kyc.doc_photo_biometric') }}</div>
+                        <div class="s">{{ $canSubmit ? __('kyc.uploaded_replace') : __('kyc.uploaded') }}</div>
+                    @else
+                        <div class="ic">
+                            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                        <div class="t">{{ __('kyc.doc_photo_biometric') }}</div>
+                        <div class="s">{{ __('kyc.doc_photo_biometric_hint') }}</div>
+                    @endif
+                    @if($canSubmit)
+                        <input type="file" name="file" accept="image/jpeg,image/png" style="display:none" onchange="this.form.submit()">
+                    @endif
+                </div>
+            </form>
+        </div>
+</x-ui.card>
+
+{{-- Step 1b: ID card documents (front + back) with selfie sub-section. --}}
+<x-ui.card :title="__('kyc.sec_id_card_title')" class="mb-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            @foreach($cardDocs as $type => $label)
             @php $field = str_replace('-', '_', $type) . '_path'; $uploaded = $bio && $bio->$field; @endphp
             <div>
                 <form action="{{ route('citizen.kyc.upload', $type) }}" method="POST" enctype="multipart/form-data" id="form-{{ $type }}">
@@ -115,28 +141,31 @@
             @endforeach
         </div>
 
-        {{-- Optional standalone biometric photo (spec §3.2) — separate cap (120KB). --}}
-        @php $bioPhotoUploaded = $bio && $bio->photo_biometric_path; @endphp
-        <div style="margin-top:16px;max-width:240px">
-            <form action="{{ route('citizen.kyc.upload', 'photo-biometric') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <div class="upbox {{ $bioPhotoUploaded ? 'done' : '' }}" @if($canSubmit) onclick="this.querySelector('input[type=file]')?.click()" style="cursor:pointer" @endif>
-                    @if($bioPhotoUploaded)
-                        <img src="{{ route('citizen.kyc.document', 'photo-biometric') }}" alt="{{ __('kyc.doc_photo_biometric') }}" style="width:100%;max-height:96px;object-fit:cover;border-radius:10px;margin-bottom:8px">
-                        <div class="t">{{ __('kyc.doc_photo_biometric') }}</div>
-                        <div class="s">{{ $canSubmit ? __('kyc.uploaded_replace') : __('kyc.uploaded') }}</div>
-                    @else
-                        <div class="ic">
-                            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                        </div>
-                        <div class="t">{{ __('kyc.doc_photo_biometric') }}</div>
-                        <div class="s">{{ __('kyc.doc_photo_biometric_hint') }}</div>
-                    @endif
-                    @if($canSubmit)
-                        <input type="file" name="file" accept="image/jpeg,image/png" style="display:none" onchange="this.form.submit()">
-                    @endif
-                </div>
-            </form>
+        {{-- Sub-section: selfie with the ID card. --}}
+        @php $selfieUploaded = $bio && $bio->selfie_with_id_path; @endphp
+        <div class="border-t border-line pt-4 mt-4">
+            <h4 class="text-sm font-bold text-ink mb-3">{{ __('kyc.subsec_selfie_title') }}</h4>
+            <div style="max-width:240px">
+                <form action="{{ route('citizen.kyc.upload', 'selfie-with-id') }}" method="POST" enctype="multipart/form-data" id="form-selfie-with-id">
+                    @csrf
+                    <div class="upbox {{ $selfieUploaded ? 'done' : '' }}" @if($canSubmit) onclick="this.querySelector('input[type=file]')?.click()" style="cursor:pointer" @endif>
+                        @if($selfieUploaded)
+                            <img src="{{ route('citizen.kyc.document', 'selfie-with-id') }}" alt="{{ __('kyc.doc_selfie') }}" style="width:100%;max-height:96px;object-fit:cover;border-radius:10px;margin-bottom:8px">
+                            <div class="t">{{ __('kyc.doc_selfie') }}</div>
+                            <div class="s">{{ $canSubmit ? __('kyc.uploaded_replace') : __('kyc.uploaded') }}</div>
+                        @else
+                            <div class="ic">
+                                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                            </div>
+                            <div class="t">{{ __('kyc.doc_selfie') }}</div>
+                            <div class="s">{{ __('kyc.upload_hint') }}</div>
+                        @endif
+                        @if($canSubmit)
+                            <input type="file" name="file" accept="image/jpeg,image/png" style="display:none" onchange="this.form.submit()">
+                        @endif
+                    </div>
+                </form>
+            </div>
         </div>
 
         <div class="bg-accent-soft text-accent-2 rounded-2xl p-4 mt-4 text-sm">
@@ -165,14 +194,18 @@
                     <input class="input" name="last_name_fr" value="{{ old('last_name_fr', $user->last_name_fr) }}" dir="ltr" {{ $ro }} required>
                 </div>
             </div>
-            <div class="grid sm:grid-cols-2 gap-4 mb-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                 <div class="field">
                     <label>{{ __('kyc.f_father_name') }} <span class="req">*</span></label>
                     <input class="input" name="father_name" value="{{ old('father_name', $user->father_name) }}" {{ $ro }} required>
                 </div>
                 <div class="field">
-                    <label>{{ __('kyc.f_mother_fullname') }} <span class="req">*</span></label>
-                    <input class="input" name="mother_fullname" value="{{ old('mother_fullname', $user->mother_fullname) }}" {{ $ro }} required>
+                    <label>{{ __('kyc.f_mother_name') }} <span class="req">*</span></label>
+                    <input class="input" name="mother_name" value="{{ old('mother_name', $user->mother_name) }}" {{ $ro }} required>
+                </div>
+                <div class="field">
+                    <label>{{ __('kyc.f_mother_surname') }} <span class="req">*</span></label>
+                    <input class="input" name="mother_surname" value="{{ old('mother_surname', $user->mother_surname) }}" {{ $ro }} required>
                 </div>
             </div>
             <div class="grid sm:grid-cols-2 gap-4 mb-4">

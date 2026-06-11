@@ -21,6 +21,13 @@ return [
     'kyc_complete_button' => 'إكمال التحقق',
     'kyc_verified_text' => 'تم التحقق من هويتك بنجاح. يمكنك المشاركة في المزايدات.',
 
+    // ===== Forced verification modal (dashboard) =====
+    'verify_modal_title' => 'تنبيه: حسابك غير موثّق',
+    'verify_modal_body_pending' => 'لن تتمكن من المشاركة في أي مزايدة قبل توثيق هويتك. أكمل التحقق الآن لتفعيل حسابك.',
+    'verify_modal_body_rejected' => 'تم رفض طلب توثيق هويتك. يجب تصحيح بياناتك وإعادة الإرسال للمشاركة في المزايدات.',
+    'verify_modal_confirm' => 'توثيق الحساب',
+    'verify_modal_dismiss' => 'لاحقاً',
+
     // ===== Won auctions =====
     'won_auctions_title' => 'المزايدات التي فزت بها',
     'no_won_auctions' => 'لم تفز بأي مزايدة بعد',

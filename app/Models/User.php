@@ -23,9 +23,9 @@ class User extends Authenticatable implements HasLocalePreference
     use HasRoles, HasUuids, LogsActivity, Notifiable, TwoFactorAuthenticatable;
 
     protected $fillable = [
-        'nin', 'id_card_number', 'passport_number', 'license_number',
+        'nin', 'professional_id_no', 'id_card_number', 'passport_number', 'license_number',
         'first_name_ar', 'last_name_ar', 'first_name_fr', 'last_name_fr',
-        'father_name', 'mother_fullname', 'birth_date', 'birth_place',
+        'father_name', 'mother_name', 'mother_surname', 'birth_date', 'birth_place',
         'phone', 'email', 'address', 'commune_id', 'postal_code',
         'profession', 'nif', 'nis', 'commerce_register_no', 'rip', 'expected_income',
         'kyc_status', 'kyc_completed_at', 'kyc_submitted_at', 'kyc_rejection_reason',
@@ -70,7 +70,7 @@ class User extends Authenticatable implements HasLocalePreference
     {
         return LogOptions::defaults()
             ->logOnly([
-                'nin', 'email', 'phone', 'first_name_ar', 'last_name_ar',
+                'nin', 'professional_id_no', 'email', 'phone', 'first_name_ar', 'last_name_ar',
                 'kyc_status', 'kyc_submitted_at', 'kyc_rejection_reason',
                 'account_status', 'is_blacklisted', 'blacklist_reason',
                 'role', 'failed_login_attempts', 'locked_until',
@@ -88,6 +88,11 @@ class User extends Authenticatable implements HasLocalePreference
     public function fullNameFr(): string
     {
         return trim(($this->first_name_fr ?? '').' '.($this->last_name_fr ?? ''));
+    }
+
+    public function motherFullName(): string
+    {
+        return trim(($this->mother_name ?? '').' '.($this->mother_surname ?? ''));
     }
 
     public function commune(): BelongsTo

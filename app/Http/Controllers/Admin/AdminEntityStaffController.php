@@ -12,6 +12,8 @@ use App\Models\EntityUser;
 use App\Models\User;
 use App\Rules\AlgerianPhone;
 use App\Rules\NinValidation;
+use App\Rules\ProfessionalIdValidation;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -73,6 +75,7 @@ class AdminEntityStaffController extends Controller
         $validated = $request->validate([
             'entity_id' => [$superAdmin ? 'required' : 'nullable', 'exists:entities,id'],
             'nin' => ['required', 'string', new NinValidation, 'unique:users,nin'],
+            'professional_id_no' => ['required', 'string', new ProfessionalIdValidation, 'unique:users,professional_id_no'],
             'first_name_ar' => ['required', 'string', 'max:100'],
             'last_name_ar' => ['required', 'string', 'max:100'],
             'phone' => ['required', 'string', new AlgerianPhone, 'unique:users,phone'],
@@ -89,6 +92,7 @@ class AdminEntityStaffController extends Controller
         DB::transaction(function () use ($validated, $entityId) {
             $user = User::create([
                 'nin' => $validated['nin'],
+                'professional_id_no' => $validated['professional_id_no'],
                 'first_name_ar' => $validated['first_name_ar'],
                 'last_name_ar' => $validated['last_name_ar'],
                 'phone' => $validated['phone'],
@@ -158,6 +162,26 @@ class AdminEntityStaffController extends Controller
 
         return redirect()->route('admin.entity-staff.index')
             ->with('success', __('admin.entity_staff.flash_updated'));
+    }
+
+    /**
+     * Active staff (id + display name) for an entity — feeds the cascading
+     * "entity staff" select on the auction form. Locked down like the rest of
+     * this surface: an entity head may only read their own entity's roster.
+     */
+    public function staff(Entity $entity): JsonResponse
+    {
+        $this->authorize('entities.members.manage');
+
+        if (! $this->actorIsSuperAdmin()) {
+            abort_unless($entity->id === auth()->user()->entity_id, 403);
+        }
+
+        return response()->json(
+            $entity->entityUsers()->where('is_active', true)
+                ->orderBy('full_name')
+                ->get(['id', 'full_name', 'role'])
+        );
     }
 
     public function deactivate(EntityUser $entityStaff): RedirectResponse
