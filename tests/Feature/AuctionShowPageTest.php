@@ -48,9 +48,9 @@ class AuctionShowPageTest extends TestCase
         ]);
 
         $response = $this->get(route('auctions.show', $auction))->assertOk();
-        // Carousel scaffold + every uploaded photo URL is emitted.
+        // Carousel scaffold (Swiper hero) + every uploaded photo URL is emitted.
         $response->assertSee('data-gallery', false);
-        $response->assertSee('data-gtrack', false);
+        $response->assertSee('data-hero', false);
         $response->assertSee('/storage/auctions/x/a.jpg', false);
         $response->assertSee('/storage/auctions/x/c.jpg', false);
     }
@@ -94,6 +94,25 @@ class AuctionShowPageTest extends TestCase
         $response->assertSee('نعم، المحرك بحالة جيدة.');
         $response->assertSee('مستودع البلدية');
         $response->assertSee(route('auctions.questions', $auction), false);
+    }
+
+    public function test_expired_active_auction_closes_on_view_and_hides_bid_form(): void
+    {
+        // The clock ran out but the auctions:close cron hasn't run yet — the
+        // dead-zone that used to render a live-looking (but doomed) bid form.
+        $auction = $this->makeAuction([
+            'status' => AuctionStatus::ACTIVE,
+            'start_time' => now()->subHours(2),
+            'end_time' => now()->subMinute(),
+        ]);
+
+        $response = $this->get(route('auctions.show', $auction))->assertOk();
+
+        // Lazy close-on-view finalised the auction for this very visitor...
+        $this->assertSame(AuctionStatus::CLOSED, $auction->fresh()->status);
+        // ...so the live badge is gone and the canonical closed panel renders.
+        $response->assertSee(__('auctions.show.closed'));
+        $response->assertDontSee(__('auctions.live'));
     }
 
     public function test_closed_auction_with_winner_renders(): void

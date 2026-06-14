@@ -48,26 +48,46 @@ class AuctionService
             return;
         }
 
-        $winningBid = DB::transaction(function () use ($auction) {
-            /** @var Auction $auction */
-            $auction = Auction::lockForUpdate()->findOrFail($auction->id);
+        // Tracks whether THIS call performed the close. Concurrent callers (the
+        // cron + lazy close-on-view, or two simultaneous visitors) all pass the
+        // status check above before any acquires the lock; the re-check under
+        // the row lock ensures only the first actually closes/awards.
+        $didClose = false;
 
-            $winningBid = $this->resolveWinningBid($auction);
+        $winningBid = DB::transaction(function () use ($auction, &$didClose) {
+            /** @var Auction $locked */
+            $locked = Auction::lockForUpdate()->findOrFail($auction->id);
 
-            $auction->update([
+            // Re-check under the lock: a concurrent process may have finalised
+            // this auction already — bail without re-awarding (a null winningBid
+            // is also legitimate for a no-bid close, so we can't rely on it).
+            if (! in_array($locked->status, [AuctionStatus::ACTIVE, AuctionStatus::EXTENDED], true)) {
+                return null;
+            }
+
+            $didClose = true;
+            $winningBid = $this->resolveWinningBid($locked);
+
+            $locked->update([
                 'status' => AuctionStatus::CLOSED,
                 'winner_user_id' => $winningBid?->user_id,
-                'final_price' => $winningBid?->amount ?? $auction->opening_price,
+                'final_price' => $winningBid?->amount ?? $locked->opening_price,
                 'closed_at' => now(),
             ]);
 
-            AuditLog::log('AUCTION_CLOSED', 'auction', $auction->id, 'system', 'SYSTEM', [
+            AuditLog::log('AUCTION_CLOSED', 'auction', $locked->id, 'system', 'SYSTEM', [
                 'winner' => $winningBid?->user_id,
                 'final_price' => $winningBid?->amount,
             ]);
 
             return $winningBid;
         });
+
+        // Someone else finalised it between our status check and the lock —
+        // don't broadcast or declare the outcome twice.
+        if (! $didClose) {
+            return;
+        }
 
         $auction->refresh();
 

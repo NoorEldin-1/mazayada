@@ -6,15 +6,20 @@ use App\Models\Auction;
 use App\Models\Bid;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
 /**
  * Broadcast every time a valid bid is placed.
  * Never expose the bidder's real identity — only the deterministic alias.
+ *
+ * ShouldBroadcastNow (not the queued ShouldBroadcast): the live-bid path must
+ * reach every watcher immediately and must NOT depend on a running queue worker.
+ * The broadcast HTTP call to Reverb happens inline within the bid request
+ * (a few ms) — see BiddingService::placeBid.
  */
-class BidPlaced implements ShouldBroadcast
+class BidPlaced implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 

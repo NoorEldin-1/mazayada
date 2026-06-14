@@ -8,6 +8,7 @@ use App\Models\Auction;
 use App\Models\AuctionParticipant;
 use App\Models\InspectionQuestion;
 use App\Models\Payment;
+use App\Services\AuctionService;
 use App\Services\BiddingService;
 use App\Services\PaymentService;
 use Illuminate\Http\JsonResponse;
@@ -50,8 +51,17 @@ class AuctionController extends Controller
         return view('auctions.index', compact('auctions', 'categories', 'wilayas'));
     }
 
-    public function show(Auction $auction): View
+    public function show(Auction $auction, AuctionService $auctions): View
     {
+        // Lazy close-on-view: if the clock ran out but the auctions:close cron
+        // hasn't run yet, finalise now so this visitor sees the canonical closed
+        // panel (winner + final price) instead of a doomed-but-live bid form.
+        // close() re-checks the status under a row lock, so a concurrent cron /
+        // second visitor can't double-award. The scheduler remains the backstop.
+        if ($auction->hasEnded()) {
+            $auctions->close($auction);
+        }
+
         $auction->load(['entity', 'category', 'wilaya', 'commune']);
 
         $bids = $auction->bids()
@@ -185,6 +195,10 @@ class AuctionController extends Controller
 
     public function bid(Request $request, Auction $auction, BiddingService $bidding): RedirectResponse|JsonResponse
     {
+        // The `amount` arrives in whole dinars — the unit shown across the UI
+        // (the bid input speaks dinars like every <x-money> price). Money is
+        // stored/broadcast in centimes, so convert at this boundary only;
+        // BiddingService keeps receiving centimes.
         $request->validate([
             'amount' => ['required', 'integer', 'min:1'],
         ]);
@@ -193,7 +207,7 @@ class AuctionController extends Controller
             $bid = $bidding->placeBid(
                 $auction,
                 auth()->user(),
-                (int) $request->amount,
+                (int) $request->amount * 100,
                 $request->ip(),
                 $request->userAgent(),
             );

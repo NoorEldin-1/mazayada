@@ -23,6 +23,17 @@ return [
         'failed' => 'Échec de l’enregistrement de l’enchère, veuillez réessayer.',
     ],
 
+    // ===== Live realtime UI strings (resources/js/auction.js — spec §6) =====
+    'realtime' => [
+        'now' => 'À l’instant',
+        'extended' => 'L’enchère a été prolongée suite à une offre de dernière seconde.',
+        'closed' => 'L’enchère est terminée — actualisation de la page…',
+        'error_generic' => 'Impossible de soumettre l’offre, veuillez réessayer.',
+        // Shown the instant the countdown hits zero (before the server result).
+        'ended' => 'Enchère terminée',
+        'awaiting_result' => 'L’enchère est terminée — résultat en cours d’annonce…',
+    ],
+
     // ===== Public listing (auctions/index) =====
     'browse' => [
         'total_prefix' => 'Total',
@@ -40,6 +51,9 @@ return [
         'back' => 'Retour aux enchères',
         'gallery_prev' => 'Image précédente',
         'gallery_next' => 'Image suivante',
+        'gallery_fullscreen' => 'Afficher en plein écran',
+        'gallery_close' => 'Fermer',
+        'gallery_zoom_hint' => 'Double-cliquez ou pincez pour zoomer',
         'tab_details' => 'Détails',
         'tab_specs' => 'Caractéristiques',
         'tab_inspection' => 'Inspection & questions',
@@ -93,8 +107,12 @@ return [
         'cta_locked' => 'Votre compte est temporairement verrouillé, réessayez plus tard.',
         'cta_complete_kyc' => 'Complétez votre vérification d’identité pour participer',
         'cta_inactive' => 'Votre compte n’est pas activé pour participer pour le moment.',
-        'amount_placeholder' => 'Montant en centimes',
+        'amount_placeholder' => 'Montant de l’enchère (DA)',
+        'min_bid_hint' => 'Enchère minimale : :price',
         'place_bid' => 'Placer votre offre',
+        'bid_closed_btn' => 'Enchère terminée',
+        'ended_pending_title' => 'L’enchère est terminée',
+        'ended_pending_desc' => 'Calcul du résultat et annonce du gagnant en cours…',
         'closed' => 'Enchère clôturée',
         'winner_label' => 'Gagnant :',
         'no_winner' => 'Aucun gagnant désigné',

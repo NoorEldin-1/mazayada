@@ -1,4 +1,8 @@
 {
+  "_echo-RTthMMDF.js": {
+    "file": "assets/echo-RTthMMDF.js",
+    "name": "echo"
+  },
   "_fonts-DkuEHybc.css": {
     "file": "assets/fonts-DkuEHybc.css",
     "src": "_fonts-DkuEHybc.css"
@@ -58,7 +62,7 @@
     "isDynamicEntry": true
   },
   "resources/css/app.css": {
-    "file": "assets/app-Ca0Y9_65.css",
+    "file": "assets/app-BoaZprYj.css",
     "name": "app",
     "names": [
       "app.css"
@@ -67,7 +71,7 @@
     "isEntry": true
   },
   "resources/css/dashboard.css": {
-    "file": "assets/dashboard-Caseuk6s.css",
+    "file": "assets/dashboard-DkxzFj7g.css",
     "name": "dashboard",
     "names": [
       "dashboard.css"
@@ -76,10 +80,22 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-kST3KBkI.js",
+    "file": "assets/app-CsnK4XLB.js",
     "name": "app",
     "src": "resources/js/app.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_echo-RTthMMDF.js"
+    ]
+  },
+  "resources/js/auction.js": {
+    "file": "assets/auction-BNb_KX6x.js",
+    "name": "auction",
+    "src": "resources/js/auction.js",
+    "isEntry": true,
+    "imports": [
+      "_echo-RTthMMDF.js"
+    ]
   },
   "resources/js/dashboard.js": {
     "file": "assets/dashboard-DwI60ZHB.js",
@@ -88,6 +104,15 @@
     "isEntry": true,
     "dynamicImports": [
       "node_modules/apexcharts/dist/apexcharts.esm.js"
+    ]
+  },
+  "resources/js/gallery.js": {
+    "file": "assets/gallery-C8ToKACb.js",
+    "name": "gallery",
+    "src": "resources/js/gallery.js",
+    "isEntry": true,
+    "css": [
+      "assets/gallery-BzQOlQFh.css"
     ]
   }
 }

@@ -23,6 +23,17 @@ return [
         'failed' => 'Failed to record the bid, please try again.',
     ],
 
+    // ===== Live realtime UI strings (resources/js/auction.js — spec §6) =====
+    'realtime' => [
+        'now' => 'Just now',
+        'extended' => 'The auction was extended due to a last-second bid.',
+        'closed' => 'The auction has ended — refreshing the page…',
+        'error_generic' => 'Could not place the bid, please try again.',
+        // Shown the instant the countdown hits zero (before the server result).
+        'ended' => 'Auction ended',
+        'awaiting_result' => 'Bidding has ended — awaiting the result…',
+    ],
+
     // ===== Public listing (auctions/index) =====
     'browse' => [
         'total_prefix' => 'Total',
@@ -40,6 +51,9 @@ return [
         'back' => 'Back to auctions',
         'gallery_prev' => 'Previous image',
         'gallery_next' => 'Next image',
+        'gallery_fullscreen' => 'View fullscreen',
+        'gallery_close' => 'Close',
+        'gallery_zoom_hint' => 'Double-tap or pinch to zoom',
         'tab_details' => 'Details',
         'tab_specs' => 'Specifications',
         'tab_inspection' => 'Inspection & questions',
@@ -93,8 +107,12 @@ return [
         'cta_locked' => 'Your account is temporarily locked, please try again later.',
         'cta_complete_kyc' => 'Complete identity verification to participate',
         'cta_inactive' => 'Your account is not active for participation right now.',
-        'amount_placeholder' => 'Amount in centimes',
+        'amount_placeholder' => 'Bid amount (DZD)',
+        'min_bid_hint' => 'Minimum bid: :price',
         'place_bid' => 'Place your bid',
+        'bid_closed_btn' => 'Auction ended',
+        'ended_pending_title' => 'Bidding has ended',
+        'ended_pending_desc' => 'Calculating the result and announcing the winner…',
         'closed' => 'Auction closed',
         'winner_label' => 'Winner:',
         'no_winner' => 'No winner determined',

@@ -396,26 +396,92 @@ html[dir="rtl"] .auth-carousel-arrow svg{transform:scaleX(-1)}
 
 /* ===== Auction detail ===== */
 .ad-grid{display:grid;grid-template-columns:1fr 380px;gap:28px;align-items:flex-start}
+/* ===== Media gallery (Swiper: hero + thumbs + fullscreen zoom) ===== */
 .ad-gallery{background:var(--surface);border-radius:18px;overflow:hidden;border:1px solid var(--line);margin-bottom:24px}
-.ad-hero{aspect-ratio:16/9;background:linear-gradient(135deg,#E5F3EC,#FAEFD0);display:grid;place-items:center;color:var(--primary);position:relative}
-.ad-hero::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent 0 22px,rgba(0,0,0,.025) 22px 23px)}
-.ad-hero svg{width:90px;height:90px;opacity:.4;z-index:1;position:relative}
-.ad-thumbs{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px;background:var(--surface)}
-.ad-thumb{aspect-ratio:5/4;border-radius:9px;background:linear-gradient(135deg,#EDF2F0,#FBF5E1);display:grid;place-items:center;color:var(--muted);cursor:pointer;border:2px solid transparent}
-.ad-thumb.on{border-color:var(--primary)}
-.ad-thumb svg{width:18px;height:18px}
-.ad-thumb img{width:100%;height:100%;object-fit:cover;border-radius:7px;display:block}
 
-/* Swipeable photo carousel (auction detail hero) */
-.ad-hero{overflow:hidden}
-.ad-hero-track{position:absolute;inset:0;display:flex;transition:transform .35s ease;z-index:1;touch-action:pan-y}
-.ad-hero-slide{flex:0 0 100%;height:100%}
-.ad-hero-slide img{width:100%;height:100%;object-fit:cover;display:block}
-.ad-nav{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.92);color:var(--ink);display:grid;place-items:center;cursor:pointer;z-index:3;border:none;box-shadow:var(--shadow-soft);transition:background .15s}
-.ad-nav:hover{background:#fff}
-.ad-nav-prev{inset-inline-start:12px}
-.ad-nav-next{inset-inline-end:12px}
-.ad-hero-count{position:absolute;bottom:12px;inset-inline-end:12px;background:rgba(0,0,0,.6);color:#fff;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;z-index:3;pointer-events:none}
+/* Stage — a neutral dark canvas; media is shown whole (contain), never cropped,
+   so photos and the video behave identically with no surprise letterboxing. */
+.ad-hero{position:relative;aspect-ratio:16/9;background:#0E1413;overflow:hidden;isolation:isolate}
+/* The swiper fills the bounded stage absolutely. Higher specificity than
+   Swiper's own `.swiper{position:relative}` so it wins regardless of stylesheet
+   load order — this is what keeps the stage from ever ballooning. */
+.ad-hero .ad-hero-swiper{position:absolute;inset:0;width:100%;height:100%}
+.ad-hero .ad-hero-swiper>.swiper-wrapper{display:flex;height:100%}
+.ad-hero .ad-hero-slide{flex:0 0 100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.ad-hero-slide img,.ad-hero-slide video{width:100%;height:100%;object-fit:contain;display:block}
+.ad-hero-slide[data-type="image"]{cursor:zoom-in}
+/* Before Swiper boots (or if its stylesheet hasn't arrived yet) show only the
+   first slide — never let the un-laid-out wrapper stack every slide. */
+.ad-hero-swiper:not(.swiper-initialized) .ad-hero-slide:not(:first-child){display:none}
+
+/* Empty state — keep the soft brand wash + crosshatch when there's no media. */
+.ad-gallery--empty .ad-hero{background:linear-gradient(135deg,#E5F3EC,#FAEFD0);display:grid;place-items:center;color:var(--primary)}
+.ad-gallery--empty .ad-hero::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent 0 22px,rgba(0,0,0,.025) 22px 23px)}
+.ad-gallery--empty .ad-hero svg{width:90px;height:90px;opacity:.4;position:relative;z-index:1}
+
+/* Floating controls — strong, glassy, legible over any media (dark or bright). */
+.ad-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:5;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;cursor:pointer;border:none;color:#fff;background:rgba(15,20,19,.42);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 6px 20px rgba(0,0,0,.28);transition:background .18s,transform .18s,opacity .18s}
+.ad-nav svg{width:20px;height:20px}
+.ad-nav:hover{background:rgba(15,20,19,.66);transform:translateY(-50%) scale(1.06)}
+.ad-nav:active{transform:translateY(-50%) scale(.95)}
+.ad-nav-prev{inset-inline-start:14px}
+.ad-nav-next{inset-inline-end:14px}
+.ad-nav.swiper-button-disabled{opacity:0;pointer-events:none}
+/* Mirror the chevrons in RTL so "previous" always points the natural way. */
+[dir="rtl"] .ad-nav svg{transform:scaleX(-1)}
+
+.ad-hero-count{position:absolute;bottom:12px;inset-inline-end:14px;z-index:5;background:rgba(15,20,19,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#fff;font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;pointer-events:none;letter-spacing:.02em}
+
+.ad-expand{position:absolute;top:12px;inset-inline-end:14px;z-index:5;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;cursor:pointer;border:none;color:#fff;background:rgba(15,20,19,.42);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 6px 20px rgba(0,0,0,.28);transition:background .18s,transform .18s}
+.ad-expand svg{width:18px;height:18px}
+.ad-expand:hover{background:rgba(15,20,19,.66);transform:scale(1.06)}
+.ad-expand:active{transform:scale(.95)}
+
+/* Thumbnail strip — a single free-scrolling row (no more orphaned grid cell).
+   Rules are scoped under .ad-thumbs so they out-specify Swiper's generic
+   `.swiper-slide{width:100%;height:100%}` (which loads after this file). */
+.ad-thumbs{padding:8px;background:var(--surface);overflow:hidden}
+.ad-thumbs .swiper-wrapper{display:flex;align-items:stretch}
+.ad-thumbs .ad-thumb{flex:0 0 auto;width:88px;height:auto;aspect-ratio:5/4;border-radius:10px;overflow:hidden;position:relative;cursor:pointer;border:2px solid transparent;opacity:.55;background:var(--bg-2);transition:opacity .2s,border-color .2s}
+.ad-thumbs .ad-thumb:hover{opacity:.85}
+.ad-thumbs .ad-thumb img,.ad-thumbs .ad-thumb video{width:100%;height:100%;object-fit:cover;display:block}
+.ad-thumbs .ad-thumb.swiper-slide-thumb-active{opacity:1;border-color:var(--primary)}
+.ad-thumbs .ad-thumb.is-video::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.32);z-index:1}
+.ad-thumbs .ad-thumb.is-video .play{position:absolute;inset:0;z-index:2;display:grid;place-items:center;color:#fff}
+.ad-thumbs .ad-thumb.is-video .play svg{width:20px;height:20px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.55))}
+
+/* Fullscreen zoom lightbox (built by resources/js/gallery.js on first open). */
+.ad-lb-open{overflow:hidden}
+.ad-lightbox{position:fixed;inset:0;z-index:9999;display:flex}
+.ad-lightbox[hidden]{display:none}
+.ad-lb-backdrop{position:absolute;inset:0;background:rgba(8,10,12,.93);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.ad-lb-stage{position:relative;flex:1;min-width:0;display:flex}
+.ad-lb-swiper{position:relative;z-index:1;width:100%;height:100%}
+.ad-lightbox .ad-lb-slide{display:flex;align-items:center;justify-content:center;height:100%;padding:clamp(16px,4vw,56px)}
+.ad-lb-slide .swiper-zoom-container{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.ad-lb-slide img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;cursor:zoom-in}
+.ad-lb-slide video{max-width:100%;max-height:100%;width:auto;height:auto;display:block}
+.ad-lb-nav{background:rgba(255,255,255,.12);box-shadow:0 6px 20px rgba(0,0,0,.4)}
+.ad-lb-nav:hover{background:rgba(255,255,255,.22)}
+.ad-lb-prev{inset-inline-start:18px}
+.ad-lb-next{inset-inline-end:18px}
+.ad-lb-close{position:absolute;top:18px;inset-inline-end:18px;z-index:3;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;cursor:pointer;border:none;color:#fff;background:rgba(255,255,255,.12);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:background .18s,transform .18s}
+.ad-lb-close svg{width:22px;height:22px}
+.ad-lb-close:hover{background:rgba(255,255,255,.22);transform:scale(1.06)}
+.ad-lb-count{position:absolute;bottom:20px;inset-inline-end:22px;z-index:3;color:#fff;font-size:13px;font-weight:600;background:rgba(255,255,255,.12);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding:5px 12px;border-radius:999px;pointer-events:none}
+
+/* Gallery — phones & small tablets: taller stage, smaller controls & thumbs. */
+@media (max-width: 760px){
+  .ad-hero{aspect-ratio:4/3}
+  .ad-nav{width:40px;height:40px}
+  .ad-nav svg{width:18px;height:18px}
+  .ad-nav-prev{inset-inline-start:10px}
+  .ad-nav-next{inset-inline-end:10px}
+  .ad-thumbs .ad-thumb{width:72px}
+  .ad-lb-close{top:12px;inset-inline-end:12px}
+  .ad-lb-prev{inset-inline-start:8px}
+  .ad-lb-next{inset-inline-end:8px}
+}
 
 .tab-strip{display:flex;gap:8px;border-bottom:1px solid var(--line);margin-bottom:24px}
 .tab-strip button{padding:14px 18px;font-size:14px;font-weight:600;color:var(--muted);position:relative;cursor:pointer;border-radius:0}
@@ -443,6 +509,33 @@ html[dir="rtl"] .auth-carousel-arrow svg{transform:scaleX(-1)}
 .bid-input input::placeholder{color:rgba(255,255,255,.4)}
 .bid-cta{width:100%;background:var(--accent);color:#3a2a08;padding:14px;border-radius:12px;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px}
 .bid-cta:hover{background:#E6BB52}
+
+/* ===== Auction ending / locked / closed states (resources/js/auction.js) ===== */
+/* Last-minute urgency: the countdown turns red and pulses in the final minute. */
+.bid-panel .countdown.is-ending{border-color:rgba(217,84,78,.6);background:rgba(217,84,78,.16);animation:cd-pulse 1s ease-in-out infinite}
+.bid-panel .countdown.is-ending .cd-v{color:#FCD9D6}
+@keyframes cd-pulse{0%,100%{box-shadow:0 0 0 0 rgba(217,84,78,0)}50%{box-shadow:0 0 0 4px rgba(217,84,78,.22)}}
+/* Disabled bidding controls (clock hit zero / closed). */
+.bid-cta:disabled,.bid-cta.is-locked{background:rgba(255,255,255,.14);color:rgba(255,255,255,.5);cursor:not-allowed;pointer-events:none}
+.bid-quick button:disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
+.bid-input input:disabled{opacity:.5;cursor:not-allowed}
+.bid-panel.is-ended .bid-quick,.bid-panel.is-ended .bid-input,.bid-panel.is-ended #bidMinHint{opacity:.45;filter:grayscale(.4);pointer-events:none}
+/* "Ended — awaiting result" notice + server-rendered fallback panel. */
+.bid-ended{display:flex;align-items:center;gap:10px;margin-top:14px;padding:14px 16px;background:rgba(212,168,67,.15);border:1px solid rgba(212,168,67,.35);border-radius:12px;font-size:13px;font-weight:600;color:var(--accent)}
+/* The author `display:flex` above beats the `hidden` attribute's UA display:none,
+   so the JS-toggled #bidEndedNotice (class="bid-ended" hidden) would otherwise show
+   on every live auction. Restore `hidden` — mirrors .ad-lightbox[hidden] (line ~456). */
+.bid-ended[hidden]{display:none}
+.bid-ended--panel{align-items:flex-start}
+.bid-ended-t{font-size:14px;font-weight:700;color:#fff;margin-bottom:2px}
+.bid-ended-s{font-size:12px;font-weight:500;color:rgba(255,255,255,.7)}
+.bid-ended .spin,.bid-closed-result .spin{flex-shrink:0;width:16px;height:16px;border-radius:50%;border:2px solid rgba(212,168,67,.3);border-top-color:var(--accent);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Inline closed result (winner + final price, injected from the broadcast). */
+.bid-closed-result{margin-top:16px;padding:16px;background:rgba(212,168,67,.15);border:1px solid rgba(212,168,67,.3);border-radius:12px;text-align:center}
+.bid-closed-result .bcr-t{font-size:12px;opacity:.8;margin-bottom:6px;color:#fff}
+.bid-closed-result .bcr-w{font-size:14px;font-weight:600;color:var(--accent)}
+.bid-closed-result .bcr-p{font-family:"Inter";font-size:20px;font-weight:700;color:var(--accent);margin-top:4px}
 
 .facts{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border-radius:14px;overflow:hidden}
 .facts > div{background:var(--surface);padding:14px 16px}
@@ -849,14 +942,6 @@ html[dir="rtl"] .legal-related-card .arr{transform:scaleX(-1)}
 .auc-foot .bids{display:inline-flex;flex-direction:column;align-items:center;gap:1px;background:var(--accent-soft);color:var(--accent-2);padding:6px 13px;border-radius:11px;text-align:center}
 .auc-foot .bids .n{font-size:16px;line-height:1.1}
 .auc-foot .bids .w{font-size:10px;font-weight:600;opacity:.85}
-
-/* --- Media gallery: video slide + thumbnail play badge --- */
-.ad-hero-slide video{width:100%;height:100%;object-fit:contain;background:#0b0b0b;display:block}
-.ad-thumb{position:relative}
-.ad-thumb video{width:100%;height:100%;object-fit:cover;border-radius:7px;display:block}
-.ad-thumb.is-video::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.32);border-radius:inherit;z-index:1}
-.ad-thumb.is-video .play{position:absolute;inset:0;z-index:2;display:grid;place-items:center;color:#fff}
-.ad-thumb.is-video .play svg{width:22px;height:22px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.55))}
 
 /* --- Specifications: grouped sections --- */
 .spec-group{margin-bottom:20px}

@@ -23,6 +23,17 @@ return [
         'failed' => 'فشل في تسجيل المزايدة، حاول مرة أخرى.',
     ],
 
+    // ===== Live realtime UI strings (resources/js/auction.js — spec §6) =====
+    'realtime' => [
+        'now' => 'الآن',
+        'extended' => 'تم تمديد المزايدة بسبب عرض في الثواني الأخيرة.',
+        'closed' => 'انتهت المزايدة — جارٍ تحديث الصفحة…',
+        'error_generic' => 'تعذّر تقديم العرض، حاول مرة أخرى.',
+        // Shown the instant the countdown hits zero (before the server result).
+        'ended' => 'انتهت المزايدة',
+        'awaiting_result' => 'انتهت مدة المزايدة — في انتظار إعلان النتيجة…',
+    ],
+
     // ===== Public listing (auctions/index) =====
     'browse' => [
         'total_prefix' => 'إجمالي',
@@ -40,6 +51,9 @@ return [
         'back' => 'العودة إلى المزايدات',
         'gallery_prev' => 'الصورة السابقة',
         'gallery_next' => 'الصورة التالية',
+        'gallery_fullscreen' => 'عرض بملء الشاشة',
+        'gallery_close' => 'إغلاق',
+        'gallery_zoom_hint' => 'انقر نقرًا مزدوجًا أو قرّب بإصبعيك للتكبير',
         'tab_details' => 'التفاصيل',
         'tab_specs' => 'المواصفات',
         'tab_inspection' => 'المعاينة والأسئلة',
@@ -93,8 +107,12 @@ return [
         'cta_locked' => 'حسابك مقفل مؤقتاً، يرجى المحاولة لاحقاً.',
         'cta_complete_kyc' => 'أكمل التحقق من الهوية للمشاركة',
         'cta_inactive' => 'حسابك غير مفعّل للمشاركة حالياً.',
-        'amount_placeholder' => 'المبلغ بالسنتيم',
+        'amount_placeholder' => 'مبلغ العرض (دج)',
+        'min_bid_hint' => 'الحد الأدنى للمزايدة: :price',
         'place_bid' => 'قدّم عرضك',
+        'bid_closed_btn' => 'انتهت المزايدة',
+        'ended_pending_title' => 'انتهت مدة المزايدة',
+        'ended_pending_desc' => 'جارٍ احتساب النتيجة وإعلان الفائز…',
         'closed' => 'المزايدة مغلقة',
         'winner_label' => 'الفائز:',
         'no_winner' => 'لم يتم تحديد فائز',

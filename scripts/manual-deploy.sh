@@ -122,6 +122,25 @@ deploy() {
   echo "🔁 [8/8] Restarting queue workers..."
   php artisan queue:restart || true
 
+  # ── Reverb (WebSockets) — spec §6 live auctions ───────────
+  #   Reverb relays broadcasts to browsers; the live-auction page and the
+  #   BidPlaced / AuctionExtended / AuctionClosed events depend on it running.
+  #   Reverb does NOT execute app event code (the PHP-FPM request posts the
+  #   broadcast to it), so changing event classes needs no Reverb restart — but
+  #   we (re)start it here so every deploy ends with a running daemon. Preferred
+  #   setup is a supervised systemd unit (see the reference block at the bottom).
+  echo "📡 [Reverb] Ensuring the WebSocket server is running..."
+  if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files 2>/dev/null | grep -q '^mazayada-reverb\.service'; then
+    if sudo -n systemctl restart mazayada-reverb 2>/dev/null; then
+      echo "   restarted mazayada-reverb.service"
+    else
+      echo "   ⚠️  could not restart mazayada-reverb via passwordless sudo — restart it manually."
+    fi
+  else
+    echo "   ℹ️  mazayada-reverb.service not installed — see the reference at the bottom"
+    echo "      of this script to set up the systemd unit (one-time, recommended)."
+  fi
+
   echo ""
   echo "✅ Deploy complete — $(php artisan --version)"
 }
@@ -132,10 +151,38 @@ deploy "$@"
 #  REFERENCE — run these MANUALLY only when relevant
 #  (NOT part of a routine deploy):
 #
-#  • Reverb (WebSockets) — if you run it as a daemon and changed
-#    broadcasting/event code, restart it:
+#  • Reverb (WebSockets) — spec §6 live auctions. Step [Reverb] above
+#    restarts it automatically IF the systemd unit below exists and the
+#    site user has passwordless sudo for it. ONE-TIME setup (as root):
+#
+#       cat >/etc/systemd/system/mazayada-reverb.service <<'UNIT'
+#       [Unit]
+#       Description=Mazayada Reverb WebSocket Server
+#       After=network.target
+#       [Service]
+#       User=mazayada.findosystem.com
+#       WorkingDirectory=/home/mazayada.findosystem.com/laravel
+#       ExecStart=/usr/bin/php artisan reverb:start --host=127.0.0.1 --port=8080
+#       Restart=always
+#       RestartSec=3
+#       [Install]
+#       WantedBy=multi-user.target
+#       UNIT
+#       systemctl daemon-reload && systemctl enable --now mazayada-reverb
+#
+#    Allow the deploy step to restart it without a password (visudo):
+#       mazayada.findosystem.com ALL=(root) NOPASSWD: /usr/bin/systemctl restart mazayada-reverb
+#
+#    Reverb listens on 127.0.0.1:8080 (internal only). The browser reaches it
+#    over wss://mazayada.findosystem.com/app/... via the OpenLiteSpeed Web
+#    Socket Proxy (CyberPanel → Websites → vHost Conf): proxy URI /app to
+#    127.0.0.1:8080. Set the production .env to REVERB_HOST=mazayada.findosystem.com,
+#    REVERB_SCHEME=https, REVERB_PORT=443 (the committed JS reads these from the
+#    server, not from build-time env). No new firewall port — all over 443.
+#
+#    Fallback without systemd (foreground daemon as the site user):
 #       pkill -f 'reverb:start' || true
-#       nohup php artisan reverb:start > storage/logs/reverb.log 2>&1 &
+#       nohup php artisan reverb:start --host=127.0.0.1 --port=8080 > storage/logs/reverb.log 2>&1 &
 #
 #  • SCHEDULER (cron) — the daily KYC auto-suspension
 #    (`kyc:suspend-stale`), the per-minute auction commands

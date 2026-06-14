@@ -190,6 +190,26 @@ class Auction extends Model
         return in_array($this->status, [AuctionStatus::ACTIVE, AuctionStatus::EXTENDED]);
     }
 
+    /**
+     * Live AND still inside the bidding window. The bid form is gated on this —
+     * not isLive() — so the gap between end_time passing and the auctions:close
+     * cron run never renders an actionable (but doomed) bid form.
+     */
+    public function isBiddable(): bool
+    {
+        return $this->isLive() && $this->end_time !== null && $this->end_time->isFuture();
+    }
+
+    /**
+     * The clock ran out but the auction is not yet CLOSED (the close cron /
+     * lazy close-on-view hasn't finalised the winner). A transient state the
+     * UI renders as "ended — awaiting result".
+     */
+    public function hasEnded(): bool
+    {
+        return $this->isLive() && $this->end_time !== null && ! $this->end_time->isFuture();
+    }
+
     public function photosArray(): array
     {
         return $this->photos ? array_filter(explode(';', $this->photos)) : [];

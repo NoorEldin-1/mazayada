@@ -18,6 +18,7 @@
     },
     "dependencies": {
         "apexcharts": "^5.14.0",
-        "preline": "^4.2.0"
+        "preline": "^4.2.0",
+        "swiper": "^12.2.0"
     }
 }

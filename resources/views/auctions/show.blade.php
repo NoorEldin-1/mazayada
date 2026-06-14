@@ -44,55 +44,64 @@
                 $mediaCount = count($media);
             @endphp
             @if($mediaCount)
-                <div class="ad-gallery" data-gallery>
+                <div class="ad-gallery"
+                     data-gallery
+                     dir="{{ locale_dir() }}"
+                     data-a11y-prev="{{ __('auctions.show.gallery_prev') }}"
+                     data-a11y-next="{{ __('auctions.show.gallery_next') }}"
+                     data-a11y-close="{{ __('auctions.show.gallery_close') }}"
+                     data-a11y-zoom="{{ __('auctions.show.gallery_zoom_hint') }}">
                     <div class="ad-hero">
-                        <div class="ad-hero-track" data-gtrack>
-                            @foreach($media as $m)
-                                <div class="ad-hero-slide">
-                                    @if($m['type'] === 'video')
-                                        <video controls preload="metadata" playsinline src="{{ $m['url'] }}"></video>
-                                    @else
-                                        <img src="{{ $m['url'] }}" alt="{{ $auction->title_ar }}">
-                                    @endif
-                                </div>
-                            @endforeach
+                        <div class="swiper ad-hero-swiper" data-hero>
+                            <div class="swiper-wrapper">
+                                @foreach($media as $m)
+                                    <div class="swiper-slide ad-hero-slide" data-type="{{ $m['type'] }}">
+                                        @if($m['type'] === 'video')
+                                            <video controls preload="metadata" playsinline src="{{ $m['url'] }}"></video>
+                                        @else
+                                            <img src="{{ $m['url'] }}" alt="{{ $auction->title_ar }}" loading="lazy">
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
+
                         @if($mediaCount > 1)
-                            <button type="button" class="ad-nav ad-nav-prev" data-gprev aria-label="{{ __('auctions.show.gallery_prev') }}">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                            <button type="button" class="ad-nav ad-nav-prev" data-prev aria-label="{{ __('auctions.show.gallery_prev') }}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                             </button>
-                            <button type="button" class="ad-nav ad-nav-next" data-gnext aria-label="{{ __('auctions.show.gallery_next') }}">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                            <button type="button" class="ad-nav ad-nav-next" data-next aria-label="{{ __('auctions.show.gallery_next') }}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                             </button>
                             <span class="ad-hero-count num" data-gcount>1 / {{ $mediaCount }}</span>
                         @endif
+
+                        <button type="button" class="ad-expand" data-expand aria-label="{{ __('auctions.show.gallery_fullscreen') }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+                        </button>
                     </div>
+
                     @if($mediaCount > 1)
-                        <div class="ad-thumbs">
-                            @foreach($media as $i => $m)
-                                <div class="ad-thumb {{ $i === 0 ? 'on' : '' }} {{ $m['type'] === 'video' ? 'is-video' : '' }}" data-gthumb="{{ $i }}">
-                                    @if($m['type'] === 'video')
-                                        <video src="{{ $m['url'] }}#t=0.1" muted preload="metadata"></video>
-                                        <span class="play" aria-label="{{ __('auctions.show.media_video') }}"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
-                                    @else
-                                        <img src="{{ $m['url'] }}" alt="" loading="lazy">
-                                    @endif
-                                </div>
-                            @endforeach
+                        <div class="swiper ad-thumbs" data-thumbs>
+                            <div class="swiper-wrapper">
+                                @foreach($media as $i => $m)
+                                    <div class="swiper-slide ad-thumb {{ $m['type'] === 'video' ? 'is-video' : '' }}">
+                                        @if($m['type'] === 'video')
+                                            <video src="{{ $m['url'] }}#t=0.1" muted preload="metadata"></video>
+                                            <span class="play" aria-label="{{ __('auctions.show.media_video') }}"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
+                                        @else
+                                            <img src="{{ $m['url'] }}" alt="" loading="lazy">
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
                     @endif
                 </div>
             @else
-                <div class="ad-gallery">
+                <div class="ad-gallery ad-gallery--empty">
                     <div class="ad-hero">
                         <svg width="90" height="90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5l6 6M3 21l1.5-4.5L17 4a1.41 1.41 0 0 1 2 2L6.5 18.5 3 21z"/><path d="M15 6l3 3"/></svg>
-                    </div>
-                    <div class="ad-thumbs">
-                        @for($i = 0; $i < 5; $i++)
-                            <div class="ad-thumb {{ $i === 0 ? 'on' : '' }}">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                            </div>
-                        @endfor
                     </div>
                 </div>
             @endif
@@ -392,8 +401,8 @@
         {{-- Right Column (Sidebar) --}}
         <div class="ad-side">
             {{-- Bid Panel --}}
-            <div class="bid-panel">
-                @if($auction->isLive())
+            <div class="bid-panel" id="bidPanel">
+                @if($auction->isBiddable())
                     <div class="live">
                         <span class="d"></span>
                         {{ __('auctions.live') }}
@@ -401,12 +410,12 @@
                 @endif
 
                 <div class="cur-l">{{ __('auctions.current_price') }}</div>
-                <div class="cur-v"><x-money :centimes="$auction->currentPrice()" /></div>
-                <div class="cur-s"><span class="num">{{ $auction->bidCount() }}</span> {{ __('auctions.show.bids_so_far') }}</div>
+                <div class="cur-v" id="liveCurrentPrice"><x-money :centimes="$auction->currentPrice()" /></div>
+                <div class="cur-s"><span class="num" id="liveBidCount">{{ $auction->bidCount() }}</span> {{ __('auctions.show.bids_so_far') }}</div>
 
                 {{-- Countdown --}}
-                @if($auction->isLive() && $auction->end_time)
-                    <div class="countdown" data-end="{{ $auction->end_time->toIso8601String() }}">
+                @if($auction->isBiddable())
+                    <div class="countdown" id="bidCountdown" data-end="{{ $auction->end_time->toIso8601String() }}">
                         <div class="cd-i">
                             <div class="cd-v num" id="cd-h">00</div>
                             <div class="cd-l">{{ __('auctions.show.cd_hours') }}</div>
@@ -422,7 +431,7 @@
                     </div>
                 @endif
 
-                @if($auction->isLive())
+                @if($auction->isBiddable())
                     @guest
                         {{-- Not Logged In --}}
                         <a href="{{ route('login') }}" class="bid-cta" style="margin-top:14px;text-decoration:none">
@@ -482,30 +491,57 @@
                                 </button>
                             </form>
                         @else
-                            {{-- Registered Participant: Can Bid --}}
-                            <form method="POST" action="{{ route('auctions.bid', $auction) }}" style="margin-top:14px">
+                            {{-- Registered Participant: Can Bid — submitted over AJAX
+                                 by resources/js/auction.js; falls back to a normal
+                                 POST if JS is unavailable. --}}
+                            {{-- The bid amount is entered in DINARS (the unit shown everywhere on
+                                 this page). The min-next-bid below mirrors the live current price;
+                                 the controller converts dinars→centimes on submit. --}}
+                            @php $minNextDinars = intdiv($auction->currentPrice(), 100) + 1; @endphp
+                            <form method="POST" action="{{ route('auctions.bid', $auction) }}" id="bidForm" style="margin-top:14px">
                                 @csrf
                                 <div class="bid-quick">
-                                    <button type="button" onclick="addBid(100000)">
-                                        <span class="num">+1,000</span> {{ __('common.currency') }}
+                                    <button type="button" data-quickbid="1000">
+                                        <span class="num">+1 000</span> {{ __('common.currency') }}
                                     </button>
-                                    <button type="button" onclick="addBid(500000)">
-                                        <span class="num">+5,000</span> {{ __('common.currency') }}
+                                    <button type="button" data-quickbid="5000">
+                                        <span class="num">+5 000</span> {{ __('common.currency') }}
                                     </button>
-                                    <button type="button" onclick="addBid(1000000)">
-                                        <span class="num">+10,000</span> {{ __('common.currency') }}
+                                    <button type="button" data-quickbid="10000">
+                                        <span class="num">+10 000</span> {{ __('common.currency') }}
                                     </button>
                                 </div>
                                 <div class="bid-input">
-                                    <input type="number" name="amount" id="bidAmount" placeholder="{{ __('auctions.show.amount_placeholder') }}" min="{{ $auction->currentPrice() + 1 }}" required>
+                                    <input type="text" inputmode="numeric" autocomplete="off" name="amount" id="bidAmount" placeholder="{{ __('auctions.show.amount_placeholder') }}" data-current="{{ $auction->currentPrice() }}" aria-describedby="bidMinHint" required>
                                 </div>
-                                <button type="submit" class="bid-cta">
+                                <div id="bidMinHint" class="num" style="margin:8px 0 0;font-size:12px;color:rgba(255,255,255,.7)">{{ __('auctions.show.min_bid_hint', ['price' => number_format($minNextDinars, 0, ',', ' ') . ' ' . __('common.currency')]) }}</div>
+                                <div id="bidError" style="display:none;margin:8px 0 0;font-size:12px;font-weight:600;color:#FCD9D6;background:rgba(217,84,78,.18);border:1px solid rgba(217,84,78,.45);border-radius:10px;padding:8px 12px"></div>
+                                <button type="submit" id="bidSubmit" class="bid-cta">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5l6 6M3 21l1.5-4.5L17 4a1.41 1.41 0 0 1 2 2L6.5 18.5 3 21z"/></svg>
                                     {{ __('auctions.show.place_bid') }}
                                 </button>
                             </form>
                         @endif
                     @endguest
+
+                    {{-- Revealed by resources/js/auction.js the instant the
+                         countdown hits zero — the panel locks client-side at once,
+                         without waiting for the server close broadcast. --}}
+                    <div id="bidEndedNotice" class="bid-ended" hidden>
+                        <span class="spin" aria-hidden="true"></span>
+                        <span id="bidEndedText">{{ __('auctions.realtime.awaiting_result') }}</span>
+                    </div>
+                @elseif($auction->hasEnded())
+                    {{-- Clock ran out, result being finalised. Lazy close-on-view
+                         (AuctionController::show) usually closes before this renders;
+                         this is the no-JS / brief-gap fallback. --}}
+                    <div class="bid-ended bid-ended--panel" style="margin-top:14px">
+                        <span class="spin" aria-hidden="true"></span>
+                        <div>
+                            <div class="bid-ended-t">{{ __('auctions.show.ended_pending_title') }}</div>
+                            <div class="bid-ended-s">{{ __('auctions.show.ended_pending_desc') }}</div>
+                        </div>
+                    </div>
                 @elseif($auction->status === \App\Enums\AuctionStatus::CLOSED)
                     {{-- Auction Closed --}}
                     <div style="margin-top:18px;padding:16px;background:rgba(212,168,67,.15);border-radius:12px;border:1px solid rgba(212,168,67,.3);text-align:center">
@@ -565,24 +601,23 @@
                 <div class="card-h">
                     <h3>{{ __('auctions.show.recent_bids') }}</h3>
                 </div>
-                @if($bids->count())
-                    <div style="padding:8px 0">
-                        @foreach($bids->take(10) as $bid)
-                            <div style="display:flex;align-items:center;gap:10px;padding:10px 20px;{{ !$loop->last ? 'border-bottom:1px solid var(--line)' : '' }}">
-                                <div style="width:32px;height:32px;border-radius:9px;background:var(--bg-2);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--primary);flex-shrink:0" class="num">
-                                    {{ substr($bid->user_id, 0, 2) }}
-                                </div>
-                                <div style="flex:1;min-width:0">
-                                    <div style="font-size:13px;font-weight:600">{{ $bid->bidderAlias() }}</div>
-                                    <div style="font-size:11px;color:var(--muted)">{{ $bid->bid_time->diffForHumans() }}</div>
-                                </div>
-                                <div style="font-weight:700;font-size:14px;color:var(--primary)"><x-money :centimes="$bid->amount" /></div>
+                {{-- New bids are prepended live (no reload) by resources/js/auction.js. --}}
+                <div id="liveBidList" style="padding:8px 0">
+                    @forelse($bids->take(10) as $bid)
+                        <div style="display:flex;align-items:center;gap:10px;padding:10px 20px;border-bottom:1px solid var(--line)">
+                            <div style="width:32px;height:32px;border-radius:9px;background:var(--bg-2);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--primary);flex-shrink:0" class="num">
+                                {{ mb_substr($bid->bidderAlias(), 0, 2) }}
                             </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="card-pad" style="text-align:center;color:var(--muted);font-size:13px">{{ __('auctions.show.no_bids_side') }}</div>
-                @endif
+                            <div style="flex:1;min-width:0">
+                                <div style="font-size:13px;font-weight:600">{{ $bid->bidderAlias() }}</div>
+                                <div style="font-size:11px;color:var(--muted)">{{ $bid->bid_time->diffForHumans() }}</div>
+                            </div>
+                            <div style="font-weight:700;font-size:14px;color:var(--primary)"><x-money :centimes="$bid->amount" /></div>
+                        </div>
+                    @empty
+                        <div id="liveBidEmpty" class="card-pad" style="text-align:center;color:var(--muted);font-size:13px">{{ __('auctions.show.no_bids_side') }}</div>
+                    @endforelse
+                </div>
             </div>
         </div>
     </div>
@@ -600,91 +635,47 @@ document.querySelectorAll('#tabStrip button').forEach(btn => {
         document.getElementById('tab-' + this.dataset.tab).style.display = '';
     });
 });
-
-// Quick bid buttons
-function addBid(amount) {
-    document.getElementById('bidAmount').value = {{ $auction->currentPrice() }} + amount;
-}
-
-// Photo gallery — swipeable carousel (hero track + thumbnail sync), RTL-aware
-(function () {
-    const root = document.querySelector('[data-gallery]');
-    if (!root) return;
-    const track = root.querySelector('[data-gtrack]');
-    if (!track) return;
-    const slides = track.children;
-    const count = slides.length;
-    if (count <= 1) return;
-
-    const thumbs = root.querySelectorAll('[data-gthumb]');
-    const counter = root.querySelector('[data-gcount]');
-    const prevBtn = root.querySelector('[data-gprev]');
-    const nextBtn = root.querySelector('[data-gnext]');
-    let index = 0;
-
-    function isRtl() { return getComputedStyle(track).direction === 'rtl'; }
-
-    function render() {
-        const pct = index * 100;
-        // RTL lays slides out right-to-left, so the shift sign flips.
-        track.style.transform = 'translateX(' + (isRtl() ? pct : -pct) + '%)';
-        for (let i = 0; i < thumbs.length; i++) {
-            thumbs[i].classList.toggle('on', i === index);
-        }
-        // Pause any video on a slide we're leaving so its audio stops.
-        for (let i = 0; i < slides.length; i++) {
-            const v = slides[i].querySelector('video');
-            if (v && i !== index) v.pause();
-        }
-        if (counter) counter.textContent = (index + 1) + ' / ' + count;
-    }
-
-    function go(i) { index = (i % count + count) % count; render(); }
-
-    if (nextBtn) nextBtn.addEventListener('click', () => go(index + 1));
-    if (prevBtn) prevBtn.addEventListener('click', () => go(index - 1));
-    for (let t = 0; t < thumbs.length; t++) {
-        thumbs[t].addEventListener('click', function () {
-            go(parseInt(this.getAttribute('data-gthumb'), 10) || 0);
-        });
-    }
-
-    // Touch / pointer swipe on the hero.
-    let startX = null;
-    track.addEventListener('pointerdown', (e) => { startX = e.clientX; });
-    track.addEventListener('pointerup', (e) => {
-        if (startX === null) return;
-        const dx = e.clientX - startX;
-        startX = null;
-        if (Math.abs(dx) > 40) {
-            let forward = dx < 0;       // swipe toward inline-start = next (LTR)
-            if (isRtl()) forward = !forward;
-            go(forward ? index + 1 : index - 1);
-        }
-    });
-    track.addEventListener('pointercancel', () => { startX = null; });
-
-    render();
-})();
-
-// Countdown timer
-(function() {
-    const el = document.querySelector('.countdown');
-    if (!el) return;
-    const end = new Date(el.dataset.end).getTime();
-    function tick() {
-        const now = Date.now();
-        let diff = Math.max(0, Math.floor((end - now) / 1000));
-        const h = Math.floor(diff / 3600); diff %= 3600;
-        const m = Math.floor(diff / 60);
-        const s = diff % 60;
-        document.getElementById('cd-h').textContent = String(h).padStart(2, '0');
-        document.getElementById('cd-m').textContent = String(m).padStart(2, '0');
-        document.getElementById('cd-s').textContent = String(s).padStart(2, '0');
-        if (end - now > 0) requestAnimationFrame(tick);
-    }
-    tick();
-    setInterval(tick, 1000);
-})();
 </script>
+
+{{-- Live auction realtime (spec §6): Echo subscription + AJAX bidding + countdown.
+     The WS config is injected server-side so the committed Vite bundle is
+     environment-independent (works ws/localhost locally, wss/domain in prod). --}}
+@include('partials.ws-config')
+@php
+    // NOTE: build the config array in a @php block, not @json([...]) — Blade's
+    // directive paren-balancer mis-parses a multiline @json array with nested
+    // route()/config()/__() calls and emits broken PHP (project gotcha).
+    $auctionRealtimeConfig = [
+        'auctionId' => $auction->id,
+        'currentPrice' => $auction->currentPrice(),
+        'endTime' => $auction->isLive() ? $auction->end_time?->toIso8601String() : null,
+        'bidUrl' => route('auctions.bid', $auction),
+        'currency' => __('common.currency'),
+        'i18n' => [
+            'now' => __('auctions.realtime.now'),
+            'extended' => __('auctions.realtime.extended'),
+            'closed' => __('auctions.realtime.closed'),
+            'rate_limited' => __('auctions.bid.rate_limited', ['max' => config('mazayada.bidding.max_per_minute', 10)]),
+            'too_low' => __('auctions.bid.too_low'),
+            'invalid_amount' => __('auctions.bid.invalid_amount'),
+            'error_generic' => __('auctions.realtime.error_generic'),
+            // Template: keep a literal {price} token for the JS to substitute live.
+            'min_bid' => __('auctions.show.min_bid_hint', ['price' => '{price}']),
+            // Auction-ended / closed UI (client-side lock + inline result).
+            'ended' => __('auctions.realtime.ended'),
+            'awaiting_result' => __('auctions.realtime.awaiting_result'),
+            'bid_closed_btn' => __('auctions.show.bid_closed_btn'),
+            'closed_title' => __('auctions.show.closed'),
+            'winner_label' => __('auctions.show.winner_label'),
+            'no_winner' => __('auctions.show.no_winner'),
+        ],
+    ];
+@endphp
+<script type="application/json" id="auction-realtime-config">
+{!! json_encode($auctionRealtimeConfig, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!}
+</script>
+{{-- Both page bundles in ONE @vite call: realtime/bidding + the media gallery
+     (Swiper). A single call emits one Vite client in dev (two separate calls
+     would inject @vite/client twice and break module loading). --}}
+@vite(['resources/js/auction.js', 'resources/js/gallery.js'])
 @endpush

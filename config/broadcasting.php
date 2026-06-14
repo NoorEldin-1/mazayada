@@ -35,11 +35,26 @@ return [
             'key' => env('REVERB_APP_KEY'),
             'secret' => env('REVERB_APP_SECRET'),
             'app_id' => env('REVERB_APP_ID'),
+            // SERVER → Reverb (publishing broadcasts). In production this points
+            // at the INTERNAL Reverb (127.0.0.1:8080) so a bid publishes directly
+            // without a public TLS loopback or proxying the HTTP /apps endpoint.
             'options' => [
                 'host' => env('REVERB_HOST'),
                 'port' => env('REVERB_PORT', 443),
                 'scheme' => env('REVERB_SCHEME', 'https'),
                 'useTLS' => env('REVERB_SCHEME', 'https') === 'https',
+            ],
+            // BROWSER → Reverb (subscribing). Injected to the client by
+            // resources/views/partials/ws-config.blade.php. Decoupled from
+            // `options` so the browser can use the PUBLIC wss://<domain>:443
+            // (via the OpenLiteSpeed Web Socket proxy) while the server publishes
+            // internally. Falls back to the server options for local dev (single
+            // host), so nothing changes locally.
+            'client' => [
+                'key'    => env('REVERB_APP_KEY'),
+                'host'   => env('REVERB_CLIENT_HOST', env('REVERB_HOST')),
+                'port'   => (int) env('REVERB_CLIENT_PORT', env('REVERB_PORT', 443)),
+                'scheme' => env('REVERB_CLIENT_SCHEME', env('REVERB_SCHEME', 'https')),
             ],
             'client_options' => [
                 // Guzzle client options: https://docs.guzzlephp.org/en/stable/request-options.html
