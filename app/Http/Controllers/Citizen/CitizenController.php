@@ -36,9 +36,11 @@ class CitizenController extends Controller
             ->limit(5)
             ->get();
 
+        // Compact summary for the dashboard panel; the full list lives on the
+        // notifications page.
         $recentNotifications = $user->userNotifications()
             ->latest('created_at')
-            ->limit(10)
+            ->limit(5)
             ->get();
 
         return view('citizen.dashboard', compact(
@@ -47,13 +49,18 @@ class CitizenController extends Controller
         ));
     }
 
-    public function myAuctions(): View
+    public function myAuctions(Request $request): View
     {
         $user = auth()->user();
 
-        $participations = $user->participations()->with(['auction.category', 'auction.wilaya'])->get();
+        // Drop rows whose auction is gone so the grouping closures below can
+        // safely dereference $p->auction.
+        $participations = $user->participations()
+            ->with(['auction.category', 'auction.wilaya'])
+            ->get()
+            ->filter(fn ($p) => $p->auction !== null);
 
-        $grouped = [
+        $groups = [
             'active' => $participations->filter(fn ($p) => $p->auction->isLive()),
             'won' => $participations->filter(fn ($p) => $p->auction->winner_user_id === $user->id),
             'lost' => $participations->filter(
@@ -63,7 +70,17 @@ class CitizenController extends Controller
             'upcoming' => $participations->filter(fn ($p) => $p->auction->status === AuctionStatus::PUBLISHED),
         ];
 
-        return view('citizen.my-auctions', compact('grouped'));
+        // Only honour a tab the page actually renders; anything else falls back.
+        $tab = in_array($request->query('tab'), array_keys($groups), true)
+            ? $request->query('tab')
+            : 'active';
+
+        $counts = array_map(fn ($group) => $group->count(), $groups);
+
+        // The view renders Auction cards — hand it auctions, not participation rows.
+        $auctions = $groups[$tab]->map(fn ($p) => $p->auction)->values();
+
+        return view('citizen.my-auctions', compact('auctions', 'tab', 'counts'));
     }
 
     public function notifications(): View
@@ -72,7 +89,11 @@ class CitizenController extends Controller
             ->latest('created_at')
             ->paginate(20);
 
-        return view('citizen.notifications', compact('notifications'));
+        // Count all unread rows from the DB — not just the current page — so the
+        // header badge matches the nav badge (both via unreadNotificationsCount()).
+        $unreadCount = auth()->user()->unreadNotificationsCount();
+
+        return view('citizen.notifications', compact('notifications', 'unreadCount'));
     }
 
     public function markNotificationRead(UserNotification $notification): RedirectResponse
@@ -116,7 +137,14 @@ class CitizenController extends Controller
             // Secret question/answer recovery (spec §8.4). Stored as a stable key;
             // the answer is hashed by the model cast.
             'secret_question' => ['sometimes', 'nullable', Rule::in(array_keys((array) __('auth.secret_questions')))],
-            'secret_answer' => ['nullable', 'string', 'min:2', 'max:200'],
+            // A recovery question is useless without an answer: require one when a
+            // question is selected and the account doesn't already have a stored answer.
+            'secret_answer' => [
+                Rule::requiredIf(fn () => $request->filled('secret_question') && ! $user->secret_answer),
+                'nullable', 'string', 'min:2', 'max:200',
+            ],
+        ], [
+            'secret_answer.required' => __('profile.secret_answer_required'),
         ]);
 
         $fields = $request->only([

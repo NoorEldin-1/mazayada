@@ -363,37 +363,46 @@
                 </div>
             </div>
 
-            {{-- Tab: Bid History --}}
+            {{-- Tab: Bid History — updated live (no reload) by resources/js/auction.js,
+                 mirroring the sidebar "recent bids". The table is always rendered so
+                 new rows can be prepended even from an empty start; the top row (the
+                 highest = latest bid) carries the premium "highest" highlight. --}}
             <div id="tab-bids" style="display:none">
                 <div class="card">
                     <div class="card-h">
                         <h3>{{ __('auctions.show.tab_bids') }}</h3>
-                        <span class="sub">{{ __('auctions.show.recent_prefix') }} <span class="num">{{ $bids->count() }}</span> {{ __('auctions.bids_word') }}</span>
+                        <span class="sub">{{ __('auctions.show.recent_prefix') }} <span class="num" id="liveBidHistoryCount">{{ $bids->count() }}</span> {{ __('auctions.bids_word') }}</span>
                     </div>
-                    @if($bids->count())
-                        <table class="tbl">
-                            <thead>
-                                <tr>
-                                    <th>{{ __('auctions.show.th_bidder') }}</th>
-                                    <th>{{ __('auctions.show.th_amount') }}</th>
-                                    <th>{{ __('auctions.show.th_time') }}</th>
+                    <table class="tbl">
+                        <thead>
+                            <tr>
+                                <th>{{ __('auctions.show.th_bidder') }}</th>
+                                <th>{{ __('auctions.show.th_amount') }}</th>
+                                <th>{{ __('auctions.show.th_time') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="liveBidHistory">
+                            @forelse($bids as $bid)
+                                <tr class="bid-hist-row{{ $loop->first ? ' is-top' : '' }}">
+                                    <td class="bid-hist-bidder">
+                                        <span>{{ $bid->bidderAlias() }}</span>
+                                        @if($loop->first)
+                                            <span class="top-badge">
+                                                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 16 3 6l5.5 4L12 4l3.5 6L21 6l-2 10H5Zm0 3h14v2H5z"/></svg>
+                                                {{ __('auctions.show.highest_badge') }}
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="bid-hist-amt"><x-money :centimes="$bid->amount" /></td>
+                                    <td class="bid-hist-time">{{ $bid->bid_time->diffForHumans() }}</td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($bids as $bid)
-                                    <tr>
-                                        <td style="font-weight:600">{{ $bid->bidderAlias() }}</td>
-                                        <td><x-money :centimes="$bid->amount" style="font-weight:700;color:var(--primary)" /></td>
-                                        <td style="color:var(--muted);font-size:12px">{{ $bid->bid_time->diffForHumans() }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    @else
-                        <div class="card-pad" style="text-align:center;color:var(--muted);padding:32px">
-                            {{ __('auctions.show.no_bids') }}
-                        </div>
-                    @endif
+                            @empty
+                                <tr id="liveBidHistoryEmpty">
+                                    <td colspan="3" style="text-align:center;color:var(--muted);padding:32px">{{ __('auctions.show.no_bids') }}</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -601,18 +610,26 @@
                 <div class="card-h">
                     <h3>{{ __('auctions.show.recent_bids') }}</h3>
                 </div>
-                {{-- New bids are prepended live (no reload) by resources/js/auction.js. --}}
+                {{-- New bids are prepended live (no reload) by resources/js/auction.js.
+                     The top row (highest = latest bid) carries the premium "highest"
+                     highlight; auction.js moves it as new bids arrive. --}}
                 <div id="liveBidList" style="padding:8px 0">
                     @forelse($bids->take(10) as $bid)
-                        <div style="display:flex;align-items:center;gap:10px;padding:10px 20px;border-bottom:1px solid var(--line)">
-                            <div style="width:32px;height:32px;border-radius:9px;background:var(--bg-2);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--primary);flex-shrink:0" class="num">
-                                {{ mb_substr($bid->bidderAlias(), 0, 2) }}
+                        <div class="bid-row{{ $loop->first ? ' is-top' : '' }}">
+                            <div class="bid-row-av num">{{ mb_substr($bid->bidderAlias(), 0, 2) }}</div>
+                            <div class="bid-row-main">
+                                <div class="bid-row-name">
+                                    <span>{{ $bid->bidderAlias() }}</span>
+                                    @if($loop->first)
+                                        <span class="top-badge">
+                                            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 16 3 6l5.5 4L12 4l3.5 6L21 6l-2 10H5Zm0 3h14v2H5z"/></svg>
+                                            {{ __('auctions.show.highest_badge') }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <div class="bid-row-time">{{ $bid->bid_time->diffForHumans() }}</div>
                             </div>
-                            <div style="flex:1;min-width:0">
-                                <div style="font-size:13px;font-weight:600">{{ $bid->bidderAlias() }}</div>
-                                <div style="font-size:11px;color:var(--muted)">{{ $bid->bid_time->diffForHumans() }}</div>
-                            </div>
-                            <div style="font-weight:700;font-size:14px;color:var(--primary)"><x-money :centimes="$bid->amount" /></div>
+                            <div class="bid-row-amt"><x-money :centimes="$bid->amount" /></div>
                         </div>
                     @empty
                         <div id="liveBidEmpty" class="card-pad" style="text-align:center;color:var(--muted);font-size:13px">{{ __('auctions.show.no_bids_side') }}</div>
@@ -668,6 +685,8 @@ document.querySelectorAll('#tabStrip button').forEach(btn => {
             'closed_title' => __('auctions.show.closed'),
             'winner_label' => __('auctions.show.winner_label'),
             'no_winner' => __('auctions.show.no_winner'),
+            // Premium "highest bid" badge text for live-built rows.
+            'highest_badge' => __('auctions.show.highest_badge'),
         ],
     ];
 @endphp

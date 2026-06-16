@@ -119,6 +119,7 @@ return [
         'not_started' => 'المزايدة لم تبدأ بعد',
         'recent_bids' => 'آخر العروض',
         'no_bids_side' => 'لا توجد عروض بعد',
+        'highest_badge' => 'الأعلى',
     ],
 
     // ===== Controller flash messages =====

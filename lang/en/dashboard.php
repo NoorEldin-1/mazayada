@@ -32,6 +32,11 @@ return [
     'won_auctions_title' => 'Auctions you have won',
     'no_won_auctions' => 'You haven’t won any auction yet',
 
+    // ===== Recent notifications =====
+    'recent_notifications_title' => 'Recent notifications',
+    'recent_notifications_view_all' => 'View all',
+    'no_recent_notifications' => 'No notifications yet',
+
     // ===== Quick actions =====
     'quick_appeals_title' => 'My Appeals',
     'quick_appeals_desc' => 'Manage appeals and complaints',

@@ -119,6 +119,7 @@ return [
         'not_started' => 'L’enchère n’a pas encore commencé',
         'recent_bids' => 'Offres récentes',
         'no_bids_side' => 'Aucune offre pour le moment',
+        'highest_badge' => 'Plus haute',
     ],
 
     // ===== Controller flash messages =====

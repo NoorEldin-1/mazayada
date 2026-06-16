@@ -327,3 +327,104 @@ html[data-theme="dark"] .ui-table tbody tr:hover { background: var(--bg-2); }
 html[data-theme="dark"] .lang-switch { background: var(--bg-2); }
 html[data-theme="dark"] .lang-switch a { color: var(--muted); }
 html[data-theme="dark"] .lang-switch a.on { background: var(--surface); color: var(--primary-4); }
+
+/* =============================================================
+   Unified modal system (.mdl-*) — SINGLE source of truth for the
+   confirm dialog (<x-confirm-modal/>) and the forced KYC modal
+   (<x-kyc-verify-modal/>). Fully token-driven + logical properties,
+   so it mirrors correctly in RTL/LTR and is correct in light AND
+   dark. Loaded dashboard-only (admin + citizen layouts), the only
+   place these modals ever render. Touch this block to restyle every
+   modal in the app at once.
+
+   Variant tints are driven by one --mdl-accent var on the box:
+     (default)        warn   — generic confirm
+     .mdl-box--danger danger — destructive confirm (delete/cancel)
+     .mdl-box--brand  primary— positive call-to-action (KYC verify)
+   ============================================================= */
+.mdl-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(8, 15, 12, .55);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  animation: mdl-fade .15s ease-out;
+}
+.mdl-overlay.is-open { display: flex; }
+@keyframes mdl-fade { from { opacity: 0 } to { opacity: 1 } }
+
+.mdl-box {
+  --mdl-accent: var(--warn);
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  inline-size: 100%;
+  max-inline-size: 430px;
+  padding: 28px;
+  box-shadow: var(--shadow-lg, 0 24px 60px rgba(0, 0, 0, .25));
+  text-align: center;
+  animation: mdl-pop .14s ease-out;
+}
+.mdl-box--danger { --mdl-accent: var(--danger); }
+.mdl-box--brand  { --mdl-accent: var(--primary); }
+@keyframes mdl-pop { from { transform: scale(.96); opacity: .4 } to { transform: scale(1); opacity: 1 } }
+
+.mdl-icon {
+  inline-size: 56px;
+  block-size: 56px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin-block-end: 18px;
+  margin-inline: auto;
+  background: color-mix(in oklab, var(--mdl-accent) 15%, transparent);
+  color: color-mix(in oklab, var(--mdl-accent) 88%, #000);   /* deepen for light bg legibility */
+}
+html[data-theme="dark"] .mdl-icon {
+  background: color-mix(in oklab, var(--mdl-accent) 24%, transparent);
+  color: color-mix(in oklab, var(--mdl-accent) 78%, #fff);   /* brighten for dark bg */
+}
+
+.mdl-title { font-size: 19px; font-weight: 700; margin: 0 0 10px; color: var(--ink); }
+.mdl-msg   { font-size: 14px; line-height: 1.8; margin: 0 0 24px; color: var(--ink-2); }
+
+.mdl-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.mdl-btn {
+  min-inline-size: 130px;
+  padding: 12px 20px;
+  border: 0;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: filter .15s ease, background .15s ease;
+}
+.mdl-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.mdl-btn--primary { background: var(--primary); color: #fff; }
+.mdl-btn--primary:hover { filter: brightness(1.07); }
+.mdl-btn--danger  { background: var(--danger); color: #fff; }
+.mdl-btn--danger:hover  { filter: brightness(1.07); }
+.mdl-btn--ghost   { background: var(--bg-2); color: var(--ink-2); }
+.mdl-btn--ghost:hover { filter: brightness(.97); }
+
+/* Deepen the soft dark-mode red so white button text stays legible,
+   and lighten (not darken) the ghost button on hover over a dark well. */
+html[data-theme="dark"] .mdl-btn--danger { background: color-mix(in oklab, var(--danger) 62%, #000); }
+html[data-theme="dark"] .mdl-btn--ghost:hover { filter: brightness(1.12); }
+
+/* Stack the actions on very narrow screens; primary stays on top. */
+@media (max-width: 380px) {
+  .mdl-actions { flex-direction: column; }
+  .mdl-btn { inline-size: 100%; }
+}

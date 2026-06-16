@@ -537,6 +537,44 @@ html[dir="rtl"] .auth-carousel-arrow svg{transform:scaleX(-1)}
 .bid-closed-result .bcr-w{font-size:14px;font-weight:600;color:var(--accent)}
 .bid-closed-result .bcr-p{font-family:"Inter";font-size:20px;font-weight:700;color:var(--accent);margin-top:4px}
 
+/* ===== Live price roll + premium "highest bid" highlight (resources/js/auction.js) ===== */
+/* Price roll: the old value slides up & out while the new value rises from below.
+   The new value sits in normal flow (so the box keeps its size); the old value is
+   absolutely overlaid on top, and auction.js translateY-animates both. */
+.cur-v .amt.is-rolling{position:relative;display:inline-block;overflow:hidden;vertical-align:bottom;line-height:1.1}
+.cur-v .amt.is-rolling .roll-new{display:block;will-change:transform}
+.cur-v .amt.is-rolling .roll-old{position:absolute;inset-block-start:0;inset-inline-start:0;inset-inline-end:0;display:block;will-change:transform}
+
+/* Recent-bids list rows — moved out of inline styles so .is-top can override and
+   newly-prepended rows (built by auction.js) reuse the exact same markup. */
+.bid-row{display:flex;align-items:center;gap:10px;padding:10px 20px;border-bottom:1px solid var(--line);transition:background .25s ease}
+.bid-row-av{width:32px;height:32px;border-radius:9px;background:var(--bg-2);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--primary);flex-shrink:0}
+.bid-row-main{flex:1;min-width:0}
+.bid-row-name{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.bid-row-time{font-size:11px;color:var(--muted)}
+.bid-row-amt{font-weight:700;font-size:14px;color:var(--primary)}
+
+/* History table cells (tab "سجل العروض"). */
+.bid-hist-bidder{font-weight:600}
+.bid-hist-amt,.bid-hist-amt .amt{color:var(--primary);font-weight:700}
+.bid-hist-time{color:var(--muted);font-size:12px}
+
+/* Premium highlight for the highest (= latest) bid — green/gold platform palette,
+   subtle and direction-agnostic (border on the logical start side for RTL/LTR). */
+.bid-row.is-top{background:rgba(212,168,67,.10);border-inline-start:3px solid var(--accent);box-shadow:inset 0 0 0 1px rgba(212,168,67,.14)}
+.bid-row.is-top .bid-row-av{background:rgba(212,168,67,.18);color:var(--accent-2)}
+.bid-row.is-top .bid-row-amt,.bid-row.is-top .bid-row-amt .amt{color:var(--accent-2)}
+.tbl tr.is-top{background:rgba(212,168,67,.10)}
+.tbl tr.is-top .bid-hist-amt,.tbl tr.is-top .bid-hist-amt .amt{color:var(--accent-2);font-weight:800}
+
+/* "Highest" pill badge (Blade-rendered for the top row; auction.js mirrors it live). */
+.top-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;line-height:1;color:var(--accent-2);background:rgba(212,168,67,.16);border:1px solid rgba(212,168,67,.4);padding:3px 8px;border-radius:999px;letter-spacing:.02em;white-space:nowrap}
+.top-badge svg{width:11px;height:11px;flex-shrink:0}
+
+@media (prefers-reduced-motion: reduce){
+  .bid-row{transition:none}
+}
+
 .facts{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border-radius:14px;overflow:hidden}
 .facts > div{background:var(--surface);padding:14px 16px}
 .facts .l{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}

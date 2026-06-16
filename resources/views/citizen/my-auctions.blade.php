@@ -4,15 +4,19 @@
 
 <x-ui.page-header :title="__('dashboard.nav_my_auctions')" />
 
-@php $tab = request('tab', 'active'); @endphp
 <div class="flex flex-wrap gap-2 mb-6">
     @foreach(['active' => __('dashboard.tab_active'), 'won' => __('dashboard.tab_won'), 'lost' => __('dashboard.tab_lost'), 'upcoming' => __('dashboard.tab_upcoming')] as $key => $label)
-    <x-ui.btn :variant="$tab === $key ? 'primary' : 'ghost'" size="sm" :href="'?tab='.$key">{{ $label }}</x-ui.btn>
+    <x-ui.btn :variant="$tab === $key ? 'primary' : 'ghost'" size="sm" :href="'?tab='.$key">
+        {{ $label }}
+        @if(($counts[$key] ?? 0) > 0)
+        <span class="num inline-grid place-items-center min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-bold leading-none {{ $tab === $key ? 'bg-white/20 text-white' : 'bg-bg-2 text-muted' }}">{{ $counts[$key] }}</span>
+        @endif
+    </x-ui.btn>
     @endforeach
 </div>
 
-<div class="auc-grid" style="grid-template-columns:repeat(3,1fr)">
-    @forelse($auctions ?? [] as $auction)
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+    @forelse($auctions as $auction)
     <a href="{{ route('auctions.show', $auction) }}" class="auc-card" style="text-decoration:none">
         <div class="auc-img">
             @php $cover = $auction->coverPhotoUrl(); @endphp
@@ -21,8 +25,8 @@
             @else
             <svg width="54" height="54" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="opacity:.4"><path d="m14.5 17.5 3 3 3-3"/><path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
             @endif
-            <span class="auc-tag {{ in_array($auction->status->value, ['ACTIVE','EXTENDED']) ? 'live' : '' }}">
-                @if(in_array($auction->status->value, ['ACTIVE','EXTENDED']))<span class="dot"></span>@endif
+            <span class="auc-tag {{ $auction->isLive() ? 'live' : '' }}">
+                @if($auction->isLive())<span class="dot"></span>@endif
                 {{ $auction->status->label() }}
             </span>
         </div>

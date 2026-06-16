@@ -8,18 +8,31 @@ use App\Models\Appeal;
 use App\Models\AuditLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class AppealController extends Controller
 {
     public function index(): View
     {
-        $appeals = auth()->user()->appeals()
+        $user = auth()->user();
+
+        $appeals = $user->appeals()
             ->with('auction')
             ->latest()
             ->paginate(15);
 
-        return view('citizen.appeals', compact('appeals'));
+        // Auctions the user has taken part in, for the optional reference
+        // dropdown. Deduped, with any deleted/null auctions filtered out.
+        $auctions = $user->participations()
+            ->with('auction')
+            ->get()
+            ->pluck('auction')
+            ->filter()
+            ->unique('id')
+            ->values();
+
+        return view('citizen.appeals', compact('appeals', 'auctions'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -27,7 +40,12 @@ class AppealController extends Controller
         $request->validate([
             'subject' => ['required', 'string', 'max:255'],
             'reason' => ['required', 'string', 'max:2000'],
-            'auction_id' => ['nullable', 'exists:auctions,id'],
+            // Only an auction the user actually participated in may be referenced.
+            'auction_id' => [
+                'nullable',
+                Rule::exists('auction_participants', 'auction_id')
+                    ->where('user_id', auth()->id()),
+            ],
         ]);
 
         $appeal = Appeal::create([

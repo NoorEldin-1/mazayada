@@ -19,7 +19,7 @@
             </div>
             <p class="text-[13px] text-muted mb-1.5">{{ Str::limit($appeal->reason, 100) }}</p>
             <div class="text-[11px] text-muted flex gap-3">
-                @if($appeal->auction_id)<span>{{ __('appeals.auction_ref') }} {{ Str::limit($appeal->auction?->title_ar, 30) }}</span>@endif
+                @if($appeal->auction)<span>{{ __('appeals.auction_ref') }} {{ Str::limit($appeal->auction->localizedTitle(), 30) }}</span>@endif
                 <span>{{ $appeal->created_at->format('Y-m-d') }}</span>
             </div>
             @if($appeal->admin_response)
@@ -34,6 +34,12 @@
             <p class="text-sm">{{ __('appeals.none_submitted') }}</p>
         </div>
         @endforelse
+
+        @if($appeals->hasPages())
+        <div class="mt-4">
+            {{ $appeals->links() }}
+        </div>
+        @endif
     </x-ui.card>
 
     {{-- New Appeal Form --}}
@@ -54,8 +60,8 @@
                 <label>{{ __('appeals.auction_ref_field') }} <span class="hint">({{ __('common.optional') }})</span></label>
                 <select class="input" name="auction_id">
                     <option value="">{{ __('appeals.no_ref') }}</option>
-                    @foreach(auth()->user()->participations()->with('auction')->get() as $p)
-                        <option value="{{ $p->auction_id }}">{{ $p->auction->title_ar }}</option>
+                    @foreach($auctions as $auction)
+                        <option value="{{ $auction->id }}" @selected(old('auction_id') == $auction->id)>{{ $auction->localizedTitle() }}</option>
                     @endforeach
                 </select>
             </div>

@@ -6,6 +6,7 @@ return [
     'empty' => 'No notifications',
     'mark_read' => 'Mark as read',
     'mark_all_read' => 'Mark all as read',
+    'just_now' => 'Just now',
     'flash_marked_read' => 'Notification marked as read.',
     'flash_all_marked_read' => 'All notifications marked as read.',
 

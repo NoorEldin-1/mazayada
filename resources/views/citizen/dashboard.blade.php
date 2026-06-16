@@ -32,8 +32,8 @@
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <div class="text-sm font-semibold text-ink truncate">{{ $auction->title_ar }}</div>
-                        <div class="text-xs text-muted">{{ $auction->updated_at->format('Y-m-d') }}</div>
+                        <div class="text-sm font-semibold text-ink truncate">{{ $auction->localizedTitle() }}</div>
+                        <div class="text-xs text-muted num">{{ ($auction->closed_at ?? $auction->updated_at)->format('Y-m-d') }}</div>
                     </div>
                     <div class="num font-bold text-primary text-[15px] shrink-0">{{ dzd($auction->final_price ?? $auction->currentPrice()) }}</div>
                 </a>
@@ -41,6 +41,42 @@
         </div>
     @else
         <div class="text-center text-muted py-10 px-6 text-sm">{{ __('dashboard.no_won_auctions') }}</div>
+    @endif
+</x-ui.card>
+
+{{-- Recent notifications --}}
+<x-ui.card :padding="false" class="mb-5">
+    <x-slot:header>
+        <svg class="size-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <h3 class="text-base font-semibold text-ink">{{ __('dashboard.recent_notifications_title') }}</h3>
+        <a href="{{ route('citizen.notifications') }}" class="ms-auto text-xs font-semibold text-primary hover:underline shrink-0">{{ __('dashboard.recent_notifications_view_all') }}</a>
+    </x-slot:header>
+
+    @if(isset($recentNotifications) && $recentNotifications->count())
+        <div>
+            @foreach($recentNotifications as $notif)
+                <a href="{{ $notif->action_url ?: route('citizen.notifications') }}"
+                   class="flex items-start gap-3.5 px-5 sm:px-6 py-3.5 hover:bg-bg-2 transition {{ !$notif->is_read ? 'bg-primary/5' : '' }} {{ !$loop->last ? 'border-b border-line' : '' }}">
+                    <div class="grid place-items-center size-10 rounded-xl shrink-0 {{ !$notif->is_read ? 'bg-primary/10 text-primary' : 'bg-bg-2 text-muted' }}">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm font-semibold truncate {{ !$notif->is_read ? 'text-ink' : 'text-ink-2' }}">{{ $notif->title }}</span>
+                            @if(!$notif->is_read)
+                                <span class="size-2 rounded-full bg-primary shrink-0"></span>
+                            @endif
+                            <span class="ms-auto text-[11px] text-muted whitespace-nowrap shrink-0">{{ $notif->created_at->diffForHumans() }}</span>
+                        </div>
+                        @if($notif->body)
+                            <p class="m-0 mt-0.5 text-xs text-muted leading-relaxed line-clamp-2">{{ $notif->body }}</p>
+                        @endif
+                    </div>
+                </a>
+            @endforeach
+        </div>
+    @else
+        <div class="text-center text-muted py-10 px-6 text-sm">{{ __('dashboard.no_recent_notifications') }}</div>
     @endif
 </x-ui.card>
 

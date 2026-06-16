@@ -6,6 +6,7 @@ return [
     'empty' => 'Aucune notification',
     'mark_read' => 'Marquer comme lue',
     'mark_all_read' => 'Tout marquer comme lu',
+    'just_now' => 'À l’instant',
     'flash_marked_read' => 'Notification marquée comme lue.',
     'flash_all_marked_read' => 'Toutes les notifications ont été marquées comme lues.',
 

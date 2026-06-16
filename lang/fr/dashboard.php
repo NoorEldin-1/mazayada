@@ -32,6 +32,11 @@ return [
     'won_auctions_title' => 'Enchères que vous avez gagnées',
     'no_won_auctions' => 'Vous n’avez encore gagné aucune enchère',
 
+    // ===== Recent notifications =====
+    'recent_notifications_title' => 'Notifications récentes',
+    'recent_notifications_view_all' => 'Voir tout',
+    'no_recent_notifications' => 'Aucune notification pour le moment',
+
     // ===== Quick actions =====
     'quick_appeals_title' => 'Mes recours',
     'quick_appeals_desc' => 'Gérer les recours et réclamations',

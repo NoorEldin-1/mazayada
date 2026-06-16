@@ -119,6 +119,7 @@ return [
         'not_started' => 'The auction has not started yet',
         'recent_bids' => 'Recent bids',
         'no_bids_side' => 'No bids yet',
+        'highest_badge' => 'Highest',
     ],
 
     // ===== Controller flash messages =====

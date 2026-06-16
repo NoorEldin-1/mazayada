@@ -6,6 +6,7 @@ return [
     'empty' => 'لا توجد إشعارات',
     'mark_read' => 'تعليم كمقروء',
     'mark_all_read' => 'تعليم الكل كمقروء',
+    'just_now' => 'الآن',
     'flash_marked_read' => 'تم تعليم الإشعار كمقروء.',
     'flash_all_marked_read' => 'تم تعليم جميع الإشعارات كمقروءة.',
 

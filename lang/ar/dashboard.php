@@ -32,6 +32,11 @@ return [
     'won_auctions_title' => 'المزايدات التي فزت بها',
     'no_won_auctions' => 'لم تفز بأي مزايدة بعد',
 
+    // ===== Recent notifications =====
+    'recent_notifications_title' => 'آخر الإشعارات',
+    'recent_notifications_view_all' => 'عرض الكل',
+    'no_recent_notifications' => 'لا توجد إشعارات بعد',
+
     // ===== Quick actions =====
     'quick_appeals_title' => 'طعوناتي',
     'quick_appeals_desc' => 'إدارة الطعون والشكاوى',

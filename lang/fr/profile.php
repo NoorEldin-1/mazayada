@@ -19,6 +19,7 @@ return [
     'secret_answer' => 'Réponse secrète',
     'secret_answer_set' => '•••••• (enregistrée)',
     'secret_answer_hint' => 'Sert à récupérer le compte en cas de perte de l\'e-mail. Laissez vide pour conserver la réponse actuelle.',
+    'secret_answer_required' => 'La réponse secrète est requise lorsqu\'une question est sélectionnée.',
 
     // ===== Controller flash messages =====
     'flash_updated' => 'Profil mis à jour avec succès.',

@@ -1,45 +1,29 @@
 {{--
     Reusable confirmation modal — replaces the native browser confirm() dialog.
+    Shares the unified .mdl-* design system (defined in resources/css/dashboard.css)
+    with <x-kyc-verify-modal/>, so both modals look identical and theme-correct.
 
     Usage: add `data-confirm="message"` to any <form>. Optional attributes:
-      data-confirm-title="..."     custom heading (defaults to common.confirm_title)
-      data-confirm-label="..."     custom OK button label (defaults to common.confirm)
-      data-confirm-variant="danger" red OK button for destructive actions
+      data-confirm-title="..."      custom heading (defaults to common.confirm_title)
+      data-confirm-label="..."      custom OK button label (defaults to common.confirm)
+      data-confirm-variant="danger" red icon + red OK button for destructive actions
 
     The form submits normally only after the user presses OK.
 --}}
-<div class="cm-overlay" id="confirmModal" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="cm-box" data-cm-box>
-        <div class="cm-icon" data-cm-icon>
+<div class="mdl-overlay" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="cmTitle" aria-hidden="true">
+    <div class="mdl-box" data-cm-box>
+        <div class="mdl-icon" data-cm-icon aria-hidden="true">
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         </div>
-        <h3 class="cm-title" data-cm-title data-default="{{ __('common.confirm_title') }}">{{ __('common.confirm_title') }}</h3>
-        <p class="cm-msg" data-cm-message></p>
-        <div class="cm-actions">
-            <button type="button" class="btn cm-cancel" data-cm-cancel>{{ __('common.cancel') }}</button>
-            <button type="button" class="btn cm-primary" data-cm-ok data-default="{{ __('common.confirm') }}">{{ __('common.confirm') }}</button>
+        <h3 class="mdl-title" id="cmTitle" data-cm-title data-default="{{ __('common.confirm_title') }}">{{ __('common.confirm_title') }}</h3>
+        <p class="mdl-msg" data-cm-message></p>
+        {{-- Primary action first in DOM → renders at the inline-start (right in RTL, left in LTR). --}}
+        <div class="mdl-actions">
+            <button type="button" class="mdl-btn mdl-btn--primary" data-cm-ok data-default="{{ __('common.confirm') }}">{{ __('common.confirm') }}</button>
+            <button type="button" class="mdl-btn mdl-btn--ghost" data-cm-cancel>{{ __('common.cancel') }}</button>
         </div>
     </div>
 </div>
-
-<style>
-    .cm-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:center;justify-content:center;z-index:80;padding:20px}
-    .cm-overlay.open{display:flex}
-    .cm-box{background:var(--surface,#fff);border-radius:18px;max-width:420px;width:100%;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center;animation:cmpop .12s ease-out}
-    @keyframes cmpop{from{transform:scale(.96);opacity:.4}to{transform:scale(1);opacity:1}}
-    .cm-icon{width:54px;height:54px;border-radius:50%;background:#FBEFD6;color:#8A6310;display:grid;place-items:center;margin:0 auto 16px}
-    .cm-box.cm-box--danger .cm-icon{background:#FBE2E0;color:#8E2F2A}
-    .cm-title{font-size:18px;font-weight:700;margin:0 0 8px;color:var(--ink,#1a1a1a)}
-    .cm-msg{font-size:14px;color:var(--muted,#667085);margin:0 0 22px;line-height:1.7}
-    .cm-actions{display:flex;gap:12px;justify-content:center}
-    .cm-actions .btn{min-width:120px;padding:11px 20px;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;border:0;line-height:1}
-    .cm-cancel{background:#EEF1F4;color:#3a3f4a}
-    .cm-cancel:hover{background:#E3E7EC}
-    .cm-primary{background:var(--primary,#15573f);color:#fff}
-    .cm-primary:hover{filter:brightness(1.06)}
-    .cm-danger{background:#ef4444;color:#fff}
-    .cm-danger:hover{filter:brightness(1.06)}
-</style>
 
 <script>
 (function () {
@@ -52,24 +36,30 @@
     const okBtn = modal.querySelector('[data-cm-ok]');
     const cancelBtn = modal.querySelector('[data-cm-cancel]');
     let pendingForm = null;
+    let lastFocus = null;
 
     function open(form) {
         pendingForm = form;
+        lastFocus = document.activeElement;
         msgEl.textContent = form.dataset.confirm || '';
         titleEl.textContent = form.dataset.confirmTitle || titleEl.dataset.default;
         okBtn.textContent = form.dataset.confirmLabel || okBtn.dataset.default;
         const danger = form.dataset.confirmVariant === 'danger';
-        okBtn.className = 'btn ' + (danger ? 'cm-danger' : 'cm-primary');
-        box.classList.toggle('cm-box--danger', danger);
-        modal.classList.add('open');
+        okBtn.className = 'mdl-btn ' + (danger ? 'mdl-btn--danger' : 'mdl-btn--primary');
+        box.classList.toggle('mdl-box--danger', danger);
+        modal.classList.add('is-open');
         modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
         okBtn.focus();
     }
 
-    function close() {
-        modal.classList.remove('open');
+    function close(restoreFocus = true) {
+        modal.classList.remove('is-open');
         modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
         pendingForm = null;
+        if (restoreFocus && lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
+        lastFocus = null;
     }
 
     // Intercept any form that opts in via data-confirm. HTML5 validation has
@@ -85,15 +75,23 @@
     okBtn.addEventListener('click', function () {
         if (!pendingForm) return;
         const f = pendingForm;
-        close();
+        close(false); // navigating away — no need to restore focus to the trigger
         f.dataset.cmConfirmed = '1';
         if (typeof f.requestSubmit === 'function') f.requestSubmit(); else f.submit();
     });
 
-    cancelBtn.addEventListener('click', close);
+    cancelBtn.addEventListener('click', function () { close(); });
     modal.addEventListener('click', function (e) { if (e.target === modal) close(); });
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && modal.classList.contains('open')) close();
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) close();
+    });
+
+    // Minimal focus trap: cycle Tab between the two buttons while open.
+    modal.addEventListener('keydown', function (e) {
+        if (e.key !== 'Tab' || !modal.classList.contains('is-open')) return;
+        const first = okBtn, last = cancelBtn;
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     });
 })();
 </script>

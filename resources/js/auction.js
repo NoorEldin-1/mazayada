@@ -35,6 +35,10 @@ import './echo';
     const i18n = cfg.i18n || {};
     const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
+    // Honour the OS "reduce motion" setting: the price roll and row entrance
+    // animations fall back to an instant swap when this is on.
+    const reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
     // Mutable view state — the single source of truth for the live price.
     const state = {
         currentPrice: Number(cfg.currentPrice) || 0,
@@ -45,6 +49,8 @@ import './echo';
     const priceEl = document.getElementById('liveCurrentPrice');
     const countEl = document.getElementById('liveBidCount');
     const listEl = document.getElementById('liveBidList');
+    const historyBody = document.getElementById('liveBidHistory');     // tab "سجل العروض" <tbody>
+    const historyCountEl = document.getElementById('liveBidHistoryCount');
     const form = document.getElementById('bidForm');
     const amountInput = document.getElementById('bidAmount');
     const submitBtn = document.getElementById('bidSubmit');
@@ -97,6 +103,77 @@ import './echo';
         el.animate([{ opacity: 0.3 }, { opacity: 1 }], { duration: 450, easing: 'ease-out' });
     }
 
+    // Roll the price number: the old value slides up and out while the new value
+    // rises from below (slot-machine style). Falls back to an instant swap when
+    // motion is reduced or the Web Animations API is unavailable.
+    function rollAmount(amtEl, newText) {
+        if (!amtEl) return;
+        // Track the true displayed value on the element: mid-roll the innerHTML holds
+        // two stacked copies, so textContent isn't reliable for back-to-back bids.
+        const oldText = amtEl.dataset.value != null ? amtEl.dataset.value : amtEl.textContent;
+        amtEl.dataset.value = newText;
+        if (oldText === newText) { flash(priceEl); return; }
+        // The price roll is the headline live-feedback the page is built around, so it
+        // plays whenever the Web Animations API is available — including when the OS
+        // has "reduce motion" on (a common Windows default that otherwise silently
+        // killed the roll). Only fall back to an instant swap with no WAAPI at all.
+        if (typeof amtEl.animate !== 'function') {
+            amtEl.classList.remove('is-rolling');
+            amtEl.textContent = newText;
+            flash(priceEl);
+            return;
+        }
+        amtEl.classList.add('is-rolling');
+        amtEl.innerHTML =
+            '<span class="roll-old">' + escapeHtml(oldText) + '</span>'
+            + '<span class="roll-new">' + escapeHtml(newText) + '</span>';
+        const oldSpan = amtEl.querySelector('.roll-old');
+        const newSpan = amtEl.querySelector('.roll-new');
+        const opts = { duration: 520, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards' };
+        if (oldSpan) {
+            oldSpan.animate([
+                { transform: 'translateY(0)', opacity: 1 },
+                { transform: 'translateY(-110%)', opacity: 0 },
+            ], opts);
+        }
+        const a = newSpan && newSpan.animate([
+            { transform: 'translateY(110%)', opacity: 0.3 },
+            { transform: 'translateY(0)', opacity: 1 },
+        ], opts);
+        // Flatten back to plain text — but only if no newer roll has superseded us.
+        const settle = () => {
+            if (amtEl.dataset.value !== newText) return;
+            amtEl.classList.remove('is-rolling');
+            amtEl.textContent = newText;
+        };
+        if (a) { a.onfinish = settle; } else { settle(); }
+        // Soft gold glow on the whole price to underline the change.
+        if (priceEl && typeof priceEl.animate === 'function') {
+            priceEl.animate([
+                { textShadow: '0 0 0 rgba(212,168,67,0)' },
+                { textShadow: '0 0 18px rgba(212,168,67,.55)' },
+                { textShadow: '0 0 0 rgba(212,168,67,0)' },
+            ], { duration: 700, easing: 'ease-out' });
+        }
+    }
+
+    // Subtle entrance for a freshly-prepended bid row (fade + slide from the top).
+    function animateRowIn(row) {
+        if (!row || reduceMotion || typeof row.animate !== 'function') return;
+        row.animate([
+            { opacity: 0, transform: 'translateY(-8px)' },
+            { opacity: 1, transform: 'translateY(0)' },
+        ], { duration: 380, easing: 'cubic-bezier(.22,1,.36,1)' });
+    }
+
+    // Markup for the premium "highest bid" pill badge (mirrors the Blade version).
+    function badgeHtml() {
+        return '<span class="top-badge">'
+            + '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">'
+            + '<path d="M5 16 3 6l5.5 4L12 4l3.5 6L21 6l-2 10H5Zm0 3h14v2H5z"/></svg>'
+            + escapeHtml(i18n.highest_badge || '') + '</span>';
+    }
+
     let toastTimer = null;
     function toast(message) {
         if (!message) return;
@@ -127,8 +204,7 @@ import './echo';
         state.currentPrice = Number(centimes) || state.currentPrice;
         if (priceEl) {
             const amt = priceEl.querySelector('.amt');
-            if (amt) amt.textContent = formatDinars(state.currentPrice);
-            flash(priceEl);
+            rollAmount(amt, formatDinars(state.currentPrice));
         }
         if (amountInput) amountInput.dataset.current = String(state.currentPrice);
         updateMinHint();
@@ -140,23 +216,83 @@ import './echo';
         countEl.textContent = String(n + 1);
     }
 
+    // Sidebar "آخر العروض" — prepend a new bid row (class-based markup matching the
+    // Blade partial so the premium .is-top styling applies identically).
     function prependBidRow(alias, centimes) {
         if (!listEl) return;
         document.getElementById('liveBidEmpty')?.remove();
         const row = document.createElement('div');
-        row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:10px 20px;border-bottom:1px solid var(--line)';
+        row.className = 'bid-row';
         const safeAlias = escapeHtml(alias);
         row.innerHTML =
-            '<div class="num" style="width:32px;height:32px;border-radius:9px;background:var(--bg-2);'
-            + 'display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--primary);flex-shrink:0">'
-            + safeAlias.slice(0, 2) + '</div>'
-            + '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600">' + safeAlias + '</div>'
-            + '<div style="font-size:11px;color:var(--muted)">' + escapeHtml(i18n.now || '') + '</div></div>'
-            + '<div class="money" style="font-weight:700;font-size:14px;color:var(--primary)">'
-            + '<span class="amt">' + formatDinars(centimes) + '</span> '
-            + '<span class="cur">' + escapeHtml(cfg.currency || '') + '</span></div>';
+            '<div class="bid-row-av num">' + safeAlias.slice(0, 2) + '</div>'
+            + '<div class="bid-row-main">'
+            + '<div class="bid-row-name"><span>' + safeAlias + '</span></div>'
+            + '<div class="bid-row-time">' + escapeHtml(i18n.now || '') + '</div></div>'
+            + '<div class="bid-row-amt"><span class="money"><span class="amt">' + formatDinars(centimes) + '</span> '
+            + '<span class="cur">' + escapeHtml(cfg.currency || '') + '</span></span></div>';
         listEl.prepend(row);
         while (listEl.children.length > 10) listEl.lastElementChild.remove();
+        animateRowIn(row);
+    }
+
+    // Tab "سجل العروض" — prepend a new row into the history table (mirrors the
+    // sidebar so both lists update live from the single .bid.placed broadcast).
+    function prependHistoryRow(alias, centimes) {
+        if (!historyBody) return;
+        document.getElementById('liveBidHistoryEmpty')?.remove();
+        const tr = document.createElement('tr');
+        tr.className = 'bid-hist-row';
+        const safeAlias = escapeHtml(alias);
+        tr.innerHTML =
+            '<td class="bid-hist-bidder"><span>' + safeAlias + '</span></td>'
+            + '<td class="bid-hist-amt"><span class="money"><span class="amt">' + formatDinars(centimes) + '</span> '
+            + '<span class="cur">' + escapeHtml(cfg.currency || '') + '</span></span></td>'
+            + '<td class="bid-hist-time">' + escapeHtml(i18n.now || '') + '</td>';
+        historyBody.prepend(tr);
+        while (historyBody.children.length > 10) historyBody.lastElementChild.remove();
+        updateHistoryCount();
+        animateRowIn(tr);
+    }
+
+    function updateHistoryCount() {
+        if (!historyCountEl || !historyBody) return;
+        const n = Array.from(historyBody.children).filter((r) => r.id !== 'liveBidHistoryEmpty').length;
+        historyCountEl.textContent = String(Math.min(n, 10));
+    }
+
+    // Move the premium "highest bid" highlight to the current top row of a list:
+    // mark the first real row .is-top and inject the badge; clear it from the rest.
+    function applyTopMarker(container, getBadgeTarget, emptyId) {
+        if (!container) return;
+        let first = true;
+        Array.from(container.children).forEach((row) => {
+            if (emptyId && row.id === emptyId) return;
+            if (first) {
+                first = false;
+                row.classList.add('is-top');
+                const target = getBadgeTarget(row);
+                if (target && !target.querySelector('.top-badge')) {
+                    target.insertAdjacentHTML('beforeend', badgeHtml());
+                }
+            } else {
+                row.classList.remove('is-top');
+                row.querySelector('.top-badge')?.remove();
+            }
+        });
+    }
+
+    function refreshTopBadges() {
+        applyTopMarker(listEl, (row) => row.querySelector('.bid-row-name'), 'liveBidEmpty');
+        applyTopMarker(historyBody, (row) => row.querySelector('.bid-hist-bidder') || row.cells?.[0], 'liveBidHistoryEmpty');
+    }
+
+    // Single entry point for a new bid: update both lists, then re-anchor the
+    // premium highlight to the new top (highest = latest) row.
+    function applyNewBid(alias, centimes) {
+        prependBidRow(alias, centimes);
+        prependHistoryRow(alias, centimes);
+        refreshTopBadges();
     }
 
     // ── Auction lifecycle: lock / unlock / closed result ───────────────────
@@ -359,7 +495,7 @@ import './echo';
             if (locked && !closedFinal) unlockBidding();
             setPrice(e.new_price);
             incrementCount();
-            prependBidRow(e.bidder_alias, e.new_price);
+            applyNewBid(e.bidder_alias, e.new_price);
         })
         .listen('.auction.extended', (e) => {
             if (e.new_end_time) {
