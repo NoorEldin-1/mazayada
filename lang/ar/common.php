@@ -41,4 +41,16 @@ return [
     'optional' => 'اختياري',
     'active' => 'نشط',
     'inactive' => 'غير نشط',
+
+    // Mobile API — generic messages for the JSON envelope and error shapes.
+    'api' => [
+        'error' => 'حدث خطأ ما.',
+        'not_found' => 'العنصر المطلوب غير موجود.',
+        'unauthenticated' => 'يلزم تسجيل الدخول.',
+        'forbidden' => 'لا تملك صلاحية تنفيذ هذا الإجراء.',
+        'server_error' => 'حدث خطأ في الخادم.',
+        'too_many_requests' => 'عدد كبير من الطلبات، حاول لاحقًا.',
+        'account_inactive' => 'حسابك غير نشط أو محظور.',
+        'pong' => 'الواجهة البرمجية تعمل.',
+    ],
 ];

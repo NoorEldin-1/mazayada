@@ -53,7 +53,11 @@ class BidPlaced implements ShouldBroadcastNow
     {
         return [
             'auction_id' => $this->auctionId,
+            // new_price is in centimes (the storage unit, kept for the web client);
+            // new_price_dinars is the same amount in dinars for the mobile client,
+            // matching the REST API's money unit.
             'new_price' => $this->newPrice,
+            'new_price_dinars' => dinars($this->newPrice),
             'bidder_alias' => $this->bidderAlias,
             'timestamp' => $this->timestamp,
         ];

@@ -127,6 +127,17 @@ return [
     'two_factor_enable_hint' => 'You will need an authenticator app (e.g. Google Authenticator).',
     'two_factor_enable' => 'Enable 2FA',
 
+    // ===== Mobile API success messages =====
+    'api' => [
+        'registered' => 'Account created. A verification code has been sent to your email.',
+        'email_verified' => 'Your email has been verified successfully.',
+        'logged_in' => 'Signed in successfully.',
+        'logged_out' => 'Signed out successfully.',
+        'token_refreshed' => 'Session renewed.',
+        'needs_email_verification' => 'You must verify your email first. A new code has been sent to you.',
+        'question_revealed' => 'Account found. Answer the security question.',
+    ],
+
     'secret_questions' => [
         'mother_maiden' => 'What is your mother\'s maiden name?',
         'first_school' => 'What was the name of your first school?',

@@ -41,7 +41,9 @@ class AuctionClosed implements ShouldBroadcastNow
         return [
             'auction_id' => $this->auctionId,
             'winner_alias' => $this->winnerAlias,
+            // final_price in centimes (web client); *_dinars for the mobile client.
             'final_price' => $this->finalPrice,
+            'final_price_dinars' => $this->finalPrice !== null ? dinars($this->finalPrice) : null,
         ];
     }
 }

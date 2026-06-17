@@ -31,3 +31,14 @@ Homestead.yaml
 Thumbs.db
 /PDFs
 upgrade_plan.md
+
+# Scribe API docs. knuckleswtf/scribe is a require-dev dependency (absent in
+# production: the deploy runs `composer install --no-dev`). config/scribe.php IS
+# committed but starts with a guard that returns [] when Scribe is missing, so it
+# is safe to load in production. The static docs SITE is generated to public/docs
+# and IS committed (served at /docs, exactly like public/build). Only Scribe's
+# regeneration intermediates/artifacts are ignored:
+/.scribe
+/public/vendor/scribe
+/resources/views/scribe
+/storage/app/private/scribe

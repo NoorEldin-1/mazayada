@@ -121,6 +121,18 @@ if (! function_exists('mask_nin')) {
     }
 }
 
+if (! function_exists('dinars')) {
+    /**
+     * Whole dinars from an integer-centimes amount. The money boundary for the
+     * mobile API: services/DB/broadcasts use centimes, API resources expose
+     * dinars (amounts are always whole dinars, so this is exact).
+     */
+    function dinars(int|null $centimes): int
+    {
+        return intdiv((int) $centimes, 100);
+    }
+}
+
 if (! function_exists('dzd')) {
     /**
      * Format centimes to a DZD display string.

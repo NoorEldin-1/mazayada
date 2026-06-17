@@ -14,13 +14,14 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements HasLocalePreference
 {
-    use HasRoles, HasUuids, LogsActivity, Notifiable, TwoFactorAuthenticatable;
+    use HasApiTokens, HasRoles, HasUuids, LogsActivity, Notifiable, TwoFactorAuthenticatable;
 
     protected $fillable = [
         'nin', 'professional_id_no', 'id_card_number', 'passport_number', 'license_number',

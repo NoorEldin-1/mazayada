@@ -1,0 +1,2696 @@
+openapi: 3.0.3
+info:
+  title: 'Mazayada API Documentation'
+  description: 'Mazayada mobile API (v1). Token-authenticated JSON API for the Flutter client covering auctions and the citizen dashboard. All responses use a unified envelope ({data, message, meta} on success; {message, errors} on error). Money is returned in dinars; send Accept-Language (ar|fr|en) to localize responses.'
+  version: 1.0.0
+servers:
+  -
+    url: 'https://mazayada.findosystem.com'
+tags:
+  -
+    name: Appeals
+    description: "\nCitizen appeals/complaints, optionally linked to an auction the user took part\nin."
+  -
+    name: 'Auction Q&A'
+    description: "\nRegistered bidders asking written questions during the inspection window\n(§4 step 4). Answers are published by staff and surfaced via the public Q&A\nread endpoint."
+  -
+    name: 'Auction registration'
+    description: "\nThe §4 step-3 flow: acknowledge the condition book, then start paid\nregistration (deposit + entry fee + condition book) via the payment gateway.\nRequires a verified (KYC-complete) account."
+  -
+    name: Auctions
+    description: "\nPublic, read-only auction browsing. Money is returned in dinars; bidders are\nshown only by their deterministic alias."
+  -
+    name: Authentication
+    description: "\nToken-based authentication for the mobile app. Mirrors the web auth flows\n(OTP email verification, enumeration-safe reset, secret-question recovery) but\nissues a Sanctum access + refresh token pair instead of a session. The shared\nOTP / user-creation logic lives in OtpService + RegisterCitizen so web and API\nstay in lock-step."
+  -
+    name: Bidding
+    description: "\nPlacing bids. Requires a verified (KYC-complete) account and a paid\nregistration on the auction. Rate-limited per user per auction."
+  -
+    name: Dashboard
+    description: "\nThe citizen's home summary and their participation history."
+  -
+    name: Documents
+    description: "\nStreams generated PDFs (condition book / award / receipt) from the private\ndisk. Access is gated by DocumentPolicy@download (public docs to any\nauthenticated user; private docs to the owner / auction winner / entity staff)."
+  -
+    name: Endpoints
+    description: ''
+  -
+    name: KYC
+    description: "\nIdentity verification: upload documents to the private disk, submit the profile\nfor review, and stream back the user's own documents. Mirrors the web KYC flow."
+  -
+    name: Notifications
+    description: "\nThe citizen's in-app notification inbox."
+  -
+    name: Payments
+    description: "\nThe winner's final payment plus the gateway return handling and a status\nendpoint the app polls after the gateway web view closes."
+  -
+    name: Profile
+    description: "\nView and update the authenticated citizen's editable profile fields."
+  -
+    name: System
+    description: "\nLightweight, unauthenticated endpoints to verify the API pipeline (routing,\nenvelope, locale, rate limiting) is wired correctly."
+components:
+  securitySchemes:
+    default:
+      type: http
+      scheme: bearer
+      description: 'Obtain an <b>access token</b> from <code>POST /api/v1/auth/login</code> or <code>POST /api/v1/auth/verify-otp</code> and send it as <code>Authorization: Bearer &lt;access_token&gt;</code>. Access tokens are short-lived — use the <b>refresh token</b> at <code>POST /api/v1/auth/refresh</code> (send the refresh token as the bearer) to obtain a new pair.'
+security:
+  -
+    default: []
+paths:
+  /api/v1/appeals:
+    get:
+      summary: 'List my appeals'
+      operationId: listMyAppeals
+      description: ''
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - Appeals
+      security: []
+    post:
+      summary: 'Submit an appeal'
+      operationId: submitAnAppeal
+      description: ''
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - Appeals
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subject:
+                  type: string
+                  description: ''
+                  example: 'اعتراض على نتيجة المزاد'
+                reason:
+                  type: string
+                  description: ''
+                  example: 'لم يتم احتساب مزايدتي الأخيرة.'
+                auction_id:
+                  type: string
+                  description: 'An auction the user participated in (optional).'
+                  example: consequatur
+                  nullable: true
+              required:
+                - subject
+                - reason
+      security: []
+  '/api/v1/auctions/{auction_id}/questions':
+    post:
+      summary: 'Ask a question'
+      operationId: askAQuestion
+      description: 'Submit a question for staff to answer. Starts as PENDING and public.'
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - 'Auction Q&A'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question:
+                  type: string
+                  description: 'The question text (max 1000).'
+                  example: 'هل المركبة تعمل؟'
+              required:
+                - question
+      security: []
+    get:
+      summary: 'Public Q&A'
+      operationId: publicQA
+      description: 'Answered, public inspection questions for an auction (asker not identified).'
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data: []
+                  message: null
+                  meta:
+                    pagination:
+                      current_page: 1
+                      last_page: 1
+                      per_page: 20
+                      total: 0
+                      count: 0
+                properties:
+                  data:
+                    type: array
+                    example: []
+                  message:
+                    type: string
+                    example: null
+                    nullable: true
+                  meta:
+                    type: object
+                    properties:
+                      pagination:
+                        type: object
+                        properties:
+                          current_page:
+                            type: integer
+                            example: 1
+                          last_page:
+                            type: integer
+                            example: 1
+                          per_page:
+                            type: integer
+                            example: 20
+                          total:
+                            type: integer
+                            example: 0
+                          count:
+                            type: integer
+                            example: 0
+      tags:
+        - Auctions
+      security: []
+    parameters:
+      -
+        in: path
+        name: auction_id
+        description: 'The ID of the auction.'
+        example: a2050443-68af-41f5-8080-20d4b878c6ca
+        required: true
+        schema:
+          type: string
+  '/api/v1/auctions/{auction_id}/acknowledge-book':
+    post:
+      summary: 'Acknowledge the condition book'
+      operationId: acknowledgeTheConditionBook
+      description: "Records that the citizen has read the condition book (§10.3) — a\nprerequisite for starting registration."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - 'Auction registration'
+      security: []
+    parameters:
+      -
+        in: path
+        name: auction_id
+        description: 'The ID of the auction.'
+        example: a2050443-68af-41f5-8080-20d4b878c6ca
+        required: true
+        schema:
+          type: string
+  '/api/v1/auctions/{auction_id}/register':
+    post:
+      summary: 'Start registration'
+      operationId: startRegistration
+      description: "Creates the pending payment(s) and returns the gateway redirect URL. Open\n`redirect_url` in a web view; once the gateway returns, poll\n`GET payments/{ref}/status` (or re-fetch the auction) to confirm."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - 'Auction registration'
+      security: []
+    parameters:
+      -
+        in: path
+        name: auction_id
+        description: 'The ID of the auction.'
+        example: a2050443-68af-41f5-8080-20d4b878c6ca
+        required: true
+        schema:
+          type: string
+  /api/v1/auctions:
+    get:
+      summary: 'List auctions'
+      operationId: listAuctions
+      description: 'Paginated, filterable list of public auctions.'
+      parameters:
+        -
+          in: query
+          name: q
+          description: 'Search in the Arabic title.'
+          example: سيارة
+          required: false
+          schema:
+            type: string
+            description: 'Search in the Arabic title.'
+            example: سيارة
+        -
+          in: query
+          name: category
+          description: 'Filter by category id.'
+          example: consequatur
+          required: false
+          schema:
+            type: string
+            description: 'Filter by category id.'
+            example: consequatur
+        -
+          in: query
+          name: wilaya
+          description: 'Filter by wilaya id.'
+          example: 16
+          required: false
+          schema:
+            type: integer
+            description: 'Filter by wilaya id.'
+            example: 16
+        -
+          in: query
+          name: status
+          description: 'One of PUBLISHED, ACTIVE, EXTENDED, CLOSED.'
+          example: ACTIVE
+          required: false
+          schema:
+            type: string
+            description: 'One of PUBLISHED, ACTIVE, EXTENDED, CLOSED.'
+            example: ACTIVE
+        -
+          in: query
+          name: type
+          description: 'Auction type: SALE or LEASE.'
+          example: SALE
+          required: false
+          schema:
+            type: string
+            description: 'Auction type: SALE or LEASE.'
+            example: SALE
+        -
+          in: query
+          name: per_page
+          description: 'Items per page (1-50, default 12).'
+          example: 12
+          required: false
+          schema:
+            type: integer
+            description: 'Items per page (1-50, default 12).'
+            example: 12
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data: []
+                  message: null
+                  meta:
+                    pagination:
+                      current_page: 1
+                      last_page: 1
+                      per_page: 12
+                      total: 0
+                      count: 0
+                properties:
+                  data:
+                    type: array
+                    example: []
+                  message:
+                    type: string
+                    example: null
+                    nullable: true
+                  meta:
+                    type: object
+                    properties:
+                      pagination:
+                        type: object
+                        properties:
+                          current_page:
+                            type: integer
+                            example: 1
+                          last_page:
+                            type: integer
+                            example: 1
+                          per_page:
+                            type: integer
+                            example: 12
+                          total:
+                            type: integer
+                            example: 0
+                          count:
+                            type: integer
+                            example: 0
+      tags:
+        - Auctions
+      security: []
+  '/api/v1/auctions/{id}':
+    get:
+      summary: 'Get an auction'
+      operationId: getAnAuction
+      description: "Full detail for a single public auction. If the bidding clock has run out\nbut the auction is not yet finalised, it is closed on read (winner + final\nprice) so the response is canonical."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    id: a2050443-68af-41f5-8080-20d4b878c6ca
+                    title: 'new one'
+                    titles:
+                      ar: 'new one'
+                      fr: 'new one'
+                      en: null
+                    description: "new one\r\nnew one\r\nnew one\r\nnew one"
+                    descriptions:
+                      ar: "new one\r\nnew one\r\nnew one\r\nnew one"
+                      fr: "new one\r\nnew one\r\nnew one\r\nnew one"
+                    status: CLOSED
+                    auction_type: SALE
+                    asset_class: REAL_ESTATE
+                    condition: NEW
+                    unit_count: 1
+                    category:
+                      id: 2
+                      name: عقارات
+                    wilaya:
+                      id: 2
+                      code: '02'
+                      name: الشلف
+                    commune:
+                      id: 23
+                      name: بوقادير
+                    entity:
+                      id: a1dc9d20-adb9-4238-9c3d-a600ccd3075e
+                      name: 'المجلس الشعبي البلدي لخنشلة'
+                    asset_location: 'new site'
+                    latitude: null
+                    longitude: null
+                    mayor_name: 'new name'
+                    photos:
+                      - 'http://localhost:8000/storage/auctions/a2050443-68af-41f5-8080-20d4b878c6ca/JHBtdQWhA4LOIjXbioJHCzgG8ovifXRrNtxAjLlz.jpg'
+                      - 'http://localhost:8000/storage/auctions/a2050443-68af-41f5-8080-20d4b878c6ca/vLQTdRnwLwgvzRM53r87vWOePYcMCOHnTfVqeBJD.jpg'
+                      - 'http://localhost:8000/storage/auctions/a2050443-68af-41f5-8080-20d4b878c6ca/JcshBU0KGcgYrwxQhkikA3vDcM4fhI2V8ZQGMxSB.jpg'
+                    cover_photo_url: 'http://localhost:8000/storage/auctions/a2050443-68af-41f5-8080-20d4b878c6ca/JHBtdQWhA4LOIjXbioJHCzgG8ovifXRrNtxAjLlz.jpg'
+                    video_url: 'http://localhost:8000/storage/auctions/a2050443-68af-41f5-8080-20d4b878c6ca/video/knxMOt8C3yG3JwAnyiIPuKkDbHOWVAVTPa0mrGpD.mp4'
+                    opening_price:
+                      amount: 1000000
+                      formatted: '1 000 000 دج'
+                    current_price:
+                      amount: 6100000
+                      formatted: '6 100 000 دج'
+                    deposit_amount:
+                      amount: 200
+                      formatted: '200 دج'
+                    entry_fee:
+                      amount: 200
+                      formatted: '200 دج'
+                    book_price:
+                      amount: 200
+                      formatted: '200 دج'
+                    bid_count: 15
+                    start_time: '2026-06-14T11:10:00+01:00'
+                    end_time: '2026-06-14T12:00:00+01:00'
+                    seconds_remaining: 0
+                    is_live: false
+                    is_biddable: false
+                    has_ended: false
+                    extension_count: 0
+                    max_extensions: 10
+                    inspection:
+                      start: '2026-06-14T11:03:00+01:00'
+                      end: '2026-06-20T11:03:00+01:00'
+                      location: 'new site'
+                      is_open: true
+                    requires_commerce_register: false
+                    requires_newspaper_announcement: true
+                    winner_alias: Bold_Falcon_197
+                    final_price:
+                      amount: 6100000
+                      formatted: '6 100 000 دج'
+                    condition_book:
+                      id: f5cea43f-df52-4942-89bf-716077671467
+                      type: CONDITION_BOOK
+                      title: 'كراسة شروط — new one'
+                      is_public: true
+                      download_url: 'http://mazayada.findosystem.com/api/v1/documents/f5cea43f-df52-4942-89bf-716077671467/download'
+                    award_document: null
+                  message: null
+                  meta:
+                    viewer: null
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: a2050443-68af-41f5-8080-20d4b878c6ca
+                      title:
+                        type: string
+                        example: 'new one'
+                      titles:
+                        type: object
+                        properties:
+                          ar:
+                            type: string
+                            example: 'new one'
+                          fr:
+                            type: string
+                            example: 'new one'
+                          en:
+                            type: string
+                            example: null
+                            nullable: true
+                      description:
+                        type: string
+                        example: "new one\r\nnew one\r\nnew one\r\nnew one"
+                      descriptions:
+                        type: object
+                        properties:
+                          ar:
+                            type: string
+                            example: "new one\r\nnew one\r\nnew one\r\nnew one"
+                          fr:
+                            type: string
+                            example: "new one\r\nnew one\r\nnew one\r\nnew one"
+                      status:
+                        type: string
+                        example: CLOSED
+                      auction_type:
+                        type: string
+                        example: SALE
+                      asset_class:
+                        type: string
+                        example: REAL_ESTATE
+                      condition:
+                        type: string
+                        example: NEW
+                      unit_count:
+                        type: integer
+                        example: 1
+                      category:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            example: 2
+                          name:
+                            type: string
+                            example: عقارات
+                      wilaya:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            example: 2
+                          code:
+                            type: string
+                            example: '02'
+                          name:
+                            type: string
+                            example: الشلف
+                      commune:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            example: 23
+                          name:
+                            type: string
+                            example: بوقادير
+                      entity:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            example: a1dc9d20-adb9-4238-9c3d-a600ccd3075e
+                          name:
+                            type: string
+                            example: 'المجلس الشعبي البلدي لخنشلة'
+                      asset_location:
+                        type: string
+                        example: 'new site'
+                      latitude:
+                        type: string
+                        example: null
+                        nullable: true
+                      longitude:
+                        type: string
+                        example: null
+                        nullable: true
+                      mayor_name:
+                        type: string
+                        example: 'new name'
+                      photos:
+                        type: array
+                        example:
+                          - 'http://localhost:8000/storage/auctions/a2050443-68af-41f5-8080-20d4b878c6ca/JHBtdQWhA4LOIjXbioJHCzgG8ovifXRrNtxAjLlz.jpg'
+                          - 'http://localhost:8000/storage/auctions/a2050443-68af-41f5-8080-20d4b878c6ca/vLQTdRnwLwgvzRM53r87vWOePYcMCOHnTfVqeBJD.jpg'
+                          - 'http://localhost:8000/storage/auctions/a2050443-68af-41f5-8080-20d4b878c6ca/JcshBU0KGcgYrwxQhkikA3vDcM4fhI2V8ZQGMxSB.jpg'
+                        items:
+                          type: string
+                      cover_photo_url:
+                        type: string
+                        example: 'http://localhost:8000/storage/auctions/a2050443-68af-41f5-8080-20d4b878c6ca/JHBtdQWhA4LOIjXbioJHCzgG8ovifXRrNtxAjLlz.jpg'
+                      video_url:
+                        type: string
+                        example: 'http://localhost:8000/storage/auctions/a2050443-68af-41f5-8080-20d4b878c6ca/video/knxMOt8C3yG3JwAnyiIPuKkDbHOWVAVTPa0mrGpD.mp4'
+                      opening_price:
+                        type: object
+                        properties:
+                          amount:
+                            type: integer
+                            example: 1000000
+                          formatted:
+                            type: string
+                            example: '1 000 000 دج'
+                      current_price:
+                        type: object
+                        properties:
+                          amount:
+                            type: integer
+                            example: 6100000
+                          formatted:
+                            type: string
+                            example: '6 100 000 دج'
+                      deposit_amount:
+                        type: object
+                        properties:
+                          amount:
+                            type: integer
+                            example: 200
+                          formatted:
+                            type: string
+                            example: '200 دج'
+                      entry_fee:
+                        type: object
+                        properties:
+                          amount:
+                            type: integer
+                            example: 200
+                          formatted:
+                            type: string
+                            example: '200 دج'
+                      book_price:
+                        type: object
+                        properties:
+                          amount:
+                            type: integer
+                            example: 200
+                          formatted:
+                            type: string
+                            example: '200 دج'
+                      bid_count:
+                        type: integer
+                        example: 15
+                      start_time:
+                        type: string
+                        example: '2026-06-14T11:10:00+01:00'
+                      end_time:
+                        type: string
+                        example: '2026-06-14T12:00:00+01:00'
+                      seconds_remaining:
+                        type: integer
+                        example: 0
+                      is_live:
+                        type: boolean
+                        example: false
+                      is_biddable:
+                        type: boolean
+                        example: false
+                      has_ended:
+                        type: boolean
+                        example: false
+                      extension_count:
+                        type: integer
+                        example: 0
+                      max_extensions:
+                        type: integer
+                        example: 10
+                      inspection:
+                        type: object
+                        properties:
+                          start:
+                            type: string
+                            example: '2026-06-14T11:03:00+01:00'
+                          end:
+                            type: string
+                            example: '2026-06-20T11:03:00+01:00'
+                          location:
+                            type: string
+                            example: 'new site'
+                          is_open:
+                            type: boolean
+                            example: true
+                      requires_commerce_register:
+                        type: boolean
+                        example: false
+                      requires_newspaper_announcement:
+                        type: boolean
+                        example: true
+                      winner_alias:
+                        type: string
+                        example: Bold_Falcon_197
+                      final_price:
+                        type: object
+                        properties:
+                          amount:
+                            type: integer
+                            example: 6100000
+                          formatted:
+                            type: string
+                            example: '6 100 000 دج'
+                      condition_book:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            example: f5cea43f-df52-4942-89bf-716077671467
+                          type:
+                            type: string
+                            example: CONDITION_BOOK
+                          title:
+                            type: string
+                            example: 'كراسة شروط — new one'
+                          is_public:
+                            type: boolean
+                            example: true
+                          download_url:
+                            type: string
+                            example: 'http://mazayada.findosystem.com/api/v1/documents/f5cea43f-df52-4942-89bf-716077671467/download'
+                      award_document:
+                        type: string
+                        example: null
+                        nullable: true
+                  message:
+                    type: string
+                    example: null
+                    nullable: true
+                  meta:
+                    type: object
+                    properties:
+                      viewer:
+                        type: string
+                        example: null
+                        nullable: true
+      tags:
+        - Auctions
+      security: []
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the auction.'
+        example: a2050443-68af-41f5-8080-20d4b878c6ca
+        required: true
+        schema:
+          type: string
+  '/api/v1/auctions/{auction_id}/bids':
+    get:
+      summary: 'Latest bids'
+      operationId: latestBids
+      description: "The most recent valid bids (alias only) plus the current price. Use this to\nhydrate the bid history, or poll it as a fallback when the realtime socket\nis unavailable."
+      parameters:
+        -
+          in: query
+          name: limit
+          description: 'Number of bids to return (1-50, default 10).'
+          example: 10
+          required: false
+          schema:
+            type: integer
+            description: 'Number of bids to return (1-50, default 10).'
+            example: 10
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    -
+                      amount:
+                        amount: 6100000
+                        formatted: '6 100 000 دج'
+                      bidder_alias: Bold_Falcon_197
+                      bid_time: '2026-06-14T10:47:07+01:00'
+                    -
+                      amount:
+                        amount: 6000000
+                        formatted: '6 000 000 دج'
+                      bidder_alias: Swift_Hawk_242
+                      bid_time: '2026-06-14T10:46:30+01:00'
+                    -
+                      amount:
+                        amount: 5500000
+                        formatted: '5 500 000 دج'
+                      bidder_alias: Swift_Hawk_242
+                      bid_time: '2026-06-14T09:41:59+01:00'
+                    -
+                      amount:
+                        amount: 5400000
+                        formatted: '5 400 000 دج'
+                      bidder_alias: Swift_Hawk_242
+                      bid_time: '2026-06-14T09:41:37+01:00'
+                    -
+                      amount:
+                        amount: 5300000
+                        formatted: '5 300 000 دج'
+                      bidder_alias: Bold_Falcon_197
+                      bid_time: '2026-06-14T09:41:22+01:00'
+                    -
+                      amount:
+                        amount: 5200000
+                        formatted: '5 200 000 دج'
+                      bidder_alias: Swift_Hawk_242
+                      bid_time: '2026-06-14T09:41:12+01:00'
+                    -
+                      amount:
+                        amount: 5000000
+                        formatted: '5 000 000 دج'
+                      bidder_alias: Swift_Hawk_242
+                      bid_time: '2026-06-14T09:41:04+01:00'
+                    -
+                      amount:
+                        amount: 4600000
+                        formatted: '4 600 000 دج'
+                      bidder_alias: Bold_Falcon_197
+                      bid_time: '2026-06-14T09:40:56+01:00'
+                    -
+                      amount:
+                        amount: 3500000
+                        formatted: '3 500 000 دج'
+                      bidder_alias: Bold_Falcon_197
+                      bid_time: '2026-06-14T09:40:45+01:00'
+                    -
+                      amount:
+                        amount: 3400000
+                        formatted: '3 400 000 دج'
+                      bidder_alias: Swift_Hawk_242
+                      bid_time: '2026-06-14T09:40:32+01:00'
+                  message: null
+                  meta:
+                    current_price: 6100000
+                    bid_count: 15
+                    status: CLOSED
+                properties:
+                  data:
+                    type: array
+                    example:
+                      -
+                        amount:
+                          amount: 6100000
+                          formatted: '6 100 000 دج'
+                        bidder_alias: Bold_Falcon_197
+                        bid_time: '2026-06-14T10:47:07+01:00'
+                      -
+                        amount:
+                          amount: 6000000
+                          formatted: '6 000 000 دج'
+                        bidder_alias: Swift_Hawk_242
+                        bid_time: '2026-06-14T10:46:30+01:00'
+                      -
+                        amount:
+                          amount: 5500000
+                          formatted: '5 500 000 دج'
+                        bidder_alias: Swift_Hawk_242
+                        bid_time: '2026-06-14T09:41:59+01:00'
+                      -
+                        amount:
+                          amount: 5400000
+                          formatted: '5 400 000 دج'
+                        bidder_alias: Swift_Hawk_242
+                        bid_time: '2026-06-14T09:41:37+01:00'
+                      -
+                        amount:
+                          amount: 5300000
+                          formatted: '5 300 000 دج'
+                        bidder_alias: Bold_Falcon_197
+                        bid_time: '2026-06-14T09:41:22+01:00'
+                      -
+                        amount:
+                          amount: 5200000
+                          formatted: '5 200 000 دج'
+                        bidder_alias: Swift_Hawk_242
+                        bid_time: '2026-06-14T09:41:12+01:00'
+                      -
+                        amount:
+                          amount: 5000000
+                          formatted: '5 000 000 دج'
+                        bidder_alias: Swift_Hawk_242
+                        bid_time: '2026-06-14T09:41:04+01:00'
+                      -
+                        amount:
+                          amount: 4600000
+                          formatted: '4 600 000 دج'
+                        bidder_alias: Bold_Falcon_197
+                        bid_time: '2026-06-14T09:40:56+01:00'
+                      -
+                        amount:
+                          amount: 3500000
+                          formatted: '3 500 000 دج'
+                        bidder_alias: Bold_Falcon_197
+                        bid_time: '2026-06-14T09:40:45+01:00'
+                      -
+                        amount:
+                          amount: 3400000
+                          formatted: '3 400 000 دج'
+                        bidder_alias: Swift_Hawk_242
+                        bid_time: '2026-06-14T09:40:32+01:00'
+                    items:
+                      type: object
+                      properties:
+                        amount:
+                          type: object
+                          properties:
+                            amount:
+                              type: integer
+                              example: 6100000
+                            formatted:
+                              type: string
+                              example: '6 100 000 دج'
+                        bidder_alias:
+                          type: string
+                          example: Bold_Falcon_197
+                        bid_time:
+                          type: string
+                          example: '2026-06-14T10:47:07+01:00'
+                  message:
+                    type: string
+                    example: null
+                    nullable: true
+                  meta:
+                    type: object
+                    properties:
+                      current_price:
+                        type: integer
+                        example: 6100000
+                      bid_count:
+                        type: integer
+                        example: 15
+                      status:
+                        type: string
+                        example: CLOSED
+      tags:
+        - Auctions
+      security: []
+    parameters:
+      -
+        in: path
+        name: auction_id
+        description: 'The ID of the auction.'
+        example: a2050443-68af-41f5-8080-20d4b878c6ca
+        required: true
+        schema:
+          type: string
+  '/api/v1/auctions/{auction_id}/price':
+    get:
+      summary: 'Current price'
+      operationId: currentPrice
+      description: 'A cheap, pollable snapshot of the live price and clock for an auction.'
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    current_price: 6100000
+                    current_price_formatted: '6 100 000 دج'
+                    bid_count: 15
+                    status: CLOSED
+                    end_time: '2026-06-14T12:00:00+01:00'
+                    is_biddable: false
+                    has_ended: false
+                  message: null
+                  meta: {  }
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      current_price:
+                        type: integer
+                        example: 6100000
+                      current_price_formatted:
+                        type: string
+                        example: '6 100 000 دج'
+                      bid_count:
+                        type: integer
+                        example: 15
+                      status:
+                        type: string
+                        example: CLOSED
+                      end_time:
+                        type: string
+                        example: '2026-06-14T12:00:00+01:00'
+                      is_biddable:
+                        type: boolean
+                        example: false
+                      has_ended:
+                        type: boolean
+                        example: false
+                  message:
+                    type: string
+                    example: null
+                    nullable: true
+                  meta:
+                    type: object
+                    properties: {  }
+      tags:
+        - Auctions
+      security: []
+    parameters:
+      -
+        in: path
+        name: auction_id
+        description: 'The ID of the auction.'
+        example: a2050443-68af-41f5-8080-20d4b878c6ca
+        required: true
+        schema:
+          type: string
+  /api/v1/auth/register:
+    post:
+      summary: Register
+      operationId: register
+      description: "Create a CITIZEN account and email a 6-digit verification code. Does NOT log\nthe user in — call verify-otp with the returned user_id to obtain tokens."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nin:
+                  type: string
+                  description: ''
+                  example: consequatur
+                first_name_ar:
+                  type: string
+                  description: 'يجب ألا يزيد عدد أحرف value عن 100 حرفاً.'
+                  example: mqeopfuudtdsufvyvddqa
+                last_name_ar:
+                  type: string
+                  description: 'يجب ألا يزيد عدد أحرف value عن 100 حرفاً.'
+                  example: mniihfqcoynlazghdtqtq
+                phone:
+                  type: string
+                  description: ''
+                  example: consequatur
+                email:
+                  type: string
+                  description: 'يجب أن يكون value بريداً إلكترونياً صحيحاً. يجب ألا يزيد عدد أحرف value عن 255 حرفاً.'
+                  example: carolyne.luettgen@example.org
+                birth_date:
+                  type: string
+                  description: 'يجب أن يكون value تاريخاً صحيحاً. يجب أن يكون value تاريخاً قبل <code>2008-06-17</code>.'
+                  example: '2006-03-10'
+                password:
+                  type: string
+                  description: ''
+                  example: 'O[2UZ5ij-e/dl4m{o,'
+                device_name:
+                  type: string
+                  description: 'يجب ألا يزيد عدد أحرف value عن 80 حرفاً.'
+                  example: dqamniihfqcoynlazghdt
+                  nullable: true
+              required:
+                - nin
+                - first_name_ar
+                - last_name_ar
+                - phone
+                - email
+                - birth_date
+                - password
+      security: []
+  /api/v1/auth/login:
+    post:
+      summary: Login
+      operationId: login
+      description: "Authenticate with NIN-or-email + password. Returns a token pair, or — if the\nemail is unverified — `data.needs_email_verification = true` and a fresh OTP."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nin_or_email:
+                  type: string
+                  description: 'يجب ألا يزيد عدد أحرف value عن 255 حرفاً.'
+                  example: qkunze@example.com
+                password:
+                  type: string
+                  description: ''
+                  example: 'O[2UZ5ij-e/dl4m{o,'
+                device_name:
+                  type: string
+                  description: 'يجب ألا يزيد عدد أحرف value عن 80 حرفاً.'
+                  example: dqamniihfqcoynlazghdt
+                  nullable: true
+              required:
+                - nin_or_email
+                - password
+      security: []
+  /api/v1/auth/password/request:
+    post:
+      summary: 'Request password reset'
+      operationId: requestPasswordReset
+      description: "Step 1 — email a reset code if the NIN+email pair matches an account. The\nresponse is always neutral (does not reveal whether the account exists)."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nin:
+                  type: string
+                  description: ''
+                  example: consequatur
+                email:
+                  type: string
+                  description: 'يجب أن يكون value بريداً إلكترونياً صحيحاً.'
+                  example: carolyne.luettgen@example.org
+              required:
+                - nin
+                - email
+      security: []
+  /api/v1/auth/password/verify:
+    post:
+      summary: 'Verify password reset'
+      operationId: verifyPasswordReset
+      description: "Step 2 — verify the reset code and set a new password. All existing tokens\nand sessions are revoked."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nin:
+                  type: string
+                  description: ''
+                  example: consequatur
+                email:
+                  type: string
+                  description: 'يجب أن يكون value بريداً إلكترونياً صحيحاً.'
+                  example: carolyne.luettgen@example.org
+                otp:
+                  type: string
+                  description: 'يجب أن يكون عدد أحرف value 6 حرفاً.'
+                  example: fuudtd
+                password:
+                  type: string
+                  description: ''
+                  example: 'O[2UZ5ij-e/dl4m{o,'
+              required:
+                - nin
+                - email
+                - otp
+                - password
+      security: []
+  /api/v1/auth/recover/reveal:
+    post:
+      summary: 'Reveal secret question'
+      operationId: revealSecretQuestion
+      description: "Step 1 of account recovery — return the account's security question."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nin:
+                  type: string
+                  description: ''
+                  example: consequatur
+                email:
+                  type: string
+                  description: 'يجب أن يكون value بريداً إلكترونياً صحيحاً.'
+                  example: carolyne.luettgen@example.org
+              required:
+                - nin
+                - email
+      security: []
+  /api/v1/auth/recover/verify:
+    post:
+      summary: 'Recover by secret answer'
+      operationId: recoverBySecretAnswer
+      description: "Step 2 of account recovery — verify the secret answer and set a new\npassword. All existing tokens and sessions are revoked."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nin:
+                  type: string
+                  description: ''
+                  example: consequatur
+                email:
+                  type: string
+                  description: 'يجب أن يكون value بريداً إلكترونياً صحيحاً.'
+                  example: carolyne.luettgen@example.org
+                secret_answer:
+                  type: string
+                  description: ''
+                  example: consequatur
+                password:
+                  type: string
+                  description: ''
+                  example: 'O[2UZ5ij-e/dl4m{o,'
+              required:
+                - nin
+                - email
+                - secret_answer
+                - password
+      security: []
+  /api/v1/auth/verify-otp:
+    post:
+      summary: 'Verify OTP'
+      operationId: verifyOTP
+      description: 'Verify the registration code and receive an access + refresh token pair.'
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                  description: 'Must match an existing stored value.'
+                  example: consequatur
+                otp:
+                  type: string
+                  description: 'يجب أن يكون عدد أحرف value 6 حرفاً.'
+                  example: mqeopf
+                device_name:
+                  type: string
+                  description: 'يجب ألا يزيد عدد أحرف value عن 80 حرفاً.'
+                  example: uudtdsufvyvddqamniihf
+                  nullable: true
+              required:
+                - user_id
+                - otp
+      security: []
+  /api/v1/auth/resend-otp:
+    post:
+      summary: 'Resend OTP'
+      operationId: resendOTP
+      description: 'Re-issue a fresh registration code, throttled by a 60-second cooldown.'
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                  description: 'Must match an existing stored value.'
+                  example: consequatur
+              required:
+                - user_id
+      security: []
+  /api/v1/auth/refresh:
+    post:
+      summary: 'Refresh tokens'
+      operationId: refreshTokens
+      description: "Exchange a valid refresh token for a new access + refresh pair (rotation).\nSend the REFRESH token as the bearer here, not the access token."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - Authentication
+      security: []
+  /api/v1/auth/me:
+    get:
+      summary: 'Current user'
+      operationId: currentUser
+      description: "Return the authenticated user's profile."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - Authentication
+      security: []
+  /api/v1/auth/logout:
+    post:
+      summary: Logout
+      operationId: logout
+      description: "Revoke the current device's token pair. Pass `all=true` to revoke every\ndevice."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - Authentication
+      security: []
+  '/api/v1/auctions/{auction_id}/bid':
+    post:
+      summary: 'Place a bid'
+      operationId: placeABid
+      description: "Submit a bid in WHOLE DINARS. Business-rule failures (too low, not\nregistered, not live, …) return 422 with the localized reason under\n`errors.amount`."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - Bidding
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: integer
+                  description: 'The bid amount in dinars.'
+                  example: 15000
+              required:
+                - amount
+      security: []
+    parameters:
+      -
+        in: path
+        name: auction_id
+        description: 'The ID of the auction.'
+        example: a2050443-68af-41f5-8080-20d4b878c6ca
+        required: true
+        schema:
+          type: string
+  /api/v1/dashboard:
+    get:
+      summary: 'Dashboard summary'
+      operationId: dashboardSummary
+      description: 'Stat tiles, recent won auctions and the latest notifications.'
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - Dashboard
+      security: []
+  /api/v1/my-auctions:
+    get:
+      summary: 'My auctions'
+      operationId: myAuctions
+      description: "The user's participations grouped by tab (active | won | lost | upcoming)."
+      parameters:
+        -
+          in: query
+          name: tab
+          description: 'One of active, won, lost, upcoming (default active).'
+          example: active
+          required: false
+          schema:
+            type: string
+            description: 'One of active, won, lost, upcoming (default active).'
+            example: active
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - Dashboard
+      security: []
+  '/api/v1/documents/{document_id}/download':
+    get:
+      summary: 'Download a document'
+      operationId: downloadADocument
+      description: 'Streams the document binary (application/pdf).'
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - Documents
+      security: []
+    parameters:
+      -
+        in: path
+        name: document_id
+        description: 'The ID of the document.'
+        example: 26386cd1-0a82-45a1-af3e-b4d03db17ba8
+        required: true
+        schema:
+          type: string
+  /api/broadcasting/auth:
+    get:
+      summary: 'Authenticate the request for channel access.'
+      operationId: authenticateTheRequestForChannelAccess
+      description: ''
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - Endpoints
+      security: []
+  /api/v1/wilayas:
+    get:
+      summary: ''
+      operationId: getApiV1Wilayas
+      description: ''
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    code:
+                      type: string
+                      example: '01'
+                    name_ar:
+                      type: string
+                      example: أدرار
+                    name_fr:
+                      type: string
+                      example: Adrar
+                example:
+                  -
+                    id: 1
+                    code: '01'
+                    name_ar: أدرار
+                    name_fr: Adrar
+                  -
+                    id: 2
+                    code: '02'
+                    name_ar: الشلف
+                    name_fr: Chlef
+                  -
+                    id: 3
+                    code: '03'
+                    name_ar: الأغواط
+                    name_fr: Laghouat
+                  -
+                    id: 4
+                    code: '04'
+                    name_ar: 'أم البواقي'
+                    name_fr: 'Oum El Bouaghi'
+                  -
+                    id: 5
+                    code: '05'
+                    name_ar: باتنة
+                    name_fr: Batna
+                  -
+                    id: 6
+                    code: '06'
+                    name_ar: بجاية
+                    name_fr: Béjaïa
+                  -
+                    id: 7
+                    code: '07'
+                    name_ar: بسكرة
+                    name_fr: Biskra
+                  -
+                    id: 8
+                    code: '08'
+                    name_ar: بشار
+                    name_fr: Béchar
+                  -
+                    id: 9
+                    code: '09'
+                    name_ar: البليدة
+                    name_fr: Blida
+                  -
+                    id: 10
+                    code: '10'
+                    name_ar: البويرة
+                    name_fr: Bouïra
+                  -
+                    id: 11
+                    code: '11'
+                    name_ar: تمنراست
+                    name_fr: Tamanrasset
+                  -
+                    id: 12
+                    code: '12'
+                    name_ar: تبسة
+                    name_fr: Tébessa
+                  -
+                    id: 13
+                    code: '13'
+                    name_ar: تلمسان
+                    name_fr: Tlemcen
+                  -
+                    id: 14
+                    code: '14'
+                    name_ar: تيارت
+                    name_fr: Tiaret
+                  -
+                    id: 15
+                    code: '15'
+                    name_ar: 'تيزي وزو'
+                    name_fr: 'Tizi Ouzou'
+                  -
+                    id: 16
+                    code: '16'
+                    name_ar: الجزائر
+                    name_fr: Alger
+                  -
+                    id: 17
+                    code: '17'
+                    name_ar: الجلفة
+                    name_fr: Djelfa
+                  -
+                    id: 18
+                    code: '18'
+                    name_ar: جيجل
+                    name_fr: Jijel
+                  -
+                    id: 19
+                    code: '19'
+                    name_ar: سطيف
+                    name_fr: Sétif
+                  -
+                    id: 20
+                    code: '20'
+                    name_ar: سعيدة
+                    name_fr: Saïda
+                  -
+                    id: 21
+                    code: '21'
+                    name_ar: سكيكدة
+                    name_fr: Skikda
+                  -
+                    id: 22
+                    code: '22'
+                    name_ar: 'سيدي بلعباس'
+                    name_fr: 'Sidi Bel Abbès'
+                  -
+                    id: 23
+                    code: '23'
+                    name_ar: عنابة
+                    name_fr: Annaba
+                  -
+                    id: 24
+                    code: '24'
+                    name_ar: قالمة
+                    name_fr: Guelma
+                  -
+                    id: 25
+                    code: '25'
+                    name_ar: قسنطينة
+                    name_fr: Constantine
+                  -
+                    id: 26
+                    code: '26'
+                    name_ar: المدية
+                    name_fr: Médéa
+                  -
+                    id: 27
+                    code: '27'
+                    name_ar: مستغانم
+                    name_fr: Mostaganem
+                  -
+                    id: 28
+                    code: '28'
+                    name_ar: المسيلة
+                    name_fr: "M'Sila"
+                  -
+                    id: 29
+                    code: '29'
+                    name_ar: معسكر
+                    name_fr: Mascara
+                  -
+                    id: 30
+                    code: '30'
+                    name_ar: ورقلة
+                    name_fr: Ouargla
+                  -
+                    id: 31
+                    code: '31'
+                    name_ar: وهران
+                    name_fr: Oran
+                  -
+                    id: 32
+                    code: '32'
+                    name_ar: البيض
+                    name_fr: 'El Bayadh'
+                  -
+                    id: 33
+                    code: '33'
+                    name_ar: إليزي
+                    name_fr: Illizi
+                  -
+                    id: 34
+                    code: '34'
+                    name_ar: 'برج بوعريريج'
+                    name_fr: 'Bordj Bou Arréridj'
+                  -
+                    id: 35
+                    code: '35'
+                    name_ar: بومرداس
+                    name_fr: Boumerdès
+                  -
+                    id: 36
+                    code: '36'
+                    name_ar: الطارف
+                    name_fr: 'El Tarf'
+                  -
+                    id: 37
+                    code: '37'
+                    name_ar: تندوف
+                    name_fr: Tindouf
+                  -
+                    id: 38
+                    code: '38'
+                    name_ar: تيسمسيلت
+                    name_fr: Tissemsilt
+                  -
+                    id: 39
+                    code: '39'
+                    name_ar: الوادي
+                    name_fr: 'El Oued'
+                  -
+                    id: 40
+                    code: '40'
+                    name_ar: خنشلة
+                    name_fr: Khenchela
+                  -
+                    id: 41
+                    code: '41'
+                    name_ar: 'سوق أهراس'
+                    name_fr: 'Souk Ahras'
+                  -
+                    id: 42
+                    code: '42'
+                    name_ar: تيبازة
+                    name_fr: Tipaza
+                  -
+                    id: 43
+                    code: '43'
+                    name_ar: ميلة
+                    name_fr: Mila
+                  -
+                    id: 44
+                    code: '44'
+                    name_ar: 'عين الدفلى'
+                    name_fr: 'Aïn Defla'
+                  -
+                    id: 45
+                    code: '45'
+                    name_ar: النعامة
+                    name_fr: Naâma
+                  -
+                    id: 46
+                    code: '46'
+                    name_ar: 'عين تموشنت'
+                    name_fr: 'Aïn Témouchent'
+                  -
+                    id: 47
+                    code: '47'
+                    name_ar: غرداية
+                    name_fr: Ghardaïa
+                  -
+                    id: 48
+                    code: '48'
+                    name_ar: غليزان
+                    name_fr: Relizane
+                  -
+                    id: 49
+                    code: '49'
+                    name_ar: تيميمون
+                    name_fr: Timimoun
+                  -
+                    id: 50
+                    code: '50'
+                    name_ar: 'برج باجي مختار'
+                    name_fr: 'Bordj Badji Mokhtar'
+                  -
+                    id: 51
+                    code: '51'
+                    name_ar: 'أولاد جلال'
+                    name_fr: 'Ouled Djellal'
+                  -
+                    id: 52
+                    code: '52'
+                    name_ar: 'بني عباس'
+                    name_fr: 'Béni Abbès'
+                  -
+                    id: 53
+                    code: '53'
+                    name_ar: 'عين صالح'
+                    name_fr: 'In Salah'
+                  -
+                    id: 54
+                    code: '54'
+                    name_ar: 'عين قزام'
+                    name_fr: 'In Guezzam'
+                  -
+                    id: 55
+                    code: '55'
+                    name_ar: توقرت
+                    name_fr: Touggourt
+                  -
+                    id: 56
+                    code: '56'
+                    name_ar: جانت
+                    name_fr: Djanet
+                  -
+                    id: 57
+                    code: '57'
+                    name_ar: المغير
+                    name_fr: "El M'Ghair"
+                  -
+                    id: 58
+                    code: '58'
+                    name_ar: المنيعة
+                    name_fr: 'El Meniaa'
+      tags:
+        - Endpoints
+      security: []
+  '/api/v1/wilayas/{wilaya_id}/communes':
+    get:
+      summary: ''
+      operationId: getApiV1WilayasWilaya_idCommunes
+      description: ''
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    code:
+                      type: string
+                      example: '01001'
+                    name_ar:
+                      type: string
+                      example: أدرار
+                    name_fr:
+                      type: string
+                      example: Adrar
+                    postal_code:
+                      type: string
+                      example: null
+                      nullable: true
+                example:
+                  -
+                    id: 1
+                    code: '01001'
+                    name_ar: أدرار
+                    name_fr: Adrar
+                    postal_code: null
+                  -
+                    id: 2
+                    code: '01002'
+                    name_ar: اقبلي
+                    name_fr: Akabli
+                    postal_code: null
+                  -
+                    id: 3
+                    code: '01003'
+                    name_ar: أولف
+                    name_fr: Aoulef
+                    postal_code: null
+                  -
+                    id: 4
+                    code: '01004'
+                    name_ar: بودة
+                    name_fr: Bouda
+                    postal_code: null
+                  -
+                    id: 5
+                    code: '01005'
+                    name_ar: فنوغيل
+                    name_fr: Fenoughil
+                    postal_code: null
+                  -
+                    id: 6
+                    code: '01006'
+                    name_ar: 'إن زغمير'
+                    name_fr: 'In Zghmir'
+                    postal_code: null
+                  -
+                    id: 7
+                    code: '01007'
+                    name_ar: 'أولاد أحمد تيمي'
+                    name_fr: 'Ouled Ahmed Timmi'
+                    postal_code: null
+                  -
+                    id: 8
+                    code: '01008'
+                    name_ar: رقان
+                    name_fr: Reggane
+                    postal_code: null
+                  -
+                    id: 9
+                    code: '01009'
+                    name_ar: سالي
+                    name_fr: Sali
+                    postal_code: null
+                  -
+                    id: 10
+                    code: '01010'
+                    name_ar: السبع
+                    name_fr: Sebaa
+                    postal_code: null
+                  -
+                    id: 11
+                    code: '01011'
+                    name_ar: تامنطيط
+                    name_fr: Tamantit
+                    postal_code: null
+                  -
+                    id: 12
+                    code: '01012'
+                    name_ar: تامست
+                    name_fr: Tamest
+                    postal_code: null
+                  -
+                    id: 13
+                    code: '01013'
+                    name_ar: تيمقتن
+                    name_fr: Timekten
+                    postal_code: null
+                  -
+                    id: 14
+                    code: '01014'
+                    name_ar: تيت
+                    name_fr: Tit
+                    postal_code: null
+                  -
+                    id: 15
+                    code: '01015'
+                    name_ar: تسابيت
+                    name_fr: Tsabit
+                    postal_code: null
+                  -
+                    id: 16
+                    code: '01016'
+                    name_ar: 'زاوية كنتة'
+                    name_fr: 'Zaouiet Kounta'
+                    postal_code: null
+      tags:
+        - Endpoints
+      security: []
+    parameters:
+      -
+        in: path
+        name: wilaya_id
+        description: 'The ID of the wilaya.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+  /api/v1/kyc:
+    get:
+      summary: 'KYC status'
+      operationId: kYCStatus
+      description: "The user's KYC state, which documents are on file, and whether a (re)submit\nis currently allowed."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - KYC
+      security: []
+  '/api/v1/kyc/upload/{type}':
+    post:
+      summary: 'Upload a document'
+      operationId: uploadADocument
+      description: "Stores a KYC document (JPG/PNG) on the private disk. Allowed types:\nid-front, id-back, selfie-with-id, photo-biometric."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - KYC
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 'يجب أن يكون value صورة. يجب ألا يزيد حجم value عن 1024 كيلوبايت.'
+              required:
+                - file
+      security: []
+    parameters:
+      -
+        in: path
+        name: type
+        description: ''
+        example: consequatur
+        required: true
+        schema:
+          type: string
+  /api/v1/kyc/submit:
+    post:
+      summary: 'Submit for review'
+      operationId: submitForReview
+      description: "Validates the profile, requires all three identity documents, and moves the\naccount to UNDER_REVIEW."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - KYC
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                first_name_fr:
+                  type: string
+                  description: 'يجب ألا يزيد عدد أحرف value عن 100 حرفاً.'
+                  example: vmqeopfuudtdsufvyvddq
+                last_name_fr:
+                  type: string
+                  description: 'يجب ألا يزيد عدد أحرف value عن 100 حرفاً.'
+                  example: amniihfqcoynlazghdtqt
+                father_name:
+                  type: string
+                  description: 'يجب ألا يزيد عدد أحرف value عن 100 حرفاً.'
+                  example: qxbajwbpilpmufinllwlo
+                mother_name:
+                  type: string
+                  description: 'يجب ألا يزيد عدد أحرف value عن 100 حرفاً.'
+                  example: auydlsmsjuryvojcybzvr
+                mother_surname:
+                  type: string
+                  description: 'يجب ألا يزيد عدد أحرف value عن 100 حرفاً.'
+                  example: byickznkygloigmkwxphl
+                address:
+                  type: string
+                  description: 'يجب ألا يزيد عدد أحرف value عن 255 حرفاً.'
+                  example: vazjrcnfbaqywuxhgjjmz
+                wilaya_id:
+                  type: integer
+                  description: 'Must match an existing stored value.'
+                  example: 17
+                commune_id:
+                  type: integer
+                  description: 'Must match an existing stored value.'
+                  example: 17
+                postal_code:
+                  type: string
+                  description: 'Must match the regex /^\d{5}$/.'
+                  example: '15627'
+                profession:
+                  type: string
+                  description: 'يجب ألا يزيد عدد أحرف value عن 100 حرفاً.'
+                  example: udtdsufvyvddqamniihfq
+                  nullable: true
+                expected_income:
+                  type: integer
+                  description: 'يجب ألا تقل قيمة value عن 0.'
+                  example: 8
+                  nullable: true
+                rip:
+                  type: string
+                  description: ''
+                  example: null
+                  nullable: true
+                id_type:
+                  type: string
+                  description: ''
+                  example: ID_CARD
+                  enum:
+                    - ID_CARD
+                    - PASSPORT
+                    - LICENSE
+                  nullable: true
+                id_number:
+                  type: string
+                  description: 'This field is required when <code>id_type</code> is present. يجب ألا يزيد عدد أحرف value عن 30 حرفاً.'
+                  example: oynlazghdtqtqxbajwbpi
+                  nullable: true
+                nif:
+                  type: string
+                  description: ''
+                  example: null
+                  nullable: true
+                nis:
+                  type: string
+                  description: ''
+                  example: null
+                  nullable: true
+              required:
+                - first_name_fr
+                - last_name_fr
+                - father_name
+                - mother_name
+                - mother_surname
+                - address
+                - wilaya_id
+                - commune_id
+                - postal_code
+      security: []
+  '/api/v1/kyc/document/{type}':
+    get:
+      summary: 'Download a KYC document'
+      operationId: downloadAKYCDocument
+      description: "Streams one of the authenticated user's own KYC documents from the private\ndisk (a user can never reach another user's files)."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - KYC
+      security: []
+    parameters:
+      -
+        in: path
+        name: type
+        description: ''
+        example: 26386cd1-0a82-45a1-af3e-b4d03db17ba8
+        required: true
+        schema:
+          type: string
+  /api/v1/notifications:
+    get:
+      summary: 'List notifications'
+      operationId: listNotifications
+      description: 'Paginated, newest first. The unread total is in meta.unread_count.'
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - Notifications
+      security: []
+  /api/v1/notifications/unread-count:
+    get:
+      summary: 'Unread count'
+      operationId: unreadCount
+      description: ''
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - Notifications
+      security: []
+  '/api/v1/notifications/{notification_id}/read':
+    post:
+      summary: 'Mark one as read'
+      operationId: markOneAsRead
+      description: ''
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - Notifications
+      security: []
+    parameters:
+      -
+        in: path
+        name: notification_id
+        description: 'The ID of the notification.'
+        example: a1dc9d24-40b9-44ee-b376-f7b6d177130f
+        required: true
+        schema:
+          type: string
+  /api/v1/notifications/read-all:
+    post:
+      summary: 'Mark all as read'
+      operationId: markAllAsRead
+      description: ''
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - Notifications
+      security: []
+  /api/v1/payments/callback:
+    get:
+      summary: 'Payment callback'
+      operationId: paymentCallback
+      description: "Gateway return URL. Confirms (or fails) the payment set for the reference\nand reports the resulting status. Idempotent — safe to call more than once."
+      parameters:
+        -
+          in: query
+          name: ref
+          description: 'The gateway reference.'
+          example: MOCK-ABC123
+          required: true
+          schema:
+            type: string
+            description: 'The gateway reference.'
+            example: MOCK-ABC123
+        -
+          in: query
+          name: decision
+          description: 'The gateway decision (success|fail).'
+          example: success
+          required: false
+          schema:
+            type: string
+            description: 'The gateway decision (success|fail).'
+            example: success
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    ref: MOCK-ABC123
+                    confirmed: false
+                  message: 'لم تكتمل عملية الدفع.'
+                  meta: {  }
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      ref:
+                        type: string
+                        example: MOCK-ABC123
+                      confirmed:
+                        type: boolean
+                        example: false
+                  message:
+                    type: string
+                    example: 'لم تكتمل عملية الدفع.'
+                  meta:
+                    type: object
+                    properties: {  }
+      tags:
+        - Payments
+      security: []
+  '/api/v1/payments/{ref}/status':
+    get:
+      summary: 'Payment status'
+      operationId: paymentStatus
+      description: "Returns the status of every payment row sharing a gateway reference for the\nauthenticated user. Use this to poll after the gateway web view returns."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - Payments
+      security: []
+    parameters:
+      -
+        in: path
+        name: ref
+        description: ''
+        example: a1f6e506-27d4-496f-85a5-03541c909118
+        required: true
+        schema:
+          type: string
+  '/api/v1/auctions/{auction_id}/final-payment':
+    post:
+      summary: 'Start final payment'
+      operationId: startFinalPayment
+      description: "Begins the winner's final payment (§4 step 7) and returns the gateway\nredirect URL."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - Payments
+      security: []
+    parameters:
+      -
+        in: path
+        name: auction_id
+        description: 'The ID of the auction.'
+        example: a2050443-68af-41f5-8080-20d4b878c6ca
+        required: true
+        schema:
+          type: string
+  /api/v1/profile:
+    get:
+      summary: 'Get profile'
+      operationId: getProfile
+      description: ''
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - Profile
+      security: []
+    put:
+      summary: 'Update profile'
+      operationId: updateProfile
+      description: "Updates contact details, address and the security question. Identity fields\n(NIN, names) are not editable here."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - Profile
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  type: string
+                  description: ''
+                  example: consequatur
+                email:
+                  type: string
+                  description: 'يجب أن يكون value بريداً إلكترونياً صحيحاً.'
+                  example: carolyne.luettgen@example.org
+                address:
+                  type: string
+                  description: 'يجب ألا يزيد عدد أحرف value عن 255 حرفاً.'
+                  example: fuudtdsufvyvddqamniih
+                  nullable: true
+                commune_id:
+                  type: string
+                  description: 'Must match an existing stored value.'
+                  example: null
+                  nullable: true
+                postal_code:
+                  type: string
+                  description: 'Must match the regex /^\d{5}$/.'
+                  example: '15627'
+                  nullable: true
+                profession:
+                  type: string
+                  description: 'يجب ألا يزيد عدد أحرف value عن 100 حرفاً.'
+                  example: udtdsufvyvddqamniihfq
+                  nullable: true
+                secret_question:
+                  type: string
+                  description: ''
+                  example: pet_name
+                  enum:
+                    - mother_maiden
+                    - first_school
+                    - birth_city
+                    - pet_name
+                    - fav_teacher
+                  nullable: true
+                secret_answer:
+                  type: string
+                  description: 'يجب ألا يقل عدد أحرف value عن 2 حرفاً. يجب ألا يزيد عدد أحرف value عن 200 حرفاً.'
+                  example: coynlazghdtqtqxbajwbp
+                  nullable: true
+      security: []
+  /api/v1/ping:
+    get:
+      summary: Ping
+      operationId: ping
+      description: "Returns a simple liveness payload wrapped in the standard envelope. Useful\nfor smoke-testing the API plumbing and the active locale."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    status: ok
+                    version: v1
+                    locale: ar
+                  message: 'الواجهة البرمجية تعمل.'
+                  meta: {  }
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        example: ok
+                      version:
+                        type: string
+                        example: v1
+                      locale:
+                        type: string
+                        example: ar
+                  message:
+                    type: string
+                    example: 'الواجهة البرمجية تعمل.'
+                  meta:
+                    type: object
+                    properties: {  }
+      tags:
+        - System
+      security: []

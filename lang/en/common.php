@@ -41,4 +41,16 @@ return [
     'optional' => 'Optional',
     'active' => 'Active',
     'inactive' => 'Inactive',
+
+    // Mobile API — generic messages for the JSON envelope and error shapes.
+    'api' => [
+        'error' => 'Something went wrong.',
+        'not_found' => 'The requested resource was not found.',
+        'unauthenticated' => 'Authentication is required.',
+        'forbidden' => 'You are not authorized to perform this action.',
+        'server_error' => 'Server error.',
+        'too_many_requests' => 'Too many requests, please try again later.',
+        'account_inactive' => 'Your account is inactive or blocked.',
+        'pong' => 'The API is up.',
+    ],
 ];

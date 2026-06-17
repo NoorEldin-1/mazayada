@@ -127,6 +127,17 @@ return [
     'two_factor_enable_hint' => 'Vous aurez besoin d\'une application d\'authentification (ex. Google Authenticator).',
     'two_factor_enable' => 'Activer l\'A2F',
 
+    // ===== Mobile API success messages =====
+    'api' => [
+        'registered' => 'Compte créé. Un code de vérification a été envoyé à votre e-mail.',
+        'email_verified' => 'Votre e-mail a été vérifié avec succès.',
+        'logged_in' => 'Connexion réussie.',
+        'logged_out' => 'Déconnexion réussie.',
+        'token_refreshed' => 'Session renouvelée.',
+        'needs_email_verification' => "Vous devez d'abord vérifier votre e-mail. Un nouveau code vous a été envoyé.",
+        'question_revealed' => 'Compte trouvé. Répondez à la question de sécurité.',
+    ],
+
     'secret_questions' => [
         'mother_maiden' => 'Quel est le nom de jeune fille de votre mère ?',
         'first_school' => 'Quel est le nom de votre première école ?',

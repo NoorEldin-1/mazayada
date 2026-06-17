@@ -2,20 +2,19 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Actions\Auth\RegisterCitizen;
 use App\Enums\AccountStatus;
-use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\User;
-use App\Notifications\OtpVerificationNotification;
 use App\Rules\AlgerianPhone;
 use App\Rules\NinValidation;
+use App\Services\Auth\OtpService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
@@ -155,21 +154,12 @@ class AuthController extends Controller
             'password' => ['required', 'string', 'confirmed', Password::defaults()],
         ]);
 
-        $user = User::create([
-            'nin' => $validated['nin'],
-            'first_name_ar' => $validated['first_name_ar'],
-            'last_name_ar' => $validated['last_name_ar'],
-            'phone' => $validated['phone'],
-            'email' => $validated['email'],
-            'birth_date' => $validated['birth_date'],
-            'password' => $validated['password'],
-            'role' => UserRole::CITIZEN,
-            // Carry over the language the guest picked on the landing page so
-            // their account is created in the language they were browsing in.
-            'locale' => session('locale', config('locales.default', 'ar')),
-        ]);
-
-        $user->assignRole(UserRole::CITIZEN->value);
+        // Carry over the language the guest picked on the landing page so their
+        // account is created in the language they were browsing in.
+        $user = app(RegisterCitizen::class)->create(
+            $validated,
+            session('locale', config('locales.default', 'ar')),
+        );
 
         $this->issueOtp($user);
 
@@ -239,25 +229,13 @@ class AuthController extends Controller
     }
 
     /**
-     * Generate a fresh 6-digit code, cache it for OTP_TTL_MINUTES, and email it
-     * to the user (email-only — no SMS). Resets any previous attempt counter.
+     * Generate a fresh 6-digit code, cache it for the purpose's TTL, and email it
+     * to the user (email-only — no SMS). Delegates to the shared OtpService so the
+     * web and mobile API issue codes identically (same cache keys + TTLs).
      */
     private function issueOtp(User $user, string $purpose = 'register', ?int $ttlMinutes = null): void
     {
-        $ttlMinutes ??= self::OTP_TTL_MINUTES;
-        $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-
-        Cache::put("otp_{$purpose}_{$user->id}", $otp, now()->addMinutes($ttlMinutes));
-        Cache::forget("otp_attempts_{$purpose}_{$user->id}");
-
-        // Never let a mail-transport failure (bad SMTP creds, network blip) turn
-        // into a 500 — the code is cached and the user can hit "resend" once mail
-        // is configured. The failure is logged for ops.
-        try {
-            $user->notify(new OtpVerificationNotification($otp, $ttlMinutes, $purpose));
-        } catch (\Throwable $e) {
-            Log::error('OTP email failed to send', ['user_id' => $user->id, 'purpose' => $purpose, 'error' => $e->getMessage()]);
-        }
+        app(OtpService::class)->issue($user, $purpose, $ttlMinutes);
     }
 
     public function showResetPassword(): View

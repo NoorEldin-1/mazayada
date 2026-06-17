@@ -127,6 +127,17 @@ return [
     'two_factor_enable_hint' => 'ستحتاج إلى تطبيق مصادقة (مثل Google Authenticator).',
     'two_factor_enable' => 'تفعيل التحقق بخطوتين',
 
+    // ===== Mobile API success messages =====
+    'api' => [
+        'registered' => 'تم إنشاء الحساب. أرسلنا رمز تحقق إلى بريدك الإلكتروني.',
+        'email_verified' => 'تم تأكيد بريدك الإلكتروني بنجاح.',
+        'logged_in' => 'تم تسجيل الدخول بنجاح.',
+        'logged_out' => 'تم تسجيل الخروج بنجاح.',
+        'token_refreshed' => 'تم تجديد الجلسة.',
+        'needs_email_verification' => 'يجب تأكيد بريدك الإلكتروني أولاً. أرسلنا لك رمزاً جديداً.',
+        'question_revealed' => 'تم العثور على الحساب. أجب عن سؤال الأمان.',
+    ],
+
     'secret_questions' => [
         'mother_maiden' => 'ما هو الاسم العائلي لوالدتك؟',
         'first_school' => 'ما اسم أول مدرسة التحقت بها؟',

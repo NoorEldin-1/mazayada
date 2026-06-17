@@ -131,4 +131,22 @@ return [
         'signing_key' => env('DOCUMENT_SIGNING_KEY', env('APP_KEY')),
     ],
 
+    /*
+    | Mobile API (Flutter client) — Sanctum token lifecycle + per-group rate
+    | limits. Mirrored into system_settings so a Super Admin can tune them via
+    | the setting() helper without a deploy.
+    */
+    'api' => [
+        // Access token: short-lived bearer used on every call.
+        'access_ttl_minutes' => (int) env('API_ACCESS_TTL_MINUTES', 60),
+        // Refresh token: long-lived, ability-scoped, rotated on every refresh.
+        'refresh_ttl_days' => (int) env('API_REFRESH_TTL_DAYS', 30),
+
+        'rate' => [
+            'default' => (int) env('API_RATE_DEFAULT', 60), // requests/min, per token or IP
+            'auth' => (int) env('API_RATE_AUTH', 10),       // login/register/refresh, per IP
+            'otp' => (int) env('API_RATE_OTP', 5),          // verify/resend OTP, per IP+identifier
+        ],
+    ],
+
 ];

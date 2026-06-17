@@ -1,0 +1,2103 @@
+{
+    "variable": [
+        {
+            "id": "baseUrl",
+            "key": "baseUrl",
+            "type": "string",
+            "name": "string",
+            "value": "https:\/\/mazayada.findosystem.com"
+        }
+    ],
+    "info": {
+        "name": "Mazayada API Documentation",
+        "_postman_id": "8dc06cc4-d18f-4663-b555-4e0d591cfb25",
+        "description": "Mazayada mobile API (v1). Token-authenticated JSON API for the Flutter client covering auctions and the citizen dashboard. All responses use a unified envelope ({data, message, meta} on success; {message, errors} on error). Money is returned in dinars; send Accept-Language (ar|fr|en) to localize responses.",
+        "schema": "https:\/\/schema.getpostman.com\/json\/collection\/v2.1.0\/collection.json"
+    },
+    "item": [
+        {
+            "name": "Appeals",
+            "description": "\nCitizen appeals\/complaints, optionally linked to an auction the user took part\nin.",
+            "item": [
+                {
+                    "name": "List my appeals",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/appeals",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/appeals"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Submit an appeal",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/appeals",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/appeals"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"subject\":\"\u0627\u0639\u062a\u0631\u0627\u0636 \u0639\u0644\u0649 \u0646\u062a\u064a\u062c\u0629 \u0627\u0644\u0645\u0632\u0627\u062f\",\"reason\":\"\u0644\u0645 \u064a\u062a\u0645 \u0627\u062d\u062a\u0633\u0627\u0628 \u0645\u0632\u0627\u064a\u062f\u062a\u064a \u0627\u0644\u0623\u062e\u064a\u0631\u0629.\",\"auction_id\":\"consequatur\"}"
+                        },
+                        "description": "",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Auction Q&A",
+            "description": "\nRegistered bidders asking written questions during the inspection window\n(\u00a74 step 4). Answers are published by staff and surfaced via the public Q&A\nread endpoint.",
+            "item": [
+                {
+                    "name": "Ask a question",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auctions\/:auction_id\/questions",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auctions\/:auction_id\/questions",
+                            "variable": [
+                                {
+                                    "id": "auction_id",
+                                    "key": "auction_id",
+                                    "value": "a2050443-68af-41f5-8080-20d4b878c6ca",
+                                    "description": "The ID of the auction."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"question\":\"\u0647\u0644 \u0627\u0644\u0645\u0631\u0643\u0628\u0629 \u062a\u0639\u0645\u0644\u061f\"}"
+                        },
+                        "description": "Submit a question for staff to answer. Starts as PENDING and public.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Auction registration",
+            "description": "\nThe \u00a74 step-3 flow: acknowledge the condition book, then start paid\nregistration (deposit + entry fee + condition book) via the payment gateway.\nRequires a verified (KYC-complete) account.",
+            "item": [
+                {
+                    "name": "Acknowledge the condition book",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auctions\/:auction_id\/acknowledge-book",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auctions\/:auction_id\/acknowledge-book",
+                            "variable": [
+                                {
+                                    "id": "auction_id",
+                                    "key": "auction_id",
+                                    "value": "a2050443-68af-41f5-8080-20d4b878c6ca",
+                                    "description": "The ID of the auction."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Records that the citizen has read the condition book (\u00a710.3) \u2014 a\nprerequisite for starting registration.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Start registration",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auctions\/:auction_id\/register",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auctions\/:auction_id\/register",
+                            "variable": [
+                                {
+                                    "id": "auction_id",
+                                    "key": "auction_id",
+                                    "value": "a2050443-68af-41f5-8080-20d4b878c6ca",
+                                    "description": "The ID of the auction."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Creates the pending payment(s) and returns the gateway redirect URL. Open\n`redirect_url` in a web view; once the gateway returns, poll\n`GET payments\/{ref}\/status` (or re-fetch the auction) to confirm.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Auctions",
+            "description": "\nPublic, read-only auction browsing. Money is returned in dinars; bidders are\nshown only by their deterministic alias.",
+            "item": [
+                {
+                    "name": "List auctions",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auctions",
+                            "query": [
+                                {
+                                    "key": "q",
+                                    "value": "\u0633\u064a\u0627\u0631\u0629",
+                                    "description": "Search in the Arabic title.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "category",
+                                    "value": "consequatur",
+                                    "description": "Filter by category id.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "wilaya",
+                                    "value": "16",
+                                    "description": "Filter by wilaya id.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "status",
+                                    "value": "ACTIVE",
+                                    "description": "One of PUBLISHED, ACTIVE, EXTENDED, CLOSED.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "type",
+                                    "value": "SALE",
+                                    "description": "Auction type: SALE or LEASE.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "per_page",
+                                    "value": "12",
+                                    "description": "Items per page (1-50, default 12).",
+                                    "disabled": false
+                                }
+                            ],
+                            "raw": "{{baseUrl}}\/api\/v1\/auctions?q=%D8%B3%D9%8A%D8%A7%D8%B1%D8%A9&category=consequatur&wilaya=16&status=ACTIVE&type=SALE&per_page=12"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Paginated, filterable list of public auctions.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 200,
+                            "body": "{\"data\":[],\"message\":null,\"meta\":{\"pagination\":{\"current_page\":1,\"last_page\":1,\"per_page\":12,\"total\":0,\"count\":0}}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Get an auction",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auctions\/:id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auctions\/:id",
+                            "variable": [
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": "a2050443-68af-41f5-8080-20d4b878c6ca",
+                                    "description": "The ID of the auction."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Full detail for a single public auction. If the bidding clock has run out\nbut the auction is not yet finalised, it is closed on read (winner + final\nprice) so the response is canonical.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 200,
+                            "body": "{\"data\":{\"id\":\"a2050443-68af-41f5-8080-20d4b878c6ca\",\"title\":\"new one\",\"titles\":{\"ar\":\"new one\",\"fr\":\"new one\",\"en\":null},\"description\":\"new one\\r\\nnew one\\r\\nnew one\\r\\nnew one\",\"descriptions\":{\"ar\":\"new one\\r\\nnew one\\r\\nnew one\\r\\nnew one\",\"fr\":\"new one\\r\\nnew one\\r\\nnew one\\r\\nnew one\"},\"status\":\"CLOSED\",\"auction_type\":\"SALE\",\"asset_class\":\"REAL_ESTATE\",\"condition\":\"NEW\",\"unit_count\":1,\"category\":{\"id\":2,\"name\":\"\\u0639\\u0642\\u0627\\u0631\\u0627\\u062a\"},\"wilaya\":{\"id\":2,\"code\":\"02\",\"name\":\"\\u0627\\u0644\\u0634\\u0644\\u0641\"},\"commune\":{\"id\":23,\"name\":\"\\u0628\\u0648\\u0642\\u0627\\u062f\\u064a\\u0631\"},\"entity\":{\"id\":\"a1dc9d20-adb9-4238-9c3d-a600ccd3075e\",\"name\":\"\\u0627\\u0644\\u0645\\u062c\\u0644\\u0633 \\u0627\\u0644\\u0634\\u0639\\u0628\\u064a \\u0627\\u0644\\u0628\\u0644\\u062f\\u064a \\u0644\\u062e\\u0646\\u0634\\u0644\\u0629\"},\"asset_location\":\"new site\",\"latitude\":null,\"longitude\":null,\"mayor_name\":\"new name\",\"photos\":[\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/JHBtdQWhA4LOIjXbioJHCzgG8ovifXRrNtxAjLlz.jpg\",\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/vLQTdRnwLwgvzRM53r87vWOePYcMCOHnTfVqeBJD.jpg\",\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/JcshBU0KGcgYrwxQhkikA3vDcM4fhI2V8ZQGMxSB.jpg\"],\"cover_photo_url\":\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/JHBtdQWhA4LOIjXbioJHCzgG8ovifXRrNtxAjLlz.jpg\",\"video_url\":\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/video\\\/knxMOt8C3yG3JwAnyiIPuKkDbHOWVAVTPa0mrGpD.mp4\",\"opening_price\":{\"amount\":1000000,\"formatted\":\"1 000 000 \\u062f\\u062c\"},\"current_price\":{\"amount\":6100000,\"formatted\":\"6 100 000 \\u062f\\u062c\"},\"deposit_amount\":{\"amount\":200,\"formatted\":\"200 \\u062f\\u062c\"},\"entry_fee\":{\"amount\":200,\"formatted\":\"200 \\u062f\\u062c\"},\"book_price\":{\"amount\":200,\"formatted\":\"200 \\u062f\\u062c\"},\"bid_count\":15,\"start_time\":\"2026-06-14T11:10:00+01:00\",\"end_time\":\"2026-06-14T12:00:00+01:00\",\"seconds_remaining\":0,\"is_live\":false,\"is_biddable\":false,\"has_ended\":false,\"extension_count\":0,\"max_extensions\":10,\"inspection\":{\"start\":\"2026-06-14T11:03:00+01:00\",\"end\":\"2026-06-20T11:03:00+01:00\",\"location\":\"new site\",\"is_open\":true},\"requires_commerce_register\":false,\"requires_newspaper_announcement\":true,\"winner_alias\":\"Bold_Falcon_197\",\"final_price\":{\"amount\":6100000,\"formatted\":\"6 100 000 \\u062f\\u062c\"},\"condition_book\":{\"id\":\"f5cea43f-df52-4942-89bf-716077671467\",\"type\":\"CONDITION_BOOK\",\"title\":\"\\u0643\\u0631\\u0627\\u0633\\u0629 \\u0634\\u0631\\u0648\\u0637 \\u2014 new one\",\"is_public\":true,\"download_url\":\"http:\\\/\\\/mazayada.findosystem.com\\\/api\\\/v1\\\/documents\\\/f5cea43f-df52-4942-89bf-716077671467\\\/download\"},\"award_document\":null},\"message\":null,\"meta\":{\"viewer\":null}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Latest bids",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auctions\/:auction_id\/bids",
+                            "query": [
+                                {
+                                    "key": "limit",
+                                    "value": "10",
+                                    "description": "Number of bids to return (1-50, default 10).",
+                                    "disabled": false
+                                }
+                            ],
+                            "raw": "{{baseUrl}}\/api\/v1\/auctions\/:auction_id\/bids?limit=10",
+                            "variable": [
+                                {
+                                    "id": "auction_id",
+                                    "key": "auction_id",
+                                    "value": "a2050443-68af-41f5-8080-20d4b878c6ca",
+                                    "description": "The ID of the auction."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "The most recent valid bids (alias only) plus the current price. Use this to\nhydrate the bid history, or poll it as a fallback when the realtime socket\nis unavailable.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 200,
+                            "body": "{\"data\":[{\"amount\":{\"amount\":6100000,\"formatted\":\"6 100 000 \\u062f\\u062c\"},\"bidder_alias\":\"Bold_Falcon_197\",\"bid_time\":\"2026-06-14T10:47:07+01:00\"},{\"amount\":{\"amount\":6000000,\"formatted\":\"6 000 000 \\u062f\\u062c\"},\"bidder_alias\":\"Swift_Hawk_242\",\"bid_time\":\"2026-06-14T10:46:30+01:00\"},{\"amount\":{\"amount\":5500000,\"formatted\":\"5 500 000 \\u062f\\u062c\"},\"bidder_alias\":\"Swift_Hawk_242\",\"bid_time\":\"2026-06-14T09:41:59+01:00\"},{\"amount\":{\"amount\":5400000,\"formatted\":\"5 400 000 \\u062f\\u062c\"},\"bidder_alias\":\"Swift_Hawk_242\",\"bid_time\":\"2026-06-14T09:41:37+01:00\"},{\"amount\":{\"amount\":5300000,\"formatted\":\"5 300 000 \\u062f\\u062c\"},\"bidder_alias\":\"Bold_Falcon_197\",\"bid_time\":\"2026-06-14T09:41:22+01:00\"},{\"amount\":{\"amount\":5200000,\"formatted\":\"5 200 000 \\u062f\\u062c\"},\"bidder_alias\":\"Swift_Hawk_242\",\"bid_time\":\"2026-06-14T09:41:12+01:00\"},{\"amount\":{\"amount\":5000000,\"formatted\":\"5 000 000 \\u062f\\u062c\"},\"bidder_alias\":\"Swift_Hawk_242\",\"bid_time\":\"2026-06-14T09:41:04+01:00\"},{\"amount\":{\"amount\":4600000,\"formatted\":\"4 600 000 \\u062f\\u062c\"},\"bidder_alias\":\"Bold_Falcon_197\",\"bid_time\":\"2026-06-14T09:40:56+01:00\"},{\"amount\":{\"amount\":3500000,\"formatted\":\"3 500 000 \\u062f\\u062c\"},\"bidder_alias\":\"Bold_Falcon_197\",\"bid_time\":\"2026-06-14T09:40:45+01:00\"},{\"amount\":{\"amount\":3400000,\"formatted\":\"3 400 000 \\u062f\\u062c\"},\"bidder_alias\":\"Swift_Hawk_242\",\"bid_time\":\"2026-06-14T09:40:32+01:00\"}],\"message\":null,\"meta\":{\"current_price\":6100000,\"bid_count\":15,\"status\":\"CLOSED\"}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Current price",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auctions\/:auction_id\/price",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auctions\/:auction_id\/price",
+                            "variable": [
+                                {
+                                    "id": "auction_id",
+                                    "key": "auction_id",
+                                    "value": "a2050443-68af-41f5-8080-20d4b878c6ca",
+                                    "description": "The ID of the auction."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "A cheap, pollable snapshot of the live price and clock for an auction.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 200,
+                            "body": "{\"data\":{\"current_price\":6100000,\"current_price_formatted\":\"6 100 000 \\u062f\\u062c\",\"bid_count\":15,\"status\":\"CLOSED\",\"end_time\":\"2026-06-14T12:00:00+01:00\",\"is_biddable\":false,\"has_ended\":false},\"message\":null,\"meta\":{}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Public Q&A",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auctions\/:auction_id\/questions",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auctions\/:auction_id\/questions",
+                            "variable": [
+                                {
+                                    "id": "auction_id",
+                                    "key": "auction_id",
+                                    "value": "a2050443-68af-41f5-8080-20d4b878c6ca",
+                                    "description": "The ID of the auction."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Answered, public inspection questions for an auction (asker not identified).",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 200,
+                            "body": "{\"data\":[],\"message\":null,\"meta\":{\"pagination\":{\"current_page\":1,\"last_page\":1,\"per_page\":20,\"total\":0,\"count\":0}}}",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Authentication",
+            "description": "\nToken-based authentication for the mobile app. Mirrors the web auth flows\n(OTP email verification, enumeration-safe reset, secret-question recovery) but\nissues a Sanctum access + refresh token pair instead of a session. The shared\nOTP \/ user-creation logic lives in OtpService + RegisterCitizen so web and API\nstay in lock-step.",
+            "item": [
+                {
+                    "name": "Register",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/register",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/register"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"nin\":\"consequatur\",\"first_name_ar\":\"mqeopfuudtdsufvyvddqa\",\"last_name_ar\":\"mniihfqcoynlazghdtqtq\",\"phone\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"birth_date\":\"2006-03-10\",\"password\":\"O[2UZ5ij-e\\\/dl4m{o,\",\"device_name\":\"dqamniihfqcoynlazghdt\"}"
+                        },
+                        "description": "Create a CITIZEN account and email a 6-digit verification code. Does NOT log\nthe user in \u2014 call verify-otp with the returned user_id to obtain tokens.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Login",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/login",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/login"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"nin_or_email\":\"qkunze@example.com\",\"password\":\"O[2UZ5ij-e\\\/dl4m{o,\",\"device_name\":\"dqamniihfqcoynlazghdt\"}"
+                        },
+                        "description": "Authenticate with NIN-or-email + password. Returns a token pair, or \u2014 if the\nemail is unverified \u2014 `data.needs_email_verification = true` and a fresh OTP.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Request password reset",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/password\/request",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/password\/request"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"nin\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\"}"
+                        },
+                        "description": "Step 1 \u2014 email a reset code if the NIN+email pair matches an account. The\nresponse is always neutral (does not reveal whether the account exists).",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Verify password reset",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/password\/verify",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/password\/verify"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"nin\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"otp\":\"fuudtd\",\"password\":\"O[2UZ5ij-e\\\/dl4m{o,\"}"
+                        },
+                        "description": "Step 2 \u2014 verify the reset code and set a new password. All existing tokens\nand sessions are revoked.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Reveal secret question",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/recover\/reveal",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/recover\/reveal"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"nin\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\"}"
+                        },
+                        "description": "Step 1 of account recovery \u2014 return the account's security question.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Recover by secret answer",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/recover\/verify",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/recover\/verify"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"nin\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"secret_answer\":\"consequatur\",\"password\":\"O[2UZ5ij-e\\\/dl4m{o,\"}"
+                        },
+                        "description": "Step 2 of account recovery \u2014 verify the secret answer and set a new\npassword. All existing tokens and sessions are revoked.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Verify OTP",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/verify-otp",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/verify-otp"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"user_id\":\"consequatur\",\"otp\":\"mqeopf\",\"device_name\":\"uudtdsufvyvddqamniihf\"}"
+                        },
+                        "description": "Verify the registration code and receive an access + refresh token pair.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Resend OTP",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/resend-otp",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/resend-otp"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"user_id\":\"consequatur\"}"
+                        },
+                        "description": "Re-issue a fresh registration code, throttled by a 60-second cooldown.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Refresh tokens",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/refresh",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/refresh"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Exchange a valid refresh token for a new access + refresh pair (rotation).\nSend the REFRESH token as the bearer here, not the access token.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Current user",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/me",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/me"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Return the authenticated user's profile.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/logout",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/logout"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Revoke the current device's token pair. Pass `all=true` to revoke every\ndevice.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Bidding",
+            "description": "\nPlacing bids. Requires a verified (KYC-complete) account and a paid\nregistration on the auction. Rate-limited per user per auction.",
+            "item": [
+                {
+                    "name": "Place a bid",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auctions\/:auction_id\/bid",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auctions\/:auction_id\/bid",
+                            "variable": [
+                                {
+                                    "id": "auction_id",
+                                    "key": "auction_id",
+                                    "value": "a2050443-68af-41f5-8080-20d4b878c6ca",
+                                    "description": "The ID of the auction."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"amount\":15000}"
+                        },
+                        "description": "Submit a bid in WHOLE DINARS. Business-rule failures (too low, not\nregistered, not live, \u2026) return 422 with the localized reason under\n`errors.amount`.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Dashboard",
+            "description": "\nThe citizen's home summary and their participation history.",
+            "item": [
+                {
+                    "name": "Dashboard summary",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/dashboard",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/dashboard"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Stat tiles, recent won auctions and the latest notifications.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "My auctions",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/my-auctions",
+                            "query": [
+                                {
+                                    "key": "tab",
+                                    "value": "active",
+                                    "description": "One of active, won, lost, upcoming (default active).",
+                                    "disabled": false
+                                }
+                            ],
+                            "raw": "{{baseUrl}}\/api\/v1\/my-auctions?tab=active"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "The user's participations grouped by tab (active | won | lost | upcoming).",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Documents",
+            "description": "\nStreams generated PDFs (condition book \/ award \/ receipt) from the private\ndisk. Access is gated by DocumentPolicy@download (public docs to any\nauthenticated user; private docs to the owner \/ auction winner \/ entity staff).",
+            "item": [
+                {
+                    "name": "Download a document",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/documents\/:document_id\/download",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/documents\/:document_id\/download",
+                            "variable": [
+                                {
+                                    "id": "document_id",
+                                    "key": "document_id",
+                                    "value": "26386cd1-0a82-45a1-af3e-b4d03db17ba8",
+                                    "description": "The ID of the document."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Streams the document binary (application\/pdf).",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Endpoints",
+            "description": "",
+            "item": [
+                {
+                    "name": "Authenticate the request for channel access.",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/broadcasting\/auth",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/broadcasting\/auth"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "GET api\/v1\/wilayas",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/wilayas",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/wilayas"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "max-age=3600, public, s-maxage=3600"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                },
+                                {
+                                    "key": "set-cookie",
+                                    "value": "XSRF-TOKEN=eyJpdiI6InQwejRBU3JlVHVtbFUrQVlTdDRITGc9PSIsInZhbHVlIjoiUEtteHQ4QkNTanpIU2xIQWZ2ZVpWUklVd0UvNzYxR0k5N0RPZWJheDU4K1NiNXM1Q2JYSGlTVzk3NWhBYzJkcnBLaGJYQy9QWnZTTzlEQnlacStYaEI1TTRSN0RrQm9PY3RBK3ZlYUFwNldzVVN3cWFaNzMvV3FZRkh6ak1wdTQiLCJtYWMiOiJjZTQ2Yzk1OTE3NDUxZDU5OTYwNThlMDgxNDAxOGUwNTY4YzJmYzMzNmQyYWI0ZmE0ZjRiZTNiYTllZGE0ODI3IiwidGFnIjoiIn0%3D; expires=Wed, 17 Jun 2026 16:02:31 GMT; Max-Age=7200; path=\/; samesite=lax; mazayada-session=eyJpdiI6IktLdkw0a2RaeVhJYktleGJQb29VT2c9PSIsInZhbHVlIjoib0llUXdGN08vOVprVVZ5cnFUQjNsMVFtMFBSYi9jMnUvNDRvSHc4d0JOK2lzakxoWVRnaENwM3QwRGN2S2RQcjJUbEYrZzZhMHUzaEUrK0s5VkVLa2FoL0RKNDJCSW5HY3A4L3czcCszQk1UNE1JalQ0eE9DTVFDOHVzeW5qTVgiLCJtYWMiOiI2ODEzM2ZiNDIxNzk2NzhiMTQyNzNiNTM5NjI0YzljODEzODMyNjgzNmE1ZjJmYzg5NGY5NzI2MGViY2JmZmY3IiwidGFnIjoiIn0%3D; expires=Wed, 17 Jun 2026 16:02:31 GMT; Max-Age=7200; path=\/; httponly; samesite=lax"
+                                }
+                            ],
+                            "code": 200,
+                            "body": "[{\"id\":1,\"code\":\"01\",\"name_ar\":\"\\u0623\\u062f\\u0631\\u0627\\u0631\",\"name_fr\":\"Adrar\"},{\"id\":2,\"code\":\"02\",\"name_ar\":\"\\u0627\\u0644\\u0634\\u0644\\u0641\",\"name_fr\":\"Chlef\"},{\"id\":3,\"code\":\"03\",\"name_ar\":\"\\u0627\\u0644\\u0623\\u063a\\u0648\\u0627\\u0637\",\"name_fr\":\"Laghouat\"},{\"id\":4,\"code\":\"04\",\"name_ar\":\"\\u0623\\u0645 \\u0627\\u0644\\u0628\\u0648\\u0627\\u0642\\u064a\",\"name_fr\":\"Oum El Bouaghi\"},{\"id\":5,\"code\":\"05\",\"name_ar\":\"\\u0628\\u0627\\u062a\\u0646\\u0629\",\"name_fr\":\"Batna\"},{\"id\":6,\"code\":\"06\",\"name_ar\":\"\\u0628\\u062c\\u0627\\u064a\\u0629\",\"name_fr\":\"B\\u00e9ja\\u00efa\"},{\"id\":7,\"code\":\"07\",\"name_ar\":\"\\u0628\\u0633\\u0643\\u0631\\u0629\",\"name_fr\":\"Biskra\"},{\"id\":8,\"code\":\"08\",\"name_ar\":\"\\u0628\\u0634\\u0627\\u0631\",\"name_fr\":\"B\\u00e9char\"},{\"id\":9,\"code\":\"09\",\"name_ar\":\"\\u0627\\u0644\\u0628\\u0644\\u064a\\u062f\\u0629\",\"name_fr\":\"Blida\"},{\"id\":10,\"code\":\"10\",\"name_ar\":\"\\u0627\\u0644\\u0628\\u0648\\u064a\\u0631\\u0629\",\"name_fr\":\"Bou\\u00efra\"},{\"id\":11,\"code\":\"11\",\"name_ar\":\"\\u062a\\u0645\\u0646\\u0631\\u0627\\u0633\\u062a\",\"name_fr\":\"Tamanrasset\"},{\"id\":12,\"code\":\"12\",\"name_ar\":\"\\u062a\\u0628\\u0633\\u0629\",\"name_fr\":\"T\\u00e9bessa\"},{\"id\":13,\"code\":\"13\",\"name_ar\":\"\\u062a\\u0644\\u0645\\u0633\\u0627\\u0646\",\"name_fr\":\"Tlemcen\"},{\"id\":14,\"code\":\"14\",\"name_ar\":\"\\u062a\\u064a\\u0627\\u0631\\u062a\",\"name_fr\":\"Tiaret\"},{\"id\":15,\"code\":\"15\",\"name_ar\":\"\\u062a\\u064a\\u0632\\u064a \\u0648\\u0632\\u0648\",\"name_fr\":\"Tizi Ouzou\"},{\"id\":16,\"code\":\"16\",\"name_ar\":\"\\u0627\\u0644\\u062c\\u0632\\u0627\\u0626\\u0631\",\"name_fr\":\"Alger\"},{\"id\":17,\"code\":\"17\",\"name_ar\":\"\\u0627\\u0644\\u062c\\u0644\\u0641\\u0629\",\"name_fr\":\"Djelfa\"},{\"id\":18,\"code\":\"18\",\"name_ar\":\"\\u062c\\u064a\\u062c\\u0644\",\"name_fr\":\"Jijel\"},{\"id\":19,\"code\":\"19\",\"name_ar\":\"\\u0633\\u0637\\u064a\\u0641\",\"name_fr\":\"S\\u00e9tif\"},{\"id\":20,\"code\":\"20\",\"name_ar\":\"\\u0633\\u0639\\u064a\\u062f\\u0629\",\"name_fr\":\"Sa\\u00efda\"},{\"id\":21,\"code\":\"21\",\"name_ar\":\"\\u0633\\u0643\\u064a\\u0643\\u062f\\u0629\",\"name_fr\":\"Skikda\"},{\"id\":22,\"code\":\"22\",\"name_ar\":\"\\u0633\\u064a\\u062f\\u064a \\u0628\\u0644\\u0639\\u0628\\u0627\\u0633\",\"name_fr\":\"Sidi Bel Abb\\u00e8s\"},{\"id\":23,\"code\":\"23\",\"name_ar\":\"\\u0639\\u0646\\u0627\\u0628\\u0629\",\"name_fr\":\"Annaba\"},{\"id\":24,\"code\":\"24\",\"name_ar\":\"\\u0642\\u0627\\u0644\\u0645\\u0629\",\"name_fr\":\"Guelma\"},{\"id\":25,\"code\":\"25\",\"name_ar\":\"\\u0642\\u0633\\u0646\\u0637\\u064a\\u0646\\u0629\",\"name_fr\":\"Constantine\"},{\"id\":26,\"code\":\"26\",\"name_ar\":\"\\u0627\\u0644\\u0645\\u062f\\u064a\\u0629\",\"name_fr\":\"M\\u00e9d\\u00e9a\"},{\"id\":27,\"code\":\"27\",\"name_ar\":\"\\u0645\\u0633\\u062a\\u063a\\u0627\\u0646\\u0645\",\"name_fr\":\"Mostaganem\"},{\"id\":28,\"code\":\"28\",\"name_ar\":\"\\u0627\\u0644\\u0645\\u0633\\u064a\\u0644\\u0629\",\"name_fr\":\"M'Sila\"},{\"id\":29,\"code\":\"29\",\"name_ar\":\"\\u0645\\u0639\\u0633\\u0643\\u0631\",\"name_fr\":\"Mascara\"},{\"id\":30,\"code\":\"30\",\"name_ar\":\"\\u0648\\u0631\\u0642\\u0644\\u0629\",\"name_fr\":\"Ouargla\"},{\"id\":31,\"code\":\"31\",\"name_ar\":\"\\u0648\\u0647\\u0631\\u0627\\u0646\",\"name_fr\":\"Oran\"},{\"id\":32,\"code\":\"32\",\"name_ar\":\"\\u0627\\u0644\\u0628\\u064a\\u0636\",\"name_fr\":\"El Bayadh\"},{\"id\":33,\"code\":\"33\",\"name_ar\":\"\\u0625\\u0644\\u064a\\u0632\\u064a\",\"name_fr\":\"Illizi\"},{\"id\":34,\"code\":\"34\",\"name_ar\":\"\\u0628\\u0631\\u062c \\u0628\\u0648\\u0639\\u0631\\u064a\\u0631\\u064a\\u062c\",\"name_fr\":\"Bordj Bou Arr\\u00e9ridj\"},{\"id\":35,\"code\":\"35\",\"name_ar\":\"\\u0628\\u0648\\u0645\\u0631\\u062f\\u0627\\u0633\",\"name_fr\":\"Boumerd\\u00e8s\"},{\"id\":36,\"code\":\"36\",\"name_ar\":\"\\u0627\\u0644\\u0637\\u0627\\u0631\\u0641\",\"name_fr\":\"El Tarf\"},{\"id\":37,\"code\":\"37\",\"name_ar\":\"\\u062a\\u0646\\u062f\\u0648\\u0641\",\"name_fr\":\"Tindouf\"},{\"id\":38,\"code\":\"38\",\"name_ar\":\"\\u062a\\u064a\\u0633\\u0645\\u0633\\u064a\\u0644\\u062a\",\"name_fr\":\"Tissemsilt\"},{\"id\":39,\"code\":\"39\",\"name_ar\":\"\\u0627\\u0644\\u0648\\u0627\\u062f\\u064a\",\"name_fr\":\"El Oued\"},{\"id\":40,\"code\":\"40\",\"name_ar\":\"\\u062e\\u0646\\u0634\\u0644\\u0629\",\"name_fr\":\"Khenchela\"},{\"id\":41,\"code\":\"41\",\"name_ar\":\"\\u0633\\u0648\\u0642 \\u0623\\u0647\\u0631\\u0627\\u0633\",\"name_fr\":\"Souk Ahras\"},{\"id\":42,\"code\":\"42\",\"name_ar\":\"\\u062a\\u064a\\u0628\\u0627\\u0632\\u0629\",\"name_fr\":\"Tipaza\"},{\"id\":43,\"code\":\"43\",\"name_ar\":\"\\u0645\\u064a\\u0644\\u0629\",\"name_fr\":\"Mila\"},{\"id\":44,\"code\":\"44\",\"name_ar\":\"\\u0639\\u064a\\u0646 \\u0627\\u0644\\u062f\\u0641\\u0644\\u0649\",\"name_fr\":\"A\\u00efn Defla\"},{\"id\":45,\"code\":\"45\",\"name_ar\":\"\\u0627\\u0644\\u0646\\u0639\\u0627\\u0645\\u0629\",\"name_fr\":\"Na\\u00e2ma\"},{\"id\":46,\"code\":\"46\",\"name_ar\":\"\\u0639\\u064a\\u0646 \\u062a\\u0645\\u0648\\u0634\\u0646\\u062a\",\"name_fr\":\"A\\u00efn T\\u00e9mouchent\"},{\"id\":47,\"code\":\"47\",\"name_ar\":\"\\u063a\\u0631\\u062f\\u0627\\u064a\\u0629\",\"name_fr\":\"Gharda\\u00efa\"},{\"id\":48,\"code\":\"48\",\"name_ar\":\"\\u063a\\u0644\\u064a\\u0632\\u0627\\u0646\",\"name_fr\":\"Relizane\"},{\"id\":49,\"code\":\"49\",\"name_ar\":\"\\u062a\\u064a\\u0645\\u064a\\u0645\\u0648\\u0646\",\"name_fr\":\"Timimoun\"},{\"id\":50,\"code\":\"50\",\"name_ar\":\"\\u0628\\u0631\\u062c \\u0628\\u0627\\u062c\\u064a \\u0645\\u062e\\u062a\\u0627\\u0631\",\"name_fr\":\"Bordj Badji Mokhtar\"},{\"id\":51,\"code\":\"51\",\"name_ar\":\"\\u0623\\u0648\\u0644\\u0627\\u062f \\u062c\\u0644\\u0627\\u0644\",\"name_fr\":\"Ouled Djellal\"},{\"id\":52,\"code\":\"52\",\"name_ar\":\"\\u0628\\u0646\\u064a \\u0639\\u0628\\u0627\\u0633\",\"name_fr\":\"B\\u00e9ni Abb\\u00e8s\"},{\"id\":53,\"code\":\"53\",\"name_ar\":\"\\u0639\\u064a\\u0646 \\u0635\\u0627\\u0644\\u062d\",\"name_fr\":\"In Salah\"},{\"id\":54,\"code\":\"54\",\"name_ar\":\"\\u0639\\u064a\\u0646 \\u0642\\u0632\\u0627\\u0645\",\"name_fr\":\"In Guezzam\"},{\"id\":55,\"code\":\"55\",\"name_ar\":\"\\u062a\\u0648\\u0642\\u0631\\u062a\",\"name_fr\":\"Touggourt\"},{\"id\":56,\"code\":\"56\",\"name_ar\":\"\\u062c\\u0627\\u0646\\u062a\",\"name_fr\":\"Djanet\"},{\"id\":57,\"code\":\"57\",\"name_ar\":\"\\u0627\\u0644\\u0645\\u063a\\u064a\\u0631\",\"name_fr\":\"El M'Ghair\"},{\"id\":58,\"code\":\"58\",\"name_ar\":\"\\u0627\\u0644\\u0645\\u0646\\u064a\\u0639\\u0629\",\"name_fr\":\"El Meniaa\"}]",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "GET api\/v1\/wilayas\/{wilaya_id}\/communes",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/wilayas\/:wilaya_id\/communes",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/wilayas\/:wilaya_id\/communes",
+                            "variable": [
+                                {
+                                    "id": "wilaya_id",
+                                    "key": "wilaya_id",
+                                    "value": 1,
+                                    "description": "The ID of the wilaya."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "max-age=3600, public, s-maxage=3600"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                },
+                                {
+                                    "key": "set-cookie",
+                                    "value": "XSRF-TOKEN=eyJpdiI6Imt2cysrU1BaRHUxMWxDNFp5bzcva2c9PSIsInZhbHVlIjoieFlwaElMQ1luZ0M3NURvRmxFTjh1QU5aTUxhVW9wa05YbWUra0NmMFk5UzVod0lCVEpsK2d1R25ZQ1dOU2xPQlZoUy9RWjI2d3hOblRzaURHT3FRTDVtMVQvVm4wNFNoSndKSVQzSGY5d0FIQnlCTFFTZUN4NWRUeUJUbFhSdnoiLCJtYWMiOiJjNmYxZDk0MzQ4NDM2NGNhYTAwYTBiMWQyNTIwMWJmZGUxYTJhNGJmNjU4YThmOWQ4NzdhMzI2ZjhiZGMyODZhIiwidGFnIjoiIn0%3D; expires=Wed, 17 Jun 2026 16:02:31 GMT; Max-Age=7200; path=\/; samesite=lax; mazayada-session=eyJpdiI6InFiaFRvSHk2YkJQV2ZzV244SFFnQ3c9PSIsInZhbHVlIjoiTXREYThOTjROL1p3cWE5WHZrNjNtSC83YjEyczN6K2llcVZNR2JnZ2Y0TXg0Ykp0T0VKMmh3WDJxdDArcVdmM1AzaDRzd1NVKzE4bjU5Yk1ud1RVbUJNaVdGdzlIME1ESXJxaGJYeHBYR3MvQUFJWSsxVEorUW91a25kV0lmOTQiLCJtYWMiOiJiMDJiYWViMDhiNDVjNDNkM2JkY2I1ZDNlMDFiMjkyNDZjZDM5YWE4OWY5OWFhNTcxMDZmNDM1Y2RkNjUzYTk1IiwidGFnIjoiIn0%3D; expires=Wed, 17 Jun 2026 16:02:31 GMT; Max-Age=7200; path=\/; httponly; samesite=lax"
+                                }
+                            ],
+                            "code": 200,
+                            "body": "[{\"id\":1,\"code\":\"01001\",\"name_ar\":\"\\u0623\\u062f\\u0631\\u0627\\u0631\",\"name_fr\":\"Adrar\",\"postal_code\":null},{\"id\":2,\"code\":\"01002\",\"name_ar\":\"\\u0627\\u0642\\u0628\\u0644\\u064a\",\"name_fr\":\"Akabli\",\"postal_code\":null},{\"id\":3,\"code\":\"01003\",\"name_ar\":\"\\u0623\\u0648\\u0644\\u0641\",\"name_fr\":\"Aoulef\",\"postal_code\":null},{\"id\":4,\"code\":\"01004\",\"name_ar\":\"\\u0628\\u0648\\u062f\\u0629\",\"name_fr\":\"Bouda\",\"postal_code\":null},{\"id\":5,\"code\":\"01005\",\"name_ar\":\"\\u0641\\u0646\\u0648\\u063a\\u064a\\u0644\",\"name_fr\":\"Fenoughil\",\"postal_code\":null},{\"id\":6,\"code\":\"01006\",\"name_ar\":\"\\u0625\\u0646 \\u0632\\u063a\\u0645\\u064a\\u0631\",\"name_fr\":\"In Zghmir\",\"postal_code\":null},{\"id\":7,\"code\":\"01007\",\"name_ar\":\"\\u0623\\u0648\\u0644\\u0627\\u062f \\u0623\\u062d\\u0645\\u062f \\u062a\\u064a\\u0645\\u064a\",\"name_fr\":\"Ouled Ahmed Timmi\",\"postal_code\":null},{\"id\":8,\"code\":\"01008\",\"name_ar\":\"\\u0631\\u0642\\u0627\\u0646\",\"name_fr\":\"Reggane\",\"postal_code\":null},{\"id\":9,\"code\":\"01009\",\"name_ar\":\"\\u0633\\u0627\\u0644\\u064a\",\"name_fr\":\"Sali\",\"postal_code\":null},{\"id\":10,\"code\":\"01010\",\"name_ar\":\"\\u0627\\u0644\\u0633\\u0628\\u0639\",\"name_fr\":\"Sebaa\",\"postal_code\":null},{\"id\":11,\"code\":\"01011\",\"name_ar\":\"\\u062a\\u0627\\u0645\\u0646\\u0637\\u064a\\u0637\",\"name_fr\":\"Tamantit\",\"postal_code\":null},{\"id\":12,\"code\":\"01012\",\"name_ar\":\"\\u062a\\u0627\\u0645\\u0633\\u062a\",\"name_fr\":\"Tamest\",\"postal_code\":null},{\"id\":13,\"code\":\"01013\",\"name_ar\":\"\\u062a\\u064a\\u0645\\u0642\\u062a\\u0646\",\"name_fr\":\"Timekten\",\"postal_code\":null},{\"id\":14,\"code\":\"01014\",\"name_ar\":\"\\u062a\\u064a\\u062a\",\"name_fr\":\"Tit\",\"postal_code\":null},{\"id\":15,\"code\":\"01015\",\"name_ar\":\"\\u062a\\u0633\\u0627\\u0628\\u064a\\u062a\",\"name_fr\":\"Tsabit\",\"postal_code\":null},{\"id\":16,\"code\":\"01016\",\"name_ar\":\"\\u0632\\u0627\\u0648\\u064a\\u0629 \\u0643\\u0646\\u062a\\u0629\",\"name_fr\":\"Zaouiet Kounta\",\"postal_code\":null}]",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "KYC",
+            "description": "\nIdentity verification: upload documents to the private disk, submit the profile\nfor review, and stream back the user's own documents. Mirrors the web KYC flow.",
+            "item": [
+                {
+                    "name": "KYC status",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/kyc",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/kyc"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "The user's KYC state, which documents are on file, and whether a (re)submit\nis currently allowed.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Upload a document",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/kyc\/upload\/:type",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/kyc\/upload\/:type",
+                            "variable": [
+                                {
+                                    "id": "type",
+                                    "key": "type",
+                                    "value": "consequatur",
+                                    "description": ""
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "multipart\/form-data"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "file",
+                                    "src": [],
+                                    "type": "file"
+                                }
+                            ]
+                        },
+                        "description": "Stores a KYC document (JPG\/PNG) on the private disk. Allowed types:\nid-front, id-back, selfie-with-id, photo-biometric.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Submit for review",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/kyc\/submit",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/kyc\/submit"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"first_name_fr\":\"vmqeopfuudtdsufvyvddq\",\"last_name_fr\":\"amniihfqcoynlazghdtqt\",\"father_name\":\"qxbajwbpilpmufinllwlo\",\"mother_name\":\"auydlsmsjuryvojcybzvr\",\"mother_surname\":\"byickznkygloigmkwxphl\",\"address\":\"vazjrcnfbaqywuxhgjjmz\",\"wilaya_id\":17,\"commune_id\":17,\"postal_code\":\"15627\",\"profession\":\"udtdsufvyvddqamniihfq\",\"expected_income\":8,\"id_type\":\"ID_CARD\",\"id_number\":\"oynlazghdtqtqxbajwbpi\"}"
+                        },
+                        "description": "Validates the profile, requires all three identity documents, and moves the\naccount to UNDER_REVIEW.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Download a KYC document",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/kyc\/document\/:type",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/kyc\/document\/:type",
+                            "variable": [
+                                {
+                                    "id": "type",
+                                    "key": "type",
+                                    "value": "26386cd1-0a82-45a1-af3e-b4d03db17ba8",
+                                    "description": ""
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Streams one of the authenticated user's own KYC documents from the private\ndisk (a user can never reach another user's files).",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Notifications",
+            "description": "\nThe citizen's in-app notification inbox.",
+            "item": [
+                {
+                    "name": "List notifications",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/notifications",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/notifications"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Paginated, newest first. The unread total is in meta.unread_count.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Unread count",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/notifications\/unread-count",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/notifications\/unread-count"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Mark one as read",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/notifications\/:notification_id\/read",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/notifications\/:notification_id\/read",
+                            "variable": [
+                                {
+                                    "id": "notification_id",
+                                    "key": "notification_id",
+                                    "value": "a1dc9d24-40b9-44ee-b376-f7b6d177130f",
+                                    "description": "The ID of the notification."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Mark all as read",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/notifications\/read-all",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/notifications\/read-all"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Payments",
+            "description": "\nThe winner's final payment plus the gateway return handling and a status\nendpoint the app polls after the gateway web view closes.",
+            "item": [
+                {
+                    "name": "Payment callback",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/payments\/callback",
+                            "query": [
+                                {
+                                    "key": "ref",
+                                    "value": "MOCK-ABC123",
+                                    "description": "The gateway reference.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "decision",
+                                    "value": "success",
+                                    "description": "The gateway decision (success|fail).",
+                                    "disabled": false
+                                }
+                            ],
+                            "raw": "{{baseUrl}}\/api\/v1\/payments\/callback?ref=MOCK-ABC123&decision=success"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Gateway return URL. Confirms (or fails) the payment set for the reference\nand reports the resulting status. Idempotent \u2014 safe to call more than once.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 200,
+                            "body": "{\"data\":{\"ref\":\"MOCK-ABC123\",\"confirmed\":false},\"message\":\"\\u0644\\u0645 \\u062a\\u0643\\u062a\\u0645\\u0644 \\u0639\\u0645\\u0644\\u064a\\u0629 \\u0627\\u0644\\u062f\\u0641\\u0639.\",\"meta\":{}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Payment status",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/payments\/:ref\/status",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/payments\/:ref\/status",
+                            "variable": [
+                                {
+                                    "id": "ref",
+                                    "key": "ref",
+                                    "value": "a1f6e506-27d4-496f-85a5-03541c909118",
+                                    "description": ""
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Returns the status of every payment row sharing a gateway reference for the\nauthenticated user. Use this to poll after the gateway web view returns.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Start final payment",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auctions\/:auction_id\/final-payment",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auctions\/:auction_id\/final-payment",
+                            "variable": [
+                                {
+                                    "id": "auction_id",
+                                    "key": "auction_id",
+                                    "value": "a2050443-68af-41f5-8080-20d4b878c6ca",
+                                    "description": "The ID of the auction."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Begins the winner's final payment (\u00a74 step 7) and returns the gateway\nredirect URL.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Profile",
+            "description": "\nView and update the authenticated citizen's editable profile fields.",
+            "item": [
+                {
+                    "name": "Get profile",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/profile",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/profile"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Update profile",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/profile",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/profile"
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"phone\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"address\":\"fuudtdsufvyvddqamniih\",\"postal_code\":\"15627\",\"profession\":\"udtdsufvyvddqamniihfq\",\"secret_question\":\"pet_name\",\"secret_answer\":\"coynlazghdtqtqxbajwbp\"}"
+                        },
+                        "description": "Updates contact details, address and the security question. Identity fields\n(NIN, names) are not editable here.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "System",
+            "description": "\nLightweight, unauthenticated endpoints to verify the API pipeline (routing,\nenvelope, locale, rate limiting) is wired correctly.",
+            "item": [
+                {
+                    "name": "Ping",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/ping",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/ping"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Returns a simple liveness payload wrapped in the standard envelope. Useful\nfor smoke-testing the API plumbing and the active locale.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"data\":{\"status\":\"ok\",\"version\":\"v1\",\"locale\":\"ar\"},\"message\":\"\u0627\u0644\u0648\u0627\u062c\u0647\u0629 \u0627\u0644\u0628\u0631\u0645\u062c\u064a\u0629 \u062a\u0639\u0645\u0644.\",\"meta\":{}}",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "Authorization",
+                "type": "string"
+            }
+        ]
+    }
+}
