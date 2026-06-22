@@ -56,6 +56,7 @@ return [
         'gallery_zoom_hint' => 'Double-tap or pinch to zoom',
         'tab_details' => 'Details',
         'tab_specs' => 'Specifications',
+        'tab_overview' => 'Details & specifications',
         'tab_inspection' => 'Inspection & questions',
         'tab_bids' => 'Bid history',
         'read_condition_book' => 'Download the condition book',
@@ -120,6 +121,15 @@ return [
         'recent_bids' => 'Recent bids',
         'no_bids_side' => 'No bids yet',
         'highest_badge' => 'Highest',
+        // ----- Detail sections redesign (managing-entity + location cards) -----
+        'entity_card_title' => 'Managing entity',
+        'entity_type' => 'Entity type',
+        'entity_phone' => 'Phone',
+        'entity_email' => 'Email',
+        'location_card_title' => 'Asset location',
+        'directions' => 'Get directions',
+        'legal_docs_title' => 'Legal documents',
+        'no_documents' => 'No documents available',
     ],
 
     // ===== Controller flash messages =====

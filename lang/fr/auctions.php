@@ -56,6 +56,7 @@ return [
         'gallery_zoom_hint' => 'Double-cliquez ou pincez pour zoomer',
         'tab_details' => 'Détails',
         'tab_specs' => 'Caractéristiques',
+        'tab_overview' => 'Détails et caractéristiques',
         'tab_inspection' => 'Inspection & questions',
         'tab_bids' => 'Historique des offres',
         'read_condition_book' => 'Télécharger le cahier des charges',
@@ -120,6 +121,15 @@ return [
         'recent_bids' => 'Offres récentes',
         'no_bids_side' => 'Aucune offre pour le moment',
         'highest_badge' => 'Plus haute',
+        // ----- Detail sections redesign (managing-entity + location cards) -----
+        'entity_card_title' => 'Entité gestionnaire',
+        'entity_type' => 'Type d’entité',
+        'entity_phone' => 'Téléphone',
+        'entity_email' => 'E-mail',
+        'location_card_title' => 'Emplacement du bien',
+        'directions' => 'Itinéraire',
+        'legal_docs_title' => 'Documents légaux',
+        'no_documents' => 'Aucun document disponible',
     ],
 
     // ===== Controller flash messages =====

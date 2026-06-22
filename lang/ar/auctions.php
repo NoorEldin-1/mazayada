@@ -56,6 +56,7 @@ return [
         'gallery_zoom_hint' => 'انقر نقرًا مزدوجًا أو قرّب بإصبعيك للتكبير',
         'tab_details' => 'التفاصيل',
         'tab_specs' => 'المواصفات',
+        'tab_overview' => 'التفاصيل والمواصفات',
         'tab_inspection' => 'المعاينة والأسئلة',
         'tab_bids' => 'سجل العروض',
         'read_condition_book' => 'تحميل كراسة الشروط',
@@ -120,6 +121,15 @@ return [
         'recent_bids' => 'آخر العروض',
         'no_bids_side' => 'لا توجد عروض بعد',
         'highest_badge' => 'الأعلى',
+        // ----- Detail sections redesign (managing-entity + location cards) -----
+        'entity_card_title' => 'الجهة المنظمة',
+        'entity_type' => 'نوع الجهة',
+        'entity_phone' => 'الهاتف',
+        'entity_email' => 'البريد الإلكتروني',
+        'location_card_title' => 'موقع الأصل',
+        'directions' => 'الاتجاهات',
+        'legal_docs_title' => 'الوثائق القانونية',
+        'no_documents' => 'لا توجد وثائق متاحة',
     ],
 
     // ===== Controller flash messages =====

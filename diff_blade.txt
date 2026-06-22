@@ -1,0 +1,410 @@
+﻿diff --git a/resources/views/auctions/show.blade.php b/resources/views/auctions/show.blade.php
+index 67b434a..1f5ae27 100644
+--- a/resources/views/auctions/show.blade.php
++++ b/resources/views/auctions/show.blade.php
+@@ -132,16 +132,23 @@
+                 @endif
+             </div>
+ 
+-            {{-- Tab Strip --}}
+-            <div class="tab-strip" id="tabStrip">
+-                <button class="on" data-tab="details">{{ __('auctions.show.tab_details') }}</button>
+-                <button data-tab="specs">{{ __('auctions.show.tab_specs') }}</button>
+-                <button data-tab="inspection">{{ __('auctions.show.tab_inspection') }}</button>
+-                <button data-tab="bids">{{ __('auctions.show.tab_bids') }}</button>
+-            </div>
+-
+-            {{-- Tab: Details --}}
+-            <div id="tab-details">
++            {{-- Tab bar (segmented control) ΓÇö shows one section at a time so the page
++                 stays compact. "Details + specifications" are merged into one tab.
++                 Toggle + deep-link logic live in @push('scripts'); the live bid IDs
++                 inside #sec-bids are preserved untouched. --}}
++            <nav class="detail-nav" id="detailNav" aria-label="{{ __('auctions.show.tab_overview') }}">
++                <a href="#sec-overview" class="is-active" data-navlink="sec-overview">{{ __('auctions.show.tab_overview') }}</a>
++                <a href="#sec-inspection" data-navlink="sec-inspection">{{ __('auctions.show.tab_inspection') }}</a>
++                <a href="#sec-bids" data-navlink="sec-bids">{{ __('auctions.show.tab_bids') }}</a>
++            </nav>
++
++            {{-- Section: Overview ΓÇö merged "details + specifications" tab (default,
++                 visible). A full-width description sits above the wide specs card,
++                 which is paired with a narrow stacked column (entity + location).
++                 The condition-book download now lives prominently in the sidebar,
++                 so it is no longer repeated here. --}}
++            <section id="sec-overview" class="detail-sec">
++                {{-- Description --}}
+                 <div class="card" style="margin-bottom:24px">
+                     <div class="card-h">
+                         <h3>{{ __('auctions.show.desc_title') }}</h3>
+@@ -152,132 +159,133 @@
+                         </p>
+                     </div>
+                 </div>
+-            </div>
+-
+-            {{-- Tab: Specs ΓÇö full, grouped detail --}}
+-            <div id="tab-specs" style="display:none">
+-                {{-- Group: pricing --}}
+-                <div class="spec-group">
+-                    <h4 class="spec-h">{{ __('auctions.show.specs_group_pricing') }}</h4>
+-                    <div class="facts">
+-                        <div>
+-                            <div class="l">{{ __('auctions.show.spec_opening') }}</div>
+-                            <div class="v"><x-money :centimes="$auction->opening_price" /></div>
+-                        </div>
+-                        <div>
+-                            <div class="l">{{ __('auctions.show.spec_deposit') }}</div>
+-                            <div class="v">{{ $auction->deposit_amount ? null : '--' }}@if($auction->deposit_amount)<x-money :centimes="$auction->deposit_amount" />@endif</div>
+-                        </div>
+-                        <div>
+-                            <div class="l">{{ __('auctions.show.spec_entry') }}</div>
+-                            <div class="v">{{ $auction->entry_fee ? null : '--' }}@if($auction->entry_fee)<x-money :centimes="$auction->entry_fee" />@endif</div>
+-                        </div>
+-                        <div>
+-                            <div class="l">{{ __('auctions.show.spec_book') }}</div>
+-                            <div class="v">{{ $auction->book_price ? null : '--' }}@if($auction->book_price)<x-money :centimes="$auction->book_price" />@endif</div>
+-                        </div>
+-                    </div>
+-                </div>
+ 
+-                {{-- Group: the asset --}}
+-                <div class="spec-group">
+-                    <h4 class="spec-h">{{ __('auctions.show.specs_group_asset') }}</h4>
+-                    <div class="facts">
+-                        <div>
+-                            <div class="l">{{ __('auctions.show.spec_category') }}</div>
+-                            <div class="v">{{ $auction->category->name ?? '--' }}</div>
+-                        </div>
+-                        <div>
+-                            <div class="l">{{ __('auctions.show.spec_type') }}</div>
+-                            <div class="v">{{ $auction->auction_type->label() }}</div>
++                {{-- Specifications (wide) | managing entity + location (narrow) --}}
++                <div class="detail-cols">
++                    {{-- Specifications ΓÇö clean label/value rows, grouped (wide column) --}}
++                    <div class="card">
++                        <div class="card-h">
++                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
++                            <h3>{{ __('auctions.show.tab_specs') }}</h3>
+                         </div>
+-                        <div>
+-                            <div class="l">{{ __('auctions.show.spec_asset_class') }}</div>
+-                            <div class="v">{{ $auction->asset_class?->label() ?? '--' }}</div>
+-                        </div>
+-                        <div>
+-                            <div class="l">{{ __('auctions.show.spec_condition') }}</div>
+-                            <div class="v">{{ $auction->condition ? $auction->condition->label() : '--' }}</div>
+-                        </div>
+-                        <div>
+-                            <div class="l">{{ __('auctions.show.spec_units') }}</div>
+-                            <div class="v num">{{ $auction->unit_count ?? 1 }}</div>
+-                        </div>
+-                        <div>
+-                            <div class="l">{{ __('auctions.show.spec_requires_cr') }}</div>
+-                            <div class="v">{{ $auction->requires_commerce_register ? __('common.yes') : __('common.no') }}</div>
+-                        </div>
+-                        @if($auction->asset_location)
+-                            <div>
+-                                <div class="l">{{ __('auctions.show.spec_location') }}</div>
+-                                <div class="v">{{ $auction->asset_location }}</div>
++                        <div class="card-pad">
++                            {{-- Group: pricing --}}
++                            <div class="spec-group">
++                                <h4 class="spec-h">{{ __('auctions.show.specs_group_pricing') }}</h4>
++                                <div class="spec-rows">
++                                    <div class="spec-row"><span class="l">{{ __('auctions.show.spec_opening') }}</span><span class="v"><x-money :centimes="$auction->opening_price" /></span></div>
++                                    <div class="spec-row"><span class="l">{{ __('auctions.show.spec_deposit') }}</span><span class="v">@if($auction->deposit_amount)<x-money :centimes="$auction->deposit_amount" />@else--@endif</span></div>
++                                    <div class="spec-row"><span class="l">{{ __('auctions.show.spec_entry') }}</span><span class="v">@if($auction->entry_fee)<x-money :centimes="$auction->entry_fee" />@else--@endif</span></div>
++                                    <div class="spec-row"><span class="l">{{ __('auctions.show.spec_book') }}</span><span class="v">@if($auction->book_price)<x-money :centimes="$auction->book_price" />@else--@endif</span></div>
++                                </div>
+                             </div>
+-                        @endif
+-                    </div>
+-                </div>
+ 
+-                {{-- Group: location & organizing entity --}}
+-                <div class="spec-group">
+-                    <h4 class="spec-h">{{ __('auctions.show.specs_group_location') }}</h4>
+-                    <div class="facts">
+-                        <div>
+-                            <div class="l">{{ __('auctions.show.spec_wilaya') }}</div>
+-                            <div class="v">{{ $auction->wilaya->name ?? '--' }}</div>
+-                        </div>
+-                        @if($auction->commune)
+-                            <div>
+-                                <div class="l">{{ __('auctions.show.spec_commune') }}</div>
+-                                <div class="v">{{ $auction->commune->name }}</div>
++                            {{-- Group: the asset --}}
++                            <div class="spec-group">
++                                <h4 class="spec-h">{{ __('auctions.show.specs_group_asset') }}</h4>
++                                <div class="spec-rows">
++                                    <div class="spec-row"><span class="l">{{ __('auctions.show.spec_category') }}</span><span class="v">{{ $auction->category->name ?? '--' }}</span></div>
++                                    <div class="spec-row"><span class="l">{{ __('auctions.show.spec_type') }}</span><span class="v">{{ $auction->auction_type->label() }}</span></div>
++                                    <div class="spec-row"><span class="l">{{ __('auctions.show.spec_asset_class') }}</span><span class="v">{{ $auction->asset_class?->label() ?? '--' }}</span></div>
++                                    <div class="spec-row"><span class="l">{{ __('auctions.show.spec_condition') }}</span><span class="v">{{ $auction->condition ? $auction->condition->label() : '--' }}</span></div>
++                                    <div class="spec-row"><span class="l">{{ __('auctions.show.spec_units') }}</span><span class="v num">{{ $auction->unit_count ?? 1 }}</span></div>
++                                    <div class="spec-row"><span class="l">{{ __('auctions.show.spec_requires_cr') }}</span><span class="v">{{ $auction->requires_commerce_register ? __('common.yes') : __('common.no') }}</span></div>
++                                </div>
+                             </div>
+-                        @endif
+-                        @if($auction->mayor_name)
+-                            <div>
+-                                <div class="l">{{ __('auctions.show.spec_mayor') }}</div>
+-                                <div class="v">{{ $auction->mayor_name }}</div>
++
++                            {{-- Group: lease terms (LEASE only) --}}
++                            @if($auction->auction_type === \App\Enums\AuctionType::LEASE)
++                                <div class="spec-group">
++                                    <h4 class="spec-h">{{ __('auctions.show.specs_group_lease') }}</h4>
++                                    <div class="spec-rows">
++                                        <div class="spec-row"><span class="l">{{ __('auctions.show.spec_lease_duration') }}</span><span class="v num">{{ $auction->lease_duration_years ?? '--' }}</span></div>
++                                        <div class="spec-row"><span class="l">{{ __('auctions.show.spec_lease_renewals') }}</span><span class="v num">{{ $auction->lease_renewals ?? '--' }}</span></div>
++                                    </div>
++                                </div>
++                            @endif
++
++                            {{-- Group: schedule --}}
++                            <div class="spec-group">
++                                <h4 class="spec-h">{{ __('auctions.show.specs_group_schedule') }}</h4>
++                                <div class="spec-rows">
++                                    <div class="spec-row"><span class="l">{{ __('auctions.show.spec_start') }}</span><span class="v num">{{ $auction->start_time?->format('Y-m-d H:i') ?? '--' }}</span></div>
++                                    <div class="spec-row"><span class="l">{{ __('auctions.show.spec_end') }}</span><span class="v num">{{ $auction->end_time?->format('Y-m-d H:i') ?? '--' }}</span></div>
++                                </div>
+                             </div>
+-                        @endif
+-                        <div>
+-                            <div class="l">{{ __('auctions.show.spec_entity') }}</div>
+-                            <div class="v">{{ $auction->entity->name ?? '--' }}</div>
+                         </div>
+                     </div>
+-                </div>
+ 
+-                {{-- Group: lease terms (LEASE only) --}}
+-                @if($auction->auction_type === \App\Enums\AuctionType::LEASE)
+-                    <div class="spec-group">
+-                        <h4 class="spec-h">{{ __('auctions.show.specs_group_lease') }}</h4>
+-                        <div class="facts">
+-                            <div>
+-                                <div class="l">{{ __('auctions.show.spec_lease_duration') }}</div>
+-                                <div class="v num">{{ $auction->lease_duration_years ?? '--' }}</div>
++                    {{-- Narrow column: entity + location + documents, stacked to fill
++                         the height beside the tall specs card (avoids a big gap). --}}
++                    <div class="detail-aside">
++                        {{-- Managing entity ΓÇö display only (no public entity profile exists) --}}
++                        <aside class="card entity-card">
++                            <div class="card-h">
++                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><line x1="9" y1="9" x2="9" y2="9.01"/><line x1="9" y1="13" x2="9" y2="13.01"/></svg>
++                                <h3>{{ __('auctions.show.entity_card_title') }}</h3>
+                             </div>
+-                            <div>
+-                                <div class="l">{{ __('auctions.show.spec_lease_renewals') }}</div>
+-                                <div class="v num">{{ $auction->lease_renewals ?? '--' }}</div>
++                            <div class="card-pad entity-body">
++                                @if($auction->entity)
++                                    <div class="entity-badge num">{{ $auction->entity->type?->code() ?? 'ΓÇö' }}</div>
++                                    <div class="entity-name">{{ $auction->entity->name }}</div>
++                                    @if($auction->entity->type)
++                                        <div class="entity-sub">{{ $auction->entity->type->label() }}</div>
++                                    @endif
++                                    @if($auction->entity->phone || $auction->entity->email)
++                                        <div class="entity-contact">
++                                            @if($auction->entity->phone)
++                                                <div class="ec-row" title="{{ __('auctions.show.entity_phone') }}">
++                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
++                                                    <span class="num" dir="ltr">{{ $auction->entity->phone }}</span>
++                                                </div>
++                                            @endif
++                                            @if($auction->entity->email)
++                                                <div class="ec-row" title="{{ __('auctions.show.entity_email') }}">
++                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
++                                                    <span dir="ltr">{{ $auction->entity->email }}</span>
++                                                </div>
++                                            @endif
++                                        </div>
++                                    @endif
++                                @else
++                                    <div class="entity-sub">--</div>
++                                @endif
+                             </div>
+-                        </div>
+-                    </div>
+-                @endif
++                        </aside>
+ 
+-                {{-- Group: schedule --}}
+-                <div class="spec-group">
+-                    <h4 class="spec-h">{{ __('auctions.show.specs_group_schedule') }}</h4>
+-                    <div class="facts">
+-                        <div>
+-                            <div class="l">{{ __('auctions.show.spec_start') }}</div>
+-                            <div class="v num">{{ $auction->start_time?->format('Y-m-d H:i') ?? '--' }}</div>
+-                        </div>
+-                        <div>
+-                            <div class="l">{{ __('auctions.show.spec_end') }}</div>
+-                            <div class="v num">{{ $auction->end_time?->format('Y-m-d H:i') ?? '--' }}</div>
+-                        </div>
++                        {{-- Asset location ΓÇö text + Google Maps directions (when geo-coded) --}}
++                        <aside class="card loc-card">
++                            <div class="card-h">
++                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
++                                <h3>{{ __('auctions.show.location_card_title') }}</h3>
++                            </div>
++                            <div class="card-pad">
++                                <div class="spec-rows">
++                                    @if($auction->asset_location)
++                                        <div class="spec-row"><span class="l">{{ __('auctions.show.spec_location') }}</span><span class="v">{{ $auction->asset_location }}</span></div>
++                                    @endif
++                                    <div class="spec-row"><span class="l">{{ __('auctions.show.spec_wilaya') }}</span><span class="v">{{ $auction->wilaya->name ?? '--' }}</span></div>
++                                    @if($auction->commune)
++                                        <div class="spec-row"><span class="l">{{ __('auctions.show.spec_commune') }}</span><span class="v">{{ $auction->commune->name }}</span></div>
++                                    @endif
++                                    @if($auction->mayor_name)
++                                        <div class="spec-row"><span class="l">{{ __('auctions.show.spec_mayor') }}</span><span class="v">{{ $auction->mayor_name }}</span></div>
++                                    @endif
++                                </div>
++                                @if($auction->latitude && $auction->longitude)
++                                    <a href="https://www.google.com/maps?q={{ $auction->latitude }},{{ $auction->longitude }}" target="_blank" rel="noopener noreferrer" class="loc-directions">
++                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
++                                        {{ __('auctions.show.directions') }}
++                                    </a>
++                                @endif
++                            </div>
++                        </aside>
+                     </div>
+                 </div>
+-            </div>
++            </section>
+ 
+-            {{-- Tab: Inspection window + Q&A (┬º4 step 4) --}}
+-            <div id="tab-inspection" style="display:none">
++            {{-- Section: Inspection window + Q&A (┬º4 step 4) ΓÇö hidden until tab selected --}}
++            <section id="sec-inspection" class="detail-sec" style="display:none">
+                 {{-- Inspection window --}}
+                 <div class="card" style="margin-bottom:24px">
+                     <div class="card-h">
+@@ -285,38 +293,20 @@
+                     </div>
+                     <div class="card-pad">
+                         @if($auction->inspection_start || $auction->inspection_end || $auction->inspection_location)
+-                            <div class="facts">
++                            <div class="spec-rows">
+                                 @if($auction->inspection_start)
+-                                    <div>
+-                                        <div class="l">{{ __('inspections.window_from') }}</div>
+-                                        <div class="v">{{ $auction->inspection_start->format('Y-m-d H:i') }}</div>
+-                                    </div>
++                                    <div class="spec-row"><span class="l">{{ __('inspections.window_from') }}</span><span class="v num">{{ $auction->inspection_start->format('Y-m-d H:i') }}</span></div>
+                                 @endif
+                                 @if($auction->inspection_end)
+-                                    <div>
+-                                        <div class="l">{{ __('inspections.window_to') }}</div>
+-                                        <div class="v">{{ $auction->inspection_end->format('Y-m-d H:i') }}</div>
+-                                    </div>
++                                    <div class="spec-row"><span class="l">{{ __('inspections.window_to') }}</span><span class="v num">{{ $auction->inspection_end->format('Y-m-d H:i') }}</span></div>
+                                 @endif
+                                 @if($auction->inspection_location)
+-                                    <div>
+-                                        <div class="l">{{ __('inspections.window_location') }}</div>
+-                                        <div class="v">{{ $auction->inspection_location }}</div>
+-                                    </div>
++                                    <div class="spec-row"><span class="l">{{ __('inspections.window_location') }}</span><span class="v">{{ $auction->inspection_location }}</span></div>
+                                 @endif
+                             </div>
+                         @else
+                             <p style="margin:0;font-size:14px;color:var(--muted)">{{ __('inspections.window_none') }}</p>
+                         @endif
+-
+-                        {{-- Condition book download (┬º4 step 2) --}}
+-                        @if($conditionBook)
+-                            <a href="{{ route('documents.download', $conditionBook) }}" class="doc-dl" style="margin-top:16px;max-width:340px">
+-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+-                                {{ __('auctions.show.read_condition_book') }}
+-                                <span class="pdf">PDF</span>
+-                            </a>
+-                        @endif
+                     </div>
+                 </div>
+ 
+@@ -361,13 +351,17 @@
+                         @endguest
+                     </div>
+                 </div>
+-            </div>
++            </section>
+ 
+-            {{-- Tab: Bid History ΓÇö updated live (no reload) by resources/js/auction.js,
++            {{-- Section: Bid History ΓÇö updated live (no reload) by resources/js/auction.js,
+                  mirroring the sidebar "recent bids". The table is always rendered so
+                  new rows can be prepended even from an empty start; the top row (the
+-                 highest = latest bid) carries the premium "highest" highlight. --}}
+-            <div id="tab-bids" style="display:none">
++                 highest = latest bid) carries the premium "highest" highlight.
++                 IDs (liveBidHistory / liveBidHistoryCount / liveBidHistoryEmpty)
++                 are preserved exactly ΓÇö auction.js depends on them.
++                 Hidden until its tab is selected; the table still updates live
++                 in the background and the sidebar "recent bids" stays visible. --}}
++            <section id="sec-bids" class="detail-sec" style="display:none">
+                 <div class="card">
+                     <div class="card-h">
+                         <h3>{{ __('auctions.show.tab_bids') }}</h3>
+@@ -404,7 +398,7 @@
+                         </tbody>
+                     </table>
+                 </div>
+-            </div>
++            </section>
+         </div>
+ 
+         {{-- Right Column (Sidebar) --}}
+@@ -589,7 +583,8 @@
+                 @endif
+             </div>
+ 
+-            {{-- Documents ΓÇö condition book, prominent & always visible (┬º4 step 2) --}}
++            {{-- Condition book ΓÇö prominent, always-visible download, placed right
++                 above the recent-bids list so bidders can't miss it (┬º4 step 2). --}}
+             @if($conditionBook)
+                 <div class="doc-card">
+                     <div class="doc-t">
+@@ -643,15 +638,34 @@
+ 
+ @push('scripts')
+ <script>
+-// Tab switching
+-document.querySelectorAll('#tabStrip button').forEach(btn => {
+-    btn.addEventListener('click', function() {
+-        document.querySelectorAll('#tabStrip button').forEach(b => b.classList.remove('on'));
+-        this.classList.add('on');
+-        document.querySelectorAll('[id^="tab-"]').forEach(t => t.style.display = 'none');
+-        document.getElementById('tab-' + this.dataset.tab).style.display = '';
++// Detail tabs: show one section at a time (keeps the page compact). The bid
++// history table updates live even while hidden; the sidebar mirrors it.
++(function () {
++    const nav = document.getElementById('detailNav');
++    if (!nav) return;
++    const links = Array.from(nav.querySelectorAll('a[data-navlink]'));
++    const sections = links
++        .map((a) => document.getElementById(a.dataset.navlink))
++        .filter(Boolean);
++
++    function activate(id, push) {
++        if (!document.getElementById(id)) return;
++        sections.forEach((s) => { s.style.display = s.id === id ? '' : 'none'; });
++        links.forEach((a) => a.classList.toggle('is-active', a.dataset.navlink === id));
++        if (push) history.replaceState(null, '', '#' + id);
++    }
++
++    links.forEach((a) => {
++        a.addEventListener('click', (e) => {
++            e.preventDefault();
++            activate(a.dataset.navlink, true);
++        });
+     });
+-});
++
++    // Deep-link support: open the tab named in the URL hash (e.g. #sec-bids).
++    const initial = (location.hash || '').replace('#', '');
++    activate(links.some((a) => a.dataset.navlink === initial) ? initial : 'sec-overview', false);
++})();
+ </script>
+ 
+ {{-- Live auction realtime (spec ┬º6): Echo subscription + AJAX bidding + countdown.

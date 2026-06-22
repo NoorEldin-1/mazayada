@@ -25,7 +25,10 @@
   --shadow-soft: 0 4px 14px rgba(15,30,43,.04);
 }
 *{box-sizing:border-box;min-width:0}
-html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Arabic","Inter",system-ui,sans-serif;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+/* overflow-x:clip (not hidden) prevents horizontal scroll WITHOUT turning body
+   into a scroll container — `hidden` here silently breaks every `position:sticky`
+   descendant (e.g. the auction-detail sidebar). clip clips without that side effect. */
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Arabic","Inter",system-ui,sans-serif;font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:clip}
 /* In LTR locales (FR/EN) lead with the Latin face. Arabic stays the default. */
 html[dir="ltr"] body{font-family:"Inter","IBM Plex Sans Arabic",system-ui,sans-serif}
 img{max-width:100%;height:auto;display:block}
@@ -489,6 +492,13 @@ html[dir="rtl"] .auth-carousel-arrow svg{transform:scaleX(-1)}
 .tab-strip button.on::after{content:"";position:absolute;inset-inline-start:0;inset-inline-end:0;bottom:-1px;height:3px;background:var(--primary);border-radius:2px 2px 0 0}
 
 .ad-side{position:sticky;top:90px}
+/* Cap the sidebar recent-bids list with an internal scroll so the whole sticky
+   column (price + documents + recent bids) stays short enough to actually pin
+   while the taller main column scrolls past it. Without this, a long bids list
+   makes the sidebar as tall as the page and sticky has no travel range. */
+#liveBidList{max-height:300px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+#liveBidList::-webkit-scrollbar{width:6px}
+#liveBidList::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
 .bid-panel{background:linear-gradient(180deg,#1B4D3E,#163e32);color:#fff;border-radius:20px;padding:24px;margin-bottom:14px;position:relative;overflow:hidden}
 .bid-panel::before{content:"";position:absolute;width:240px;height:240px;border-radius:50%;background:rgba(212,168,67,.15);top:-100px;left:-80px;filter:blur(30px)}
 .bid-panel > *{position:relative;z-index:1}
@@ -661,6 +671,9 @@ html[dir="rtl"] .auth-carousel-arrow svg{transform:scaleX(-1)}
   .cz-grid{grid-template-columns:1fr;padding:18px 16px}
   .cz-side{position:static}
   .ad-grid{grid-template-columns:1fr}
+  /* Single column on tablet/mobile — the sidebar flows normally, not sticky. */
+  .ad-side{position:static}
+  #liveBidList{max-height:none}
   .auth-shell{grid-template-columns:1fr;min-height:auto}
   .auth-left{display:none}
   .tiles-4{grid-template-columns:repeat(2,1fr)}
@@ -778,6 +791,9 @@ html[dir="rtl"] .auth-carousel-arrow svg{transform:scaleX(-1)}
   .bid-panel .countdown{padding:10px}
   .bid-panel .cd-v{font-size:20px}
   .facts{grid-template-columns:1fr}
+  .detail-cols{grid-template-columns:1fr}
+  /* Tab labels size to content and scroll horizontally instead of cramming. */
+  .detail-nav a{flex:0 0 auto;text-align:start}
 
   /* Admin layout: off-canvas drawer (RTL: sidebar anchored to right, hides by translating right) */
   .adm-side{transform:translateX(-100%);transition:transform .25s ease;width:260px !important;overflow-y:auto}
@@ -986,6 +1002,38 @@ html[dir="rtl"] .legal-related-card .arr{transform:scaleX(-1)}
 .spec-group:last-child{margin-bottom:0}
 .spec-h{font-size:12px;font-weight:700;color:var(--ink-2);text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px;display:flex;align-items:center;gap:10px}
 .spec-h::after{content:"";flex:1;height:1px;background:var(--line)}
+
+/* --- Detail page: tab bar (segmented control) + paired demo-style cards --- */
+.detail-nav{display:flex;gap:6px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px;margin-bottom:24px;box-shadow:var(--shadow-soft);overflow-x:auto;scrollbar-width:none}
+.detail-nav::-webkit-scrollbar{display:none}
+.detail-nav a{flex:1 1 0;text-align:center;padding:10px 16px;border-radius:10px;font-size:13.5px;font-weight:600;color:var(--muted);text-decoration:none;white-space:nowrap;cursor:pointer;transition:color .15s,background .15s}
+.detail-nav a:hover{color:var(--ink)}
+.detail-nav a.is-active{color:#fff;background:var(--primary)}
+
+/* Demo-style pairing: wide specs card | narrow stacked aside (entity/location/docs). */
+.detail-cols{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:24px;align-items:start}
+.detail-aside{display:flex;flex-direction:column;gap:24px}
+
+/* Clean label/value rows (demo specifications look). */
+.spec-rows{display:flex;flex-direction:column}
+.spec-row{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid var(--line)}
+.spec-row:last-child{border-bottom:0}
+.spec-row .l{font-size:13px;color:var(--muted);flex-shrink:0}
+.spec-row .v{font-size:13.5px;font-weight:600;color:var(--ink);text-align:end;word-break:break-word}
+
+/* Managing-entity card (display-only — no public entity profile exists). */
+.entity-body{text-align:center}
+.entity-badge{display:inline-flex;align-items:center;justify-content:center;min-width:64px;height:64px;padding:0 12px;border-radius:50%;background:rgba(27,77,62,.08);color:var(--primary);font-size:18px;font-weight:800;letter-spacing:.02em;margin-bottom:12px}
+.entity-name{font-size:15px;font-weight:700;color:var(--ink);line-height:1.4}
+.entity-sub{font-size:12.5px;color:var(--muted);margin-top:4px}
+.entity-contact{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px;align-items:center}
+.entity-contact .ec-row{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-2)}
+.entity-contact .ec-row svg{color:var(--muted);flex-shrink:0}
+
+/* Asset-location card — Google Maps directions link. */
+.loc-directions{display:inline-flex;align-items:center;gap:8px;margin-top:14px;font-size:13px;font-weight:600;color:var(--primary);text-decoration:none}
+.loc-directions:hover{text-decoration:underline}
+.loc-directions svg{flex-shrink:0}
 
 /* --- Documents card + prominent condition-book download --- */
 .doc-card{background:linear-gradient(135deg,var(--accent-soft),var(--surface));border:1px solid var(--accent);border-radius:16px;padding:18px;margin-bottom:14px}
