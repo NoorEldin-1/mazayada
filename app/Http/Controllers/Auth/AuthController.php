@@ -130,7 +130,13 @@ class AuthController extends Controller
         ]);
 
         if ($user->isStaff()) {
-            return redirect()->intended(route('admin.dashboard'));
+            // Entity (read-only) accounts live in "auctions & appeals only" — the
+            // platform dashboard isn't theirs, so land them on their auctions.
+            $home = $user->entity_id !== null
+                ? route('admin.auctions.index')
+                : route('admin.dashboard');
+
+            return redirect()->intended($home);
         }
 
         return redirect()->intended(route('citizen.dashboard'));

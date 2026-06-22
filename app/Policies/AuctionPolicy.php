@@ -15,6 +15,26 @@ use App\Models\User;
  */
 class AuctionPolicy
 {
+    /** The only abilities an entity-bound (read-only) account may exercise. */
+    private const READ_ABILITIES = ['viewAny', 'view'];
+
+    /**
+     * Hard product rule: any account bound to a government entity (entity_id set)
+     * is read-only — all auction management is centralised on the platform. Deny
+     * every mutating ability up front so no entity account can ever create, edit,
+     * publish, start, extend, cancel, delete or appraise an auction. SUPER_ADMIN
+     * never reaches here (allowed earlier by the Gate::before hook); platform
+     * staff (entity_id === null) fall through to the per-ability methods below.
+     */
+    public function before(User $user, string $ability): ?bool
+    {
+        if ($user->entity_id !== null && ! in_array($ability, self::READ_ABILITIES, true)) {
+            return false;
+        }
+
+        return null;
+    }
+
     public function viewAny(User $user): bool
     {
         return $user->can('auctions.viewAny');

@@ -29,36 +29,53 @@
                 </td>
                 <td>{{ $appeal->created_at->format('Y-m-d') }}</td>
                 <td>
-                    @if(in_array($appeal->status->value, ['SUBMITTED', 'UNDER_REVIEW']))
+                    @can('respond', $appeal)
+                        @if(in_array($appeal->status->value, ['SUBMITTED', 'UNDER_REVIEW']))
+                            <x-ui.btn variant="ghost" size="sm" type="button"
+                                    onclick="document.getElementById('respond-{{ $appeal->id }}').style.display = document.getElementById('respond-{{ $appeal->id }}').style.display === 'none' ? 'block' : 'none'">
+                                {{ __('appeals.respond') }}
+                            </x-ui.btn>
+
+                            <div id="respond-{{ $appeal->id }}" style="display:none;margin-top:0.75rem">
+                                <x-ui.card>
+                                    <p style="font-size:0.85rem;margin-bottom:0.5rem"><strong>{{ __('appeals.reason_label') }}</strong> {{ $appeal->reason }}</p>
+
+                                    <form method="POST" action="{{ route('admin.appeals.respond', $appeal) }}">
+                                        @csrf
+                                        <div class="field" style="margin-bottom:0.75rem">
+                                            <label for="admin_response_{{ $appeal->id }}" style="font-size:0.85rem">{{ __('appeals.response_label') }}</label>
+                                            <textarea id="admin_response_{{ $appeal->id }}" name="admin_response" class="textarea" rows="3" required placeholder="{{ __('appeals.response_placeholder') }}"></textarea>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <x-ui.btn variant="primary" size="sm" name="status" value="RESOLVED">{{ __('appeals.accept') }}</x-ui.btn>
+                                            <x-ui.btn variant="danger" size="sm" name="status" value="REJECTED">{{ __('appeals.reject') }}</x-ui.btn>
+                                        </div>
+                                    </form>
+                                </x-ui.card>
+                            </div>
+                        @else
+                            @if($appeal->admin_response)
+                                <span class="text-muted" style="font-size:0.8rem">{{ Str::limit($appeal->admin_response, 40) }}</span>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        @endif
+                    @else
+                        {{-- Read-only entity account: reveal the full reason + response, no actions. --}}
                         <x-ui.btn variant="ghost" size="sm" type="button"
-                                onclick="document.getElementById('respond-{{ $appeal->id }}').style.display = document.getElementById('respond-{{ $appeal->id }}').style.display === 'none' ? 'block' : 'none'">
-                            {{ __('appeals.respond') }}
+                                onclick="document.getElementById('view-{{ $appeal->id }}').style.display = document.getElementById('view-{{ $appeal->id }}').style.display === 'none' ? 'block' : 'none'">
+                            {{ __('common.view') }}
                         </x-ui.btn>
 
-                        <div id="respond-{{ $appeal->id }}" style="display:none;margin-top:0.75rem">
+                        <div id="view-{{ $appeal->id }}" style="display:none;margin-top:0.75rem">
                             <x-ui.card>
                                 <p style="font-size:0.85rem;margin-bottom:0.5rem"><strong>{{ __('appeals.reason_label') }}</strong> {{ $appeal->reason }}</p>
-
-                                <form method="POST" action="{{ route('admin.appeals.respond', $appeal) }}">
-                                    @csrf
-                                    <div class="field" style="margin-bottom:0.75rem">
-                                        <label for="admin_response_{{ $appeal->id }}" style="font-size:0.85rem">{{ __('appeals.response_label') }}</label>
-                                        <textarea id="admin_response_{{ $appeal->id }}" name="admin_response" class="textarea" rows="3" required placeholder="{{ __('appeals.response_placeholder') }}"></textarea>
-                                    </div>
-                                    <div class="flex gap-2">
-                                        <x-ui.btn variant="primary" size="sm" name="status" value="RESOLVED">{{ __('appeals.accept') }}</x-ui.btn>
-                                        <x-ui.btn variant="danger" size="sm" name="status" value="REJECTED">{{ __('appeals.reject') }}</x-ui.btn>
-                                    </div>
-                                </form>
+                                @if($appeal->admin_response)
+                                    <p style="font-size:0.85rem"><strong>{{ __('appeals.response_label') }}</strong> {{ $appeal->admin_response }}</p>
+                                @endif
                             </x-ui.card>
                         </div>
-                    @else
-                        @if($appeal->admin_response)
-                            <span class="text-muted" style="font-size:0.8rem">{{ Str::limit($appeal->admin_response, 40) }}</span>
-                        @else
-                            <span class="text-muted">—</span>
-                        @endif
-                    @endif
+                    @endcan
                 </td>
             </tr>
         @empty

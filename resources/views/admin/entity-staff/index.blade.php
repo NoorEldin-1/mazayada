@@ -38,7 +38,8 @@
                     @endif
                 </td>
                 <td>
-                    <x-ui.btn variant="ghost" size="sm" :href="route('admin.entity-staff.edit', $member)">{{ __('common.edit') }}</x-ui.btn>
+                    <x-ui.btn variant="ghost" size="sm" :href="route('admin.entity-staff.show', $member)">{{ __('common.view') }}</x-ui.btn>
+                    <x-ui.btn variant="ghost" size="sm" :href="route('admin.entity-staff.edit', $member)">{{ __('admin.entity_staff.reset_password') }}</x-ui.btn>
                     <form method="POST" action="{{ route('admin.entity-staff.toggle', $member) }}" style="display:inline"
                           data-confirm="{{ $member->is_active ? __('admin.entity_staff.confirm_deactivate') : __('admin.entity_staff.confirm_reactivate') }}">
                         @csrf

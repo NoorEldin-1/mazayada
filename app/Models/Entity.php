@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Enums\AccountType;
 use App\Enums\EntityType;
 use App\Models\Concerns\HasLocalizedName;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Entity extends Model
 {
@@ -43,6 +45,16 @@ class Entity extends Model
     public function entityUsers(): HasMany
     {
         return $this->hasMany(EntityUser::class);
+    }
+
+    /**
+     * The entity's own institutional login account (read-only). Provisioned
+     * alongside the entity; distinct from the individual staff in entityUsers().
+     */
+    public function account(): HasOne
+    {
+        return $this->hasOne(User::class)
+            ->where('account_type', AccountType::INSTITUTION->value);
     }
 
     public function auctions(): HasMany

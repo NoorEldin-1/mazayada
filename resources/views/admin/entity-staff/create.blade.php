@@ -25,16 +25,8 @@
             <p class="text-sm text-muted mb-4">{{ __('admin.entity_staff.own_entity_note') }}</p>
         @endif
 
-        <div class="field">
-            <label for="role">{{ __('admin.entity_staff.f_role') }} <span class="text-danger">*</span></label>
-            <select id="role" name="role" class="select" required>
-                <option value="">{{ __('admin.entity_staff.choose_role') }}</option>
-                @foreach($roles as $role)
-                    <option value="{{ $role->value }}" {{ old('role') === $role->value ? 'selected' : '' }}>{{ $role->label() }}</option>
-                @endforeach
-            </select>
-            @error('role') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
-        </div>
+        {{-- Every staff account is a read-only entity viewer — no role to choose. --}}
+        <p class="text-sm text-muted">{{ __('admin.entity_staff.read_only_note') }}</p>
     </x-ui.card>
 
     <x-ui.card :title="__('admin.entity_staff.sec_identity')" class="mb-6">

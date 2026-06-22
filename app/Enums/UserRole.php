@@ -12,6 +12,11 @@ enum UserRole: string
     case HUISSIER = 'HUISSIER';
     case COMMITTEE_MEMBER = 'COMMITTEE_MEMBER';
     case CONTENT_ADMIN = 'CONTENT_ADMIN';
+    // Read-only entity account. Any account bound to a government entity (the
+    // institutional entity login and its staff) holds this role: it can view —
+    // but never mutate — its own entity's auctions and appeals. All auction
+    // management is centralised on the platform (SUPER_ADMIN). See EntityScope.
+    case ENTITY_VIEWER = 'ENTITY_VIEWER';
 
     public function label(): string
     {

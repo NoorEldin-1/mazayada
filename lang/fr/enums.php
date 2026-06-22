@@ -27,6 +27,7 @@ return [
         'HUISSIER' => 'Huissier de justice',
         'COMMITTEE_MEMBER' => 'Membre du comité',
         'CONTENT_ADMIN' => 'Administrateur de contenu',
+        'ENTITY_VIEWER' => 'Compte entité (lecture seule)',
     ],
 
     'auction_type' => [
@@ -46,6 +47,11 @@ return [
         'ACTIVE' => 'Actif',
         'SUSPENDED' => 'Suspendu',
         'BANNED' => 'Banni',
+    ],
+
+    'account_type' => [
+        'PERSON' => 'Personne',
+        'INSTITUTION' => 'Entité',
     ],
 
     'appeal_status' => [
@@ -69,6 +75,14 @@ return [
         'ENTRY_FEE' => 'Frais de participation',
         'BOOK_PURCHASE' => 'Cahier des charges',
         'FINAL_PAYMENT' => 'Paiement final',
+    ],
+
+    'payment_status' => [
+        'PENDING' => 'En attente',
+        'CONFIRMED' => 'Confirmé',
+        'REFUNDED' => 'Remboursé',
+        'FORFEITED' => 'Confisqué',
+        'FAILED' => 'Échoué',
     ],
 
     'id_document_type' => [

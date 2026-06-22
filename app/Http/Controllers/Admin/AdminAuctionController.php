@@ -42,6 +42,32 @@ class AdminAuctionController extends Controller
         return view('admin.auctions.index', compact('auctions'));
     }
 
+    /**
+     * Read-only full detail of one auction and everything happening in it —
+     * bids, registered participants, payments, inspection Q&A, documents and
+     * delivery. The route-model binding is entity-scoped, so an entity account
+     * only ever reaches its own auctions; the 'view' policy enforces the same.
+     */
+    public function show(Auction $auction): View
+    {
+        $this->authorize('view', $auction);
+
+        $auction->load([
+            'entity', 'category', 'wilaya', 'commune',
+            'winner', 'createdByUser', 'entityUser', 'delivery.user',
+        ]);
+
+        $bids = $auction->bids()->with('user')->orderByDesc('bid_time')->get();
+        $participants = $auction->participants()->with('user')->orderByDesc('registered_at')->get();
+        $payments = $auction->payments()->with('user')->latest()->get();
+        $questions = $auction->inspectionQuestions()->with(['user', 'answeredBy'])->latest()->get();
+        $documents = $auction->documents()->latest()->get();
+
+        return view('admin.auctions.show', compact(
+            'auction', 'bids', 'participants', 'payments', 'questions', 'documents',
+        ));
+    }
+
     public function create(): View
     {
         $this->authorize('create', Auction::class);

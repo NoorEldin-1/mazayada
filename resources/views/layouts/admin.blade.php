@@ -30,10 +30,14 @@
     </div>
 
     <nav class="flex-1 overflow-y-auto px-2.5 py-3.5 flex flex-col gap-1">
+        {{-- The platform dashboard surfaces global figures; entity (read-only)
+             accounts live in "auctions & appeals only", so it's hidden for them. --}}
+        @unless(auth()->user()->entity_id !== null)
         <x-ui.nav-link tone="onPrimary" :href="route('admin.dashboard')" :active="request()->routeIs('admin.dashboard')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
             <span>{{ __('admin.nav_dashboard') }}</span>
         </x-ui.nav-link>
+        @endunless
 
         @can('auctions.viewAny')
         <x-ui.nav-link tone="onPrimary" :href="route('admin.auctions.index')" :active="request()->routeIs('admin.auctions.index','admin.auctions.edit')">

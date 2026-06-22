@@ -17,7 +17,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
@@ -31,14 +30,12 @@ use Illuminate\View\View;
  */
 class AdminEntityStaffController extends Controller
 {
-    /** Roles that may be assigned to entity staff (SUPER_ADMIN is platform-only). */
-    private const ASSIGNABLE_ROLES = [
-        UserRole::ENTITY_HEAD,
-        UserRole::CONTENT_ADMIN,
-        UserRole::APPRAISER,
-        UserRole::HUISSIER,
-        UserRole::COMMITTEE_MEMBER,
-    ];
+    /**
+     * Every entity staff account is read-only: it views — but never mutates —
+     * its entity's auctions and appeals. There is a single role, so the form no
+     * longer asks for one. All auction management is centralised (SUPER_ADMIN).
+     */
+    private const STAFF_ROLE = UserRole::ENTITY_VIEWER;
 
     public function index(): View
     {
@@ -62,7 +59,6 @@ class AdminEntityStaffController extends Controller
 
         return view('admin.entity-staff.create', [
             'entities' => $this->actorIsSuperAdmin() ? Entity::orderBy('name')->get() : null,
-            'roles' => self::ASSIGNABLE_ROLES,
         ]);
     }
 
@@ -81,7 +77,6 @@ class AdminEntityStaffController extends Controller
             'phone' => ['required', 'string', new AlgerianPhone, 'unique:users,phone'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'username' => ['required', 'string', 'max:50', 'unique:entity_users,username'],
-            'role' => ['required', Rule::in($this->assignableRoleValues())],
             'birth_date' => ['required', 'date', 'before:'.now()->subYears(18)->toDateString()],
             'password' => ['required', 'string', 'confirmed', Password::defaults()],
         ]);
@@ -89,7 +84,9 @@ class AdminEntityStaffController extends Controller
         $entityId = $superAdmin ? $validated['entity_id'] : auth()->user()->entity_id;
         abort_unless($entityId, 422);
 
-        DB::transaction(function () use ($validated, $entityId) {
+        $role = self::STAFF_ROLE->value;
+
+        DB::transaction(function () use ($validated, $entityId, $role) {
             $user = User::create([
                 'nin' => $validated['nin'],
                 'professional_id_no' => $validated['professional_id_no'],
@@ -99,7 +96,8 @@ class AdminEntityStaffController extends Controller
                 'email' => $validated['email'],
                 'birth_date' => $validated['birth_date'],
                 'password' => $validated['password'],
-                'role' => $validated['role'],
+                // Every staff account is a read-only entity viewer (see STAFF_ROLE).
+                'role' => $role,
                 'entity_id' => $entityId,
                 // Staff are provisioned by an admin — no public KYC/OTP gate.
                 'kyc_status' => KycStatus::COMPLETE,
@@ -108,25 +106,39 @@ class AdminEntityStaffController extends Controller
                 'email_verified' => true,
             ]);
 
-            $user->syncRoles([$validated['role']]);
+            $user->syncRoles([$role]);
 
             EntityUser::create([
                 'entity_id' => $entityId,
                 'user_id' => $user->id,
                 'username' => $validated['username'],
+                // Legacy mirror column (NOT NULL); the canonical password lives on
+                // the User. EntityUser casts this to 'hashed' on write.
+                'password' => $validated['password'],
                 'full_name' => $user->fullNameAr(),
-                'role' => $validated['role'],
+                'role' => $role,
                 'is_active' => true,
             ]);
 
             AuditLog::log('ENTITY_STAFF_CREATED', 'User', $user->id, null, null, [
                 'entity_id' => $entityId,
-                'role' => $validated['role'],
+                'role' => $role,
             ]);
         });
 
         return redirect()->route('admin.entity-staff.index')
             ->with('success', __('admin.entity_staff.flash_created'));
+    }
+
+    /** Read-only full detail of a staff member (identity + account + membership). */
+    public function show(EntityUser $entityStaff): View
+    {
+        $this->authorize('entities.members.manage');
+        $this->guardEntity($entityStaff);
+
+        return view('admin.entity-staff.show', [
+            'member' => $entityStaff->load(['entity', 'user']),
+        ]);
     }
 
     public function edit(EntityUser $entityStaff): View
@@ -136,32 +148,34 @@ class AdminEntityStaffController extends Controller
 
         return view('admin.entity-staff.edit', [
             'member' => $entityStaff->load(['entity', 'user']),
-            'roles' => self::ASSIGNABLE_ROLES,
         ]);
     }
 
+    /**
+     * Reset a staff member's login password. Identity and role are fixed at
+     * creation (every staff account is a read-only viewer), so resetting the
+     * password is the only edit left — and the entity itself cannot manage its
+     * own staff, so the admin needs this surface.
+     */
     public function update(Request $request, EntityUser $entityStaff): RedirectResponse
     {
         $this->authorize('entities.members.manage');
         $this->guardEntity($entityStaff);
 
         $validated = $request->validate([
-            'role' => ['required', Rule::in($this->assignableRoleValues())],
+            'password' => ['required', 'string', 'confirmed', Password::defaults()],
         ]);
-
-        $entityStaff->update(['role' => $validated['role']]);
 
         if ($entityStaff->user) {
-            $entityStaff->user->update(['role' => $validated['role']]);
-            $entityStaff->user->syncRoles([$validated['role']]);
+            $entityStaff->user->update(['password' => $validated['password']]);
+            // Force re-login everywhere with the rotated credential.
+            invalidate_user_sessions($entityStaff->user->id);
         }
 
-        AuditLog::log('ENTITY_STAFF_UPDATED', 'EntityUser', $entityStaff->id, null, null, [
-            'role' => $validated['role'],
-        ]);
+        AuditLog::log('ENTITY_STAFF_PASSWORD_RESET', 'EntityUser', $entityStaff->id);
 
         return redirect()->route('admin.entity-staff.index')
-            ->with('success', __('admin.entity_staff.flash_updated'));
+            ->with('success', __('admin.entity_staff.flash_password_reset'));
     }
 
     /**
@@ -222,10 +236,5 @@ class AdminEntityStaffController extends Controller
         }
 
         abort_unless($entityStaff->entity_id === auth()->user()->entity_id, 403);
-    }
-
-    private function assignableRoleValues(): array
-    {
-        return array_map(fn (UserRole $r) => $r->value, self::ASSIGNABLE_ROLES);
     }
 }

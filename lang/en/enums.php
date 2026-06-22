@@ -27,6 +27,7 @@ return [
         'HUISSIER' => 'Judicial Officer',
         'COMMITTEE_MEMBER' => 'Committee Member',
         'CONTENT_ADMIN' => 'Content Admin',
+        'ENTITY_VIEWER' => 'Entity Account (read-only)',
     ],
 
     'auction_type' => [
@@ -46,6 +47,11 @@ return [
         'ACTIVE' => 'Active',
         'SUSPENDED' => 'Suspended',
         'BANNED' => 'Banned',
+    ],
+
+    'account_type' => [
+        'PERSON' => 'Person',
+        'INSTITUTION' => 'Entity',
     ],
 
     'appeal_status' => [
@@ -69,6 +75,14 @@ return [
         'ENTRY_FEE' => 'Entry fee',
         'BOOK_PURCHASE' => 'Specifications booklet',
         'FINAL_PAYMENT' => 'Final payment',
+    ],
+
+    'payment_status' => [
+        'PENDING' => 'Pending',
+        'CONFIRMED' => 'Confirmed',
+        'REFUNDED' => 'Refunded',
+        'FORFEITED' => 'Forfeited',
+        'FAILED' => 'Failed',
     ],
 
     'id_document_type' => [

@@ -15,6 +15,25 @@ use App\Models\User;
  */
 class AppealPolicy
 {
+    /** The only abilities an entity-bound (read-only) account may exercise. */
+    private const READ_ABILITIES = ['viewAny'];
+
+    /**
+     * Hard product rule: any account bound to a government entity is read-only.
+     * It may list/view the appeals filed against its own auctions but never
+     * respond — appeal handling is centralised on the platform. SUPER_ADMIN is
+     * short-circuited earlier by Gate::before; platform staff (entity_id null)
+     * fall through to respond().
+     */
+    public function before(User $user, string $ability): ?bool
+    {
+        if ($user->entity_id !== null && ! in_array($ability, self::READ_ABILITIES, true)) {
+            return false;
+        }
+
+        return null;
+    }
+
     public function viewAny(User $user): bool
     {
         return $user->can('appeals.viewAny');

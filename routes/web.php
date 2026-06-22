@@ -103,11 +103,13 @@ Route::middleware(['auth', 'kyc.verified'])->group(function () {
 // (AuthorizesRequests / $this->authorize) and the Spatie permission gate.
 // admin.2fa redirects staff without a confirmed 2FA to the setup page when the
 // 'security.enforce_admin_2fa' setting is on (off by default).
-Route::middleware(['auth', 'admin.2fa', 'role:SUPER_ADMIN,ENTITY_HEAD,CONTENT_ADMIN,APPRAISER,HUISSIER,COMMITTEE_MEMBER'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'admin.2fa', 'role:'.implode(',', \App\Enums\UserRole::staffValues())])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
     Route::get('/auctions', [AdminAuctionController::class, 'index'])->name('auctions.index');
     Route::get('/auctions/create', [AdminAuctionController::class, 'create'])->name('auctions.create');
     Route::post('/auctions', [AdminAuctionController::class, 'store'])->name('auctions.store');
+    // Read-only full detail (registered after /create so it isn't shadowed).
+    Route::get('/auctions/{auction}', [AdminAuctionController::class, 'show'])->name('auctions.show');
     Route::get('/auctions/{auction}/edit', [AdminAuctionController::class, 'edit'])->name('auctions.edit');
     Route::put('/auctions/{auction}', [AdminAuctionController::class, 'update'])->name('auctions.update');
     Route::delete('/auctions/{auction}', [AdminAuctionController::class, 'destroy'])->name('auctions.destroy');
@@ -132,6 +134,8 @@ Route::middleware(['auth', 'admin.2fa', 'role:SUPER_ADMIN,ENTITY_HEAD,CONTENT_AD
     Route::get('/entities', [AdminEntityController::class, 'index'])->name('entities.index');
     Route::get('/entities/create', [AdminEntityController::class, 'create'])->name('entities.create');
     Route::post('/entities', [AdminEntityController::class, 'store'])->name('entities.store');
+    // Read-only full detail (registered after /create so it isn't shadowed).
+    Route::get('/entities/{entity}', [AdminEntityController::class, 'show'])->name('entities.show');
     Route::get('/entities/{entity}/edit', [AdminEntityController::class, 'edit'])->name('entities.edit');
     Route::put('/entities/{entity}', [AdminEntityController::class, 'update'])->name('entities.update');
     Route::delete('/entities/{entity}', [AdminEntityController::class, 'destroy'])->name('entities.destroy');
@@ -142,6 +146,8 @@ Route::middleware(['auth', 'admin.2fa', 'role:SUPER_ADMIN,ENTITY_HEAD,CONTENT_AD
     Route::get('/entity-staff', [AdminEntityStaffController::class, 'index'])->name('entity-staff.index');
     Route::get('/entity-staff/create', [AdminEntityStaffController::class, 'create'])->name('entity-staff.create');
     Route::post('/entity-staff', [AdminEntityStaffController::class, 'store'])->name('entity-staff.store');
+    // Read-only full detail (registered after /create so it isn't shadowed).
+    Route::get('/entity-staff/{entityStaff}', [AdminEntityStaffController::class, 'show'])->name('entity-staff.show');
     Route::get('/entity-staff/{entityStaff}/edit', [AdminEntityStaffController::class, 'edit'])->name('entity-staff.edit');
     Route::put('/entity-staff/{entityStaff}', [AdminEntityStaffController::class, 'update'])->name('entity-staff.update');
     Route::post('/entity-staff/{entityStaff}/toggle', [AdminEntityStaffController::class, 'deactivate'])->name('entity-staff.toggle');

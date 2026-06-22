@@ -27,6 +27,7 @@ return [
         'HUISSIER' => 'محضر قضائي',
         'COMMITTEE_MEMBER' => 'عضو لجنة',
         'CONTENT_ADMIN' => 'مشرف محتوى',
+        'ENTITY_VIEWER' => 'حساب جهة (قراءة فقط)',
     ],
 
     'auction_type' => [
@@ -46,6 +47,11 @@ return [
         'ACTIVE' => 'نشط',
         'SUSPENDED' => 'معلّق',
         'BANNED' => 'محظور',
+    ],
+
+    'account_type' => [
+        'PERSON' => 'شخص',
+        'INSTITUTION' => 'جهة',
     ],
 
     'appeal_status' => [
@@ -69,6 +75,14 @@ return [
         'ENTRY_FEE' => 'رسوم دخول',
         'BOOK_PURCHASE' => 'كراسة شروط',
         'FINAL_PAYMENT' => 'دفع نهائي',
+    ],
+
+    'payment_status' => [
+        'PENDING' => 'قيد الانتظار',
+        'CONFIRMED' => 'مؤكَّد',
+        'REFUNDED' => 'مُسترَد',
+        'FORFEITED' => 'مُصادَر',
+        'FAILED' => 'فاشل',
     ],
 
     'id_document_type' => [

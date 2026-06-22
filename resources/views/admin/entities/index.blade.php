@@ -42,6 +42,7 @@
                     @endif
                 </td>
                 <td>
+                    <x-ui.btn variant="ghost" size="sm" :href="route('admin.entities.show', $entity)">{{ __('common.view') }}</x-ui.btn>
                     <x-ui.btn variant="ghost" size="sm" :href="route('admin.entities.edit', $entity)">{{ __('common.edit') }}</x-ui.btn>
                     <form method="POST" action="{{ route('admin.entities.destroy', $entity) }}" style="display:inline"
                           data-confirm="{{ __('admin.entities.confirm_delete') }}" data-confirm-variant="danger">

@@ -65,6 +65,10 @@
                 </td>
                 <td>
                     <div class="flex flex-wrap items-center gap-2">
+                        {{-- Read-only full detail — available to every role that can view the auction. --}}
+                        @can('view', $auction)
+                            <x-ui.btn variant="ghost" size="sm" :href="route('admin.auctions.show', $auction)">{{ __('admin.auctions.view_details') }}</x-ui.btn>
+                        @endcan
                         {{-- §4 step 2 — condition book: generate (then download) for any pre-close auction --}}
                         @can('documents.generate')
                             @if(in_array($auction->status, [\App\Enums\AuctionStatus::DRAFT, \App\Enums\AuctionStatus::PUBLISHED, \App\Enums\AuctionStatus::ACTIVE, \App\Enums\AuctionStatus::EXTENDED], true))

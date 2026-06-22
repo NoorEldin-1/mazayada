@@ -24,18 +24,23 @@ class AdminAuctionStoreTest extends TestCase
         $this->refs();
     }
 
-    private function staff(): User
+    /**
+     * Auction creation is centralised on the platform: a SUPER_ADMIN (no entity
+     * binding) creates auctions and assigns the owning entity. Entity-bound
+     * accounts are read-only and cannot reach store() — see MultiTenancyTest.
+     */
+    private function admin(): User
     {
         $user = User::create([
             'nin' => '109823041175663999',
-            'first_name_ar' => 'موظف', 'last_name_ar' => 'جهة',
-            'phone' => '0555123999', 'email' => 'staff@example.test',
+            'first_name_ar' => 'مشرف', 'last_name_ar' => 'النظام',
+            'phone' => '0555123999', 'email' => 'admin@example.test',
             'birth_date' => '1985-01-01', 'password' => 'StrongP@ss123',
-            'role' => UserRole::ENTITY_HEAD, 'entity_id' => $this->refEntity->id,
+            'role' => UserRole::SUPER_ADMIN, 'entity_id' => null,
             'kyc_status' => KycStatus::COMPLETE, 'account_status' => AccountStatus::ACTIVE,
             'phone_verified' => true, 'email_verified' => true,
         ]);
-        $user->assignRole(UserRole::ENTITY_HEAD->value);
+        $user->assignRole(UserRole::SUPER_ADMIN->value);
 
         return $user;
     }
@@ -43,6 +48,7 @@ class AdminAuctionStoreTest extends TestCase
     public function test_sale_auction_creates_with_empty_lease_fields(): void
     {
         $payload = [
+            'entity_id' => $this->refEntity->id,
             'category_id' => $this->refCategory->id,
             'wilaya_id' => $this->refWilaya->id,
             'title_ar' => 'سيارة تجريبية',
@@ -62,7 +68,7 @@ class AdminAuctionStoreTest extends TestCase
             'lease_renewals' => '',
         ];
 
-        $this->actingAs($this->staff())
+        $this->actingAs($this->admin())
             ->post(route('admin.auctions.store'), $payload)
             ->assertRedirect(route('admin.auctions.index'));
 
@@ -78,6 +84,7 @@ class AdminAuctionStoreTest extends TestCase
         Storage::fake('public');
 
         $payload = [
+            'entity_id' => $this->refEntity->id,
             'category_id' => $this->refCategory->id,
             'wilaya_id' => $this->refWilaya->id,
             'title_ar' => 'سيارة بصور',
@@ -94,7 +101,7 @@ class AdminAuctionStoreTest extends TestCase
             ],
         ];
 
-        $this->actingAs($this->staff())
+        $this->actingAs($this->admin())
             ->post(route('admin.auctions.store'), $payload)
             ->assertSessionHasNoErrors()
             ->assertRedirect(route('admin.auctions.index'));
@@ -109,6 +116,7 @@ class AdminAuctionStoreTest extends TestCase
     public function test_lease_auction_defaults_renewals_when_blank(): void
     {
         $payload = [
+            'entity_id' => $this->refEntity->id,
             'category_id' => $this->refCategory->id,
             'wilaya_id' => $this->refWilaya->id,
             'title_ar' => 'محل للإيجار',
@@ -123,7 +131,7 @@ class AdminAuctionStoreTest extends TestCase
             'lease_renewals' => '',
         ];
 
-        $this->actingAs($this->staff())
+        $this->actingAs($this->admin())
             ->post(route('admin.auctions.store'), $payload)
             ->assertRedirect(route('admin.auctions.index'));
 

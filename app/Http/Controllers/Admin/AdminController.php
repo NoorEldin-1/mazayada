@@ -11,12 +11,20 @@ use App\Models\Bid;
 use App\Models\Payment;
 use App\Models\User;
 use App\Models\Wilaya;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class AdminController extends Controller
 {
-    public function dashboard(): View
+    public function dashboard(): View|RedirectResponse
     {
+        // Entity (read-only) accounts are scoped to "auctions & appeals only".
+        // The platform dashboard surfaces global user/KYC figures that aren't
+        // theirs to see, so send them straight to their auctions instead.
+        if (auth()->user()->entity_id !== null) {
+            return redirect()->route('admin.auctions.index');
+        }
+
         // Auction-derived figures inherit per-entity isolation automatically
         // (Auction's EntityScope, active in the admin area). Payment/Bid figures
         // do so transitively via whereHas('auction').

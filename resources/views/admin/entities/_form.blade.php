@@ -71,8 +71,9 @@
             @error('phone') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
         </div>
         <div class="field">
-            <label for="email">{{ __('admin.entities.f_email') }}</label>
-            <input type="email" id="email" name="email" class="input" value="{{ old('email', $e?->email) }}" style="direction:ltr">
+            <label for="email">{{ __('admin.entities.f_email') }} <span class="text-danger">*</span></label>
+            <input type="email" id="email" name="email" class="input" value="{{ old('email', $e?->email) }}" style="direction:ltr" required>
+            <small class="text-muted text-xs mt-1">{{ __('admin.entities.email_is_login_hint') }}</small>
             @error('email') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
         </div>
     </div>
@@ -82,6 +83,24 @@
             <input type="checkbox" name="is_active" value="1" {{ old('is_active', $e?->is_active ?? true) ? 'checked' : '' }}>
             {{ __('admin.entities.f_active') }}
         </label>
+    </div>
+</x-ui.card>
+
+{{-- The entity's own read-only login (UserRole::ENTITY_VIEWER). Username = the
+     email above. Password is required on create; on edit, leave blank to keep. --}}
+<x-ui.card :title="__('admin.entities.sec_account')" class="mb-6">
+    <p class="text-sm text-muted mb-4">{{ __('admin.entities.account_note') }}</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="field">
+            <label for="password">{{ __('admin.entities.f_password') }} @unless($e)<span class="text-danger">*</span>@endunless</label>
+            <input type="password" id="password" name="password" class="input" style="direction:ltr" autocomplete="new-password" @unless($e) required @endunless>
+            @if($e)<small class="text-muted text-xs mt-1">{{ __('admin.entities.password_keep_hint') }}</small>@endif
+            @error('password') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
+        </div>
+        <div class="field">
+            <label for="password_confirmation">{{ __('admin.entities.f_password_confirm') }} @unless($e)<span class="text-danger">*</span>@endunless</label>
+            <input type="password" id="password_confirmation" name="password_confirmation" class="input" style="direction:ltr" autocomplete="new-password" @unless($e) required @endunless>
+        </div>
     </div>
 </x-ui.card>
 

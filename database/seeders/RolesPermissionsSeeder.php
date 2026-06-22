@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Enums\UserRole;
+use App\Models\EntityUser;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -123,6 +125,18 @@ class RolesPermissionsSeeder extends Seeder
             'appeals.viewAny',
         ],
 
+        // Read-only entity account (institutional login + its staff). Strictly
+        // observes its own entity's auctions and appeals — no create/update/
+        // publish/cancel/extend/delete/respond/manage. Per-entity isolation is
+        // enforced by EntityScope + the policies' sameEntity() check.
+        UserRole::ENTITY_VIEWER->value => [
+            'auctions.viewAny', 'auctions.view',
+            'bids.viewAny',
+            'payments.viewAny',
+            'documents.download',
+            'appeals.viewAny',
+        ],
+
         UserRole::CITIZEN->value => [
             'auctions.viewAny', 'auctions.view',
             'bids.place',
@@ -160,6 +174,36 @@ class RolesPermissionsSeeder extends Seeder
             $role->syncPermissions($permissions);
         }
 
+        $this->enforceEntityAccountsAreReadOnly();
+
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+    }
+
+    /**
+     * Hard product rule: any account bound to a government entity is read-only
+     * (UserRole::ENTITY_VIEWER) — it only views its entity's auctions & appeals;
+     * all auction management is centralised on the platform.
+     *
+     * This is the CANONICAL place for the conversion because it runs on every
+     * deploy (db:seed step) AFTER the ENTITY_VIEWER role exists, so it reliably
+     * downgrades any pre-existing staff that still hold a write role. The
+     * standalone data migration runs BEFORE roles are seeded, so it cannot be
+     * relied on for an already-populated database. Idempotent — rows already on
+     * ENTITY_VIEWER are skipped.
+     */
+    private function enforceEntityAccountsAreReadOnly(): void
+    {
+        $viewer = UserRole::ENTITY_VIEWER->value;
+
+        User::query()
+            ->whereNotNull('entity_id')
+            ->where('role', '!=', $viewer)
+            ->get()
+            ->each(function (User $user) use ($viewer) {
+                $user->update(['role' => $viewer]);
+                $user->syncRoles([$viewer]);
+            });
+
+        EntityUser::where('role', '!=', $viewer)->update(['role' => $viewer]);
     }
 }

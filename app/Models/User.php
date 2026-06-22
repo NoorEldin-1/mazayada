@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\AccountStatus;
+use App\Enums\AccountType;
 use App\Enums\KycStatus;
 use App\Enums\UserRole;
 use Illuminate\Contracts\Translation\HasLocalePreference;
@@ -32,7 +33,7 @@ class User extends Authenticatable implements HasLocalePreference
         'kyc_status', 'kyc_completed_at', 'kyc_submitted_at', 'kyc_rejection_reason',
         'is_blacklisted', 'blacklist_reason',
         'account_status', 'premium_until', 'secret_question', 'secret_answer',
-        'password', 'role', 'entity_id', 'locale', 'phone_verified', 'email_verified',
+        'password', 'role', 'account_type', 'entity_id', 'locale', 'phone_verified', 'email_verified',
         'failed_login_attempts', 'locked_until',
     ];
 
@@ -60,6 +61,7 @@ class User extends Authenticatable implements HasLocalePreference
             'kyc_status' => KycStatus::class,
             'account_status' => AccountStatus::class,
             'role' => UserRole::class,
+            'account_type' => AccountType::class,
         ];
     }
 
@@ -194,6 +196,16 @@ class User extends Authenticatable implements HasLocalePreference
     public function isPremium(): bool
     {
         return $this->premium_until && $this->premium_until->isFuture();
+    }
+
+    /**
+     * An institutional account is a government entity's own read-only login
+     * (no person identity). Used to label/branch the admin UI and to find the
+     * single account that represents an entity.
+     */
+    public function isInstitution(): bool
+    {
+        return $this->account_type === AccountType::INSTITUTION;
     }
 
     public function isKycComplete(): bool
