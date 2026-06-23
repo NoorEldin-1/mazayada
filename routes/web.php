@@ -89,8 +89,10 @@ Route::middleware('auth')->group(function () {
 
 // Auction actions (authenticated) — bidding is rate-limited per user per auction.
 Route::middleware(['auth', 'kyc.verified'])->group(function () {
-    // §10.3 acknowledge the condition book → §4 step 3 paid registration.
-    Route::post('/auctions/{auction}/acknowledge-book', [AuctionController::class, 'acknowledgeConditionBook'])->name('auctions.acknowledge-book');
+    // §4 step 2 — buy the condition book (دفتر الشروط); a prerequisite for
+    // registering, but also open to any KYC-verified user who just wants to read it.
+    Route::post('/auctions/{auction}/buy-book', [AuctionController::class, 'buyConditionBook'])->name('auctions.buy-book');
+    // §4 step 3 — paid registration (participation deposit).
     Route::post('/auctions/{auction}/register', [AuctionController::class, 'startRegistration'])->name('auctions.register');
     // §4 step 7 — the winner's final payment.
     Route::post('/auctions/{auction}/final-payment', [AuctionController::class, 'startFinalPayment'])->name('auctions.final-payment');

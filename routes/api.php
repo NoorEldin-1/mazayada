@@ -130,7 +130,7 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
 
         // KYC-gated actions (parity with the web 'kyc.verified' group).
         Route::middleware('api.kyc')->group(function (): void {
-            Route::post('/auctions/{auction}/acknowledge-book', [RegistrationController::class, 'acknowledgeBook'])->name('auctions.acknowledge-book');
+            Route::post('/auctions/{auction}/buy-book', [RegistrationController::class, 'buyConditionBook'])->name('auctions.buy-book');
             Route::post('/auctions/{auction}/register', [RegistrationController::class, 'startRegistration'])->name('auctions.register');
             Route::post('/auctions/{auction}/final-payment', [PaymentController::class, 'startFinalPayment'])->name('auctions.final-payment');
             Route::post('/auctions/{auction}/questions', [QuestionController::class, 'store'])->name('auctions.questions.store');

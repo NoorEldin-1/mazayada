@@ -31,10 +31,14 @@ class AuctionParticipant extends Model
         ];
     }
 
-    /** Fully registered = deposit + entry fee confirmed (book when priced). */
+    /**
+     * Fully registered = the participation deposit is confirmed. The condition
+     * book is bought BEFORE registering (a prerequisite, not part of this), and
+     * the legacy entry fee was removed from the flow.
+     */
     public function isFullyRegistered(): bool
     {
-        return $this->deposit_paid && $this->entry_fee_paid;
+        return (bool) $this->deposit_paid;
     }
 
     public function auction(): BelongsTo

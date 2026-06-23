@@ -36,6 +36,28 @@
         </div>
     </x-ui.card>
 
+    {{-- Section 1b: Asset specifications — repeatable title + description blocks
+         (e.g. "Engine", "Colour"). Stored as JSON on the auction; shown in the
+         "specifications" tab on the public page. --}}
+    <x-ui.card :title="__('admin.auctions.sec_specifications')" class="mb-6">
+        <p style="font-size:0.85rem;color:var(--ink-muted);margin-bottom:1rem">{{ __('admin.auctions.specs_hint') }}</p>
+
+        <div id="specs-rows" data-next-index="{{ count(old('specifications', [])) }}">
+            @foreach(old('specifications', []) as $i => $spec)
+                @include('admin.auctions.partials.spec-row', ['index' => $i, 'spec' => $spec])
+            @endforeach
+        </div>
+
+        <button type="button" id="specs-add" style="display:inline-flex;align-items:center;gap:6px;font-size:0.9rem;font-weight:600;color:var(--primary);background:none;border:1px dashed var(--line);border-radius:8px;padding:0.5rem 1rem;cursor:pointer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            {{ __('admin.auctions.spec_add') }}
+        </button>
+
+        <template id="spec-row-template">
+            @include('admin.auctions.partials.spec-row', ['index' => '__INDEX__', 'spec' => []])
+        </template>
+    </x-ui.card>
+
     {{-- Section 2: Classification --}}
     <x-ui.card :title="__('admin.auctions.sec_classification')" class="mb-6">
 
@@ -111,6 +133,8 @@
                 @error('unit_count') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
             </div>
         </div>
+
+        <x-auctions.map-picker :lat="old('latitude')" :lng="old('longitude')" />
 
         <div class="field" style="margin-top:0.75rem">
             <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer">
@@ -212,20 +236,17 @@
             </div>
 
             <div class="field">
-                <label for="deposit_amount">{{ __('admin.auctions.f_deposit') }} <span class="text-danger">*</span></label>
-                <input type="number" id="deposit_amount" name="deposit_amount" class="input num" value="{{ old('deposit_amount') }}" min="0" step="0.01" required>
-                @error('deposit_amount') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
+                <label for="deposit_percent">{{ __('admin.auctions.f_deposit_percent') }}</label>
+                <input type="number" id="deposit_percent" name="deposit_percent" class="input num" value="{{ old('deposit_percent', 10) }}" min="0" max="100" step="0.01">
+                <small style="color:var(--ink-muted)">{{ __('admin.auctions.deposit_percent_hint') }}</small>
+                <small id="deposit-preview" class="num" data-prefix="{{ __('admin.auctions.deposit_computed_prefix') }}" data-currency="{{ __('common.currency') }}" style="color:var(--primary);font-weight:600;display:block;margin-block-start:4px"></small>
+                @error('deposit_percent') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
             </div>
 
-            <div class="field">
-                <label for="entry_fee">{{ __('admin.auctions.f_entry_fee') }}</label>
-                <input type="number" id="entry_fee" name="entry_fee" class="input num" value="{{ old('entry_fee') }}" min="0" step="0.01">
-                @error('entry_fee') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
-            </div>
-
-            <div class="field">
+            <div class="field" style="grid-column:1 / -1">
                 <label for="book_price">{{ __('admin.auctions.f_book_price') }}</label>
                 <input type="number" id="book_price" name="book_price" class="input num" value="{{ old('book_price') }}" min="0" step="0.01">
+                <small style="color:var(--ink-muted)">{{ __('admin.auctions.book_price_hint') }}</small>
                 @error('book_price') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
             </div>
         </div>
@@ -418,6 +439,32 @@
             if (entity.value) loadStaff(preselectStaff);
         }
 
+        // --- Repeatable asset specifications: add / remove rows ---
+        (function () {
+            var wrap = document.getElementById('specs-rows');
+            var addBtn = document.getElementById('specs-add');
+            var tpl = document.getElementById('spec-row-template');
+            if (!wrap || !addBtn || !tpl) return;
+            var nextIndex = parseInt(wrap.dataset.nextIndex || '0', 10);
+            function addRow() {
+                var html = tpl.innerHTML.replace(/__INDEX__/g, String(nextIndex));
+                nextIndex++;
+                var temp = document.createElement('div');
+                temp.innerHTML = html.trim();
+                var row = temp.querySelector('.spec-row');
+                if (row) wrap.appendChild(row);
+            }
+            addBtn.addEventListener('click', addRow);
+            wrap.addEventListener('click', function (e) {
+                var btn = e.target.closest('.spec-remove');
+                if (!btn) return;
+                var row = btn.closest('.spec-row');
+                if (row) row.remove();
+            });
+            // Start with one blank row when empty (the server prunes it if untouched).
+            if (!wrap.querySelector('.spec-row')) addRow();
+        })();
+
         // --- Block submit while the chosen video is invalid ---
         var form = video ? video.closest('form') : null;
         if (form) {
@@ -428,6 +475,9 @@
                 }
             });
         }
+
+        // --- Live participation-deposit preview (opening_price × percent) ---
+        @include('admin.auctions.partials.deposit-preview-js')
     });
 </script>
 @endpush

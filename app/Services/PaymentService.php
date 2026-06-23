@@ -30,8 +30,10 @@ class PaymentService
     ) {}
 
     /**
-     * Begin registration checkout: create the PENDING payment rows and return a
-     * gateway redirect URL. Throws on any eligibility violation (spec §2.3).
+     * Begin registration checkout. Registration now charges ONLY the
+     * participation deposit (رسوم المشاركة = a % of the opening price). The
+     * condition book is purchased separately BEFOREHAND (a prerequisite) and the
+     * legacy entry fee was removed. Throws on any eligibility violation.
      *
      * @return array{redirect_url: string, ref: string}
      */
@@ -41,11 +43,10 @@ class PaymentService
             throw new RuntimeException(__('payments.not_eligible'));
         }
 
-        $participant = $auction->participants()->where('user_id', $user->id)->first();
-
-        // §10.3 — the condition book must be acknowledged before registering.
-        if (! $participant || ! $participant->condition_book_acknowledged_at) {
-            throw new RuntimeException(__('payments.must_acknowledge_book'));
+        // The condition book must be PURCHASED before registering — it replaces
+        // the old free acknowledgement. A free book (no price) satisfies this.
+        if (! $auction->hasBookAccess($user)) {
+            throw new RuntimeException(__('payments.must_purchase_book'));
         }
 
         // §2.3 — professional customs goods require a valid Commerce Register.
@@ -53,42 +54,73 @@ class PaymentService
             throw new RuntimeException(__('payments.commerce_register_required'));
         }
 
-        if ($participant->isFullyRegistered()) {
+        $participant = $auction->participants()->where('user_id', $user->id)->first();
+        if ($participant && $participant->isFullyRegistered()) {
             throw new RuntimeException(__('payments.already_registered'));
+        }
+
+        if ((int) $auction->deposit_amount <= 0) {
+            throw new RuntimeException(__('payments.nothing_due'));
         }
 
         $driver = $this->driverName();
 
-        return DB::transaction(function () use ($auction, $user, $participant, $driver) {
-            $rows = [];
+        return DB::transaction(function () use ($auction, $user, $driver) {
+            $payment = $this->pending($auction, $user, PaymentType::DEPOSIT, (int) $auction->deposit_amount, $driver, [
+                'purpose' => 'registration',
+            ]);
 
-            if (! $participant->deposit_paid && $auction->deposit_amount > 0) {
-                $rows[] = $this->pending($auction, $user, PaymentType::DEPOSIT, (int) $auction->deposit_amount, $driver);
-            }
-            if (! $participant->entry_fee_paid && $auction->entry_fee > 0) {
-                $rows[] = $this->pending($auction, $user, PaymentType::ENTRY_FEE, (int) $auction->entry_fee, $driver);
-            }
-            if (! $participant->book_purchased && $auction->book_price > 0) {
-                $rows[] = $this->pending($auction, $user, PaymentType::BOOK_PURCHASE, (int) $auction->book_price, $driver);
-            }
-
-            if (empty($rows)) {
-                throw new RuntimeException(__('payments.nothing_due'));
-            }
-
-            // One gateway order anchors the whole registration set; all rows share
-            // its reference so the callback confirms them together.
-            $anchor = $rows[0];
-            $result = $this->gateway->charge($anchor, [
+            $result = $this->gateway->charge($payment, [
                 'description' => __('payments.registration_description', ['auction' => $auction->localizedTitle()]),
             ]);
 
-            foreach ($rows as $row) {
-                $row->update(['gateway_ref' => $result->ref, 'gateway_payload' => $result->raw]);
-            }
+            $payment->update(['gateway_ref' => $result->ref, 'gateway_payload' => $result->raw]);
 
             AuditLog::log('PAYMENT_INITIATED', 'Auction', $auction->id, $user->id, $user->role?->value, [
                 'purpose' => 'registration',
+                'ref' => $result->ref,
+            ]);
+
+            return ['redirect_url' => $result->redirectUrl ?? route('auctions.show', $auction), 'ref' => $result->ref];
+        });
+    }
+
+    /**
+     * Begin a standalone condition-book (دفتر الشروط) purchase. Open to any
+     * KYC-verified user — buying the book does NOT require participating, but it
+     * IS a prerequisite for registering. Returns a gateway redirect URL.
+     *
+     * @return array{redirect_url: string, ref: string}
+     */
+    public function initiateBookPurchase(Auction $auction, User $user): array
+    {
+        if (! $user->canBid()) {
+            throw new RuntimeException(__('payments.not_eligible'));
+        }
+
+        if ((int) $auction->book_price <= 0) {
+            throw new RuntimeException(__('payments.book_free'));
+        }
+
+        if ($auction->hasBookAccess($user)) {
+            throw new RuntimeException(__('payments.already_bought_book'));
+        }
+
+        $driver = $this->driverName();
+
+        return DB::transaction(function () use ($auction, $user, $driver) {
+            $payment = $this->pending($auction, $user, PaymentType::BOOK_PURCHASE, (int) $auction->book_price, $driver, [
+                'purpose' => 'book_purchase',
+            ]);
+
+            $result = $this->gateway->charge($payment, [
+                'description' => __('payments.book_purchase_description', ['auction' => $auction->localizedTitle()]),
+            ]);
+
+            $payment->update(['gateway_ref' => $result->ref, 'gateway_payload' => $result->raw]);
+
+            AuditLog::log('PAYMENT_INITIATED', 'Auction', $auction->id, $user->id, $user->role?->value, [
+                'purpose' => 'book_purchase',
                 'ref' => $result->ref,
             ]);
 
@@ -188,8 +220,12 @@ class PaymentService
 
         $purpose = $first->payable_meta['purpose'] ?? ($this->isRegistration($payments) ? 'registration' : 'final_payment');
 
-        if ($purpose === 'registration' && $auction && $user) {
-            $this->completeRegistration($auction, $user, $payments);
+        if ($auction && $user) {
+            match ($purpose) {
+                'registration' => $this->completeRegistration($auction, $user, $payments),
+                'book_purchase' => $this->completeBookPurchase($auction, $user),
+                default => null,
+            };
         }
 
         // Receipt + notification for the (anchor of the) confirmed set.
@@ -269,10 +305,35 @@ class PaymentService
         AuditLog::log('PARTICIPANT_REGISTERED', 'Auction', $auction->id, $user->id, $user->role?->value);
     }
 
+    /**
+     * Mark a confirmed standalone book purchase. Unlocks the condition-book
+     * download (Auction::hasBookAccess) and records the read-the-terms
+     * acknowledgement, WITHOUT marking the user as a registered participant —
+     * the deposit is still required to bid.
+     */
+    private function completeBookPurchase(Auction $auction, User $user): void
+    {
+        $participant = AuctionParticipant::firstOrNew([
+            'auction_id' => $auction->id,
+            'user_id' => $user->id,
+        ]);
+
+        $participant->book_purchased = true;
+        // Buying the book is also the legal "I have read the terms" step.
+        $participant->condition_book_acknowledged_at = $participant->condition_book_acknowledged_at ?? now();
+        // registered_at is NOT NULL; stamp the stub's creation time (mirrors the
+        // old acknowledge flow). isFullyRegistered() still keys off deposit_paid,
+        // so a book-only buyer is not treated as a registered bidder.
+        $participant->registered_at = $participant->registered_at ?? now();
+        $participant->save();
+
+        AuditLog::log('CONDITION_BOOK_PURCHASED', 'Auction', $auction->id, $user->id, $user->role?->value);
+    }
+
     private function isRegistration(Collection $payments): bool
     {
         return $payments->contains(fn (Payment $p) => in_array($p->payment_type, [
-            PaymentType::DEPOSIT, PaymentType::ENTRY_FEE, PaymentType::BOOK_PURCHASE,
+            PaymentType::DEPOSIT, PaymentType::ENTRY_FEE,
         ], true));
     }
 

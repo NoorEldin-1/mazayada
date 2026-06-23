@@ -42,6 +42,8 @@
                 $media = array_map(fn ($u) => ['type' => 'image', 'url' => $u], $photoUrls);
                 if ($videoUrl) { $media[] = ['type' => 'video', 'url' => $videoUrl]; }
                 $mediaCount = count($media);
+                // Participation-deposit percentage, trimmed for display (10.00 → "10").
+                $depositPct = rtrim(rtrim(number_format((float) $auction->deposit_percent, 2, '.', ''), '0'), '.');
             @endphp
             @if($mediaCount)
                 <div class="ad-gallery"
@@ -169,15 +171,32 @@
                             <h3>{{ __('auctions.show.tab_specs') }}</h3>
                         </div>
                         <div class="card-pad">
-                            {{-- Group: pricing --}}
+                            {{-- Group: admin-authored asset specifications (dynamic,
+                                 localized title+body blocks). Stacked layout — bodies
+                                 may be prose; pre-line keeps the admin's line breaks
+                                 while {{ }} auto-escaping stays XSS-safe. --}}
+                            @php $assetSpecs = $auction->localizedSpecifications(); @endphp
+                            @if(count($assetSpecs))
+                                <div class="spec-group">
+                                    <h4 class="spec-h">{{ __('auctions.show.specs_group_asset_specs') }}</h4>
+                                    @foreach($assetSpecs as $spec)
+                                        <div style="padding:9px 0;{{ $loop->last ? '' : 'border-bottom:1px solid var(--line)' }}">
+                                            <div style="font-size:13.5px;font-weight:700;color:var(--ink);margin-bottom:4px">{{ $spec['title'] }}</div>
+                                            <p style="margin:0;font-size:13.5px;line-height:1.8;color:var(--ink-2);white-space:pre-line">{{ $spec['body'] }}</p>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+
+                            {{-- Group: pricing — what a participant pays (book + refundable deposit) --}}
                             <div class="spec-group">
                                 <h4 class="spec-h">{{ __('auctions.show.specs_group_pricing') }}</h4>
                                 <div class="spec-rows">
                                     <div class="spec-row"><span class="l">{{ __('auctions.show.spec_opening') }}</span><span class="v"><x-money :centimes="$auction->opening_price" /></span></div>
-                                    <div class="spec-row"><span class="l">{{ __('auctions.show.spec_deposit') }}</span><span class="v">@if($auction->deposit_amount)<x-money :centimes="$auction->deposit_amount" />@else--@endif</span></div>
-                                    <div class="spec-row"><span class="l">{{ __('auctions.show.spec_entry') }}</span><span class="v">@if($auction->entry_fee)<x-money :centimes="$auction->entry_fee" />@else--@endif</span></div>
-                                    <div class="spec-row"><span class="l">{{ __('auctions.show.spec_book') }}</span><span class="v">@if($auction->book_price)<x-money :centimes="$auction->book_price" />@else--@endif</span></div>
+                                    <div class="spec-row"><span class="l">{{ __('auctions.show.spec_deposit') }}</span><span class="v">@if($auction->deposit_amount)<x-money :centimes="$auction->deposit_amount" /> <span class="num" style="color:var(--muted);font-size:12px">({{ $depositPct }}%)</span>@else--@endif</span></div>
+                                    <div class="spec-row"><span class="l">{{ __('auctions.show.spec_book') }}</span><span class="v">@if($auction->book_price)<x-money :centimes="$auction->book_price" />@else{{ __('auctions.show.book_free') }}@endif</span></div>
                                 </div>
+                                <p style="margin:10px 0 0;font-size:12px;color:var(--muted);line-height:1.7">{{ __('auctions.show.deposit_refundable_hint') }}</p>
                             </div>
 
                             {{-- Group: the asset --}}
@@ -468,29 +487,29 @@
                             <div style="margin-top:14px;padding:14px 16px;background:rgba(212,168,67,.15);border:1px solid rgba(212,168,67,.3);border-radius:12px;text-align:center;font-size:13px;color:rgba(255,255,255,.85)">
                                 {{ __('auctions.show.cta_inactive') }}
                             </div>
-                        @elseif(!$participant || !$participant->condition_book_acknowledged_at)
-                            {{-- §10.3 — must acknowledge the condition book before registering --}}
+                        @elseif(! $hasBookAccess)
+                            {{-- §4 step 2 — the condition book must be BOUGHT before registering --}}
+                            <div style="margin-top:14px;font-size:12px;color:rgba(255,255,255,.8);line-height:1.7">{{ __('auctions.show.book_required_to_register') }}</div>
+                            <form method="POST" action="{{ route('auctions.buy-book', $auction) }}" style="margin-top:10px">
+                                @csrf
+                                <button type="submit" class="bid-cta">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                                    {{ __('auctions.show.buy_condition_book') }} — <x-money :centimes="$auction->book_price" />
+                                </button>
+                            </form>
+                        @elseif(!$participant || !$participant->isFullyRegistered())
+                            {{-- Book purchased → pay the participation deposit to register (§4 step 3) --}}
                             @if($conditionBook)
                                 <a href="{{ route('documents.download', $conditionBook) }}" style="display:inline-flex;align-items:center;gap:6px;margin-top:14px;color:var(--accent);font-size:13px;font-weight:600;text-decoration:none">
                                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                                     {{ __('auctions.show.read_condition_book') }}
                                 </a>
                             @endif
-                            <form method="POST" action="{{ route('auctions.acknowledge-book', $auction) }}" style="margin-top:14px">
-                                @csrf
-                                <label style="display:flex;gap:8px;align-items:flex-start;font-size:12px;color:rgba(255,255,255,.85);margin-bottom:10px;cursor:pointer">
-                                    <input type="checkbox" required style="margin-top:3px">
-                                    <span>{{ __('auctions.show.ack_book') }}</span>
-                                </label>
-                                <button type="submit" class="bid-cta">{{ __('auctions.show.ack_submit') }}</button>
-                            </form>
-                        @elseif(!$participant->isFullyRegistered())
-                            {{-- Acknowledged → pay deposit + entry fee to register (§4 step 3) --}}
                             <form method="POST" action="{{ route('auctions.register', $auction) }}" style="margin-top:14px">
                                 @csrf
                                 <button type="submit" class="bid-cta">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-                                    {{ __('auctions.show.register_in') }}
+                                    {{ __('auctions.show.register_in') }} — <x-money :centimes="$auction->deposit_amount" />
                                 </button>
                             </form>
                         @else
@@ -583,22 +602,80 @@
                 @endif
             </div>
 
-            {{-- Condition book — prominent, always-visible download, placed right
-                 above the recent-bids list so bidders can't miss it (§4 step 2). --}}
-            @if($conditionBook)
-                <div class="doc-card">
-                    <div class="doc-t">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                        {{ __('auctions.show.documents_title') }}
-                    </div>
-                    <p class="doc-s">{{ __('auctions.show.condition_book_hint') }}</p>
-                    <a href="{{ route('documents.download', $conditionBook) }}" class="doc-dl">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        {{ __('auctions.show.read_condition_book') }}
-                        <span class="pdf">PDF</span>
-                    </a>
+            {{-- Participation costs + condition-book access — explained so bidders
+                 know exactly what they pay: the book (paid, anyone may buy) and a
+                 refundable participation deposit (spec §2 / §4 steps 2–3). --}}
+            <div class="doc-card">
+                <div class="doc-t">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    {{ __('auctions.show.costs_title') }}
                 </div>
-            @endif
+
+                {{-- Cost: condition book --}}
+                <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)">
+                    <div>
+                        <div style="font-size:13px;font-weight:700;color:var(--ink)">{{ __('auctions.show.cost_book') }}</div>
+                        <div style="font-size:11.5px;color:var(--ink-2);line-height:1.6;margin-top:2px">{{ __('auctions.show.cost_book_desc') }}</div>
+                    </div>
+                    <div style="font-size:14px;font-weight:700;color:var(--accent-2);white-space:nowrap">
+                        @if($auction->book_price)<x-money :centimes="$auction->book_price" />@else{{ __('auctions.show.book_free') }}@endif
+                    </div>
+                </div>
+
+                {{-- Cost: participation deposit (refundable) --}}
+                <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;padding:10px 0">
+                    <div>
+                        <div style="font-size:13px;font-weight:700;color:var(--ink)">{{ __('auctions.show.cost_deposit') }} <span class="num" style="color:var(--muted);font-weight:600">({{ $depositPct }}%)</span></div>
+                        <div style="font-size:11.5px;color:var(--ink-2);line-height:1.6;margin-top:2px">{{ __('auctions.show.cost_deposit_desc') }}</div>
+                    </div>
+                    <div style="font-size:14px;font-weight:700;color:var(--accent-2);white-space:nowrap">
+                        @if($auction->deposit_amount)<x-money :centimes="$auction->deposit_amount" />@else--@endif
+                    </div>
+                </div>
+
+                {{-- Winner pays the remaining balance --}}
+                <div style="font-size:11.5px;color:var(--ink-2);line-height:1.7;background:rgba(212,168,67,.14);border:1px solid rgba(212,168,67,.32);border-radius:10px;padding:9px 11px;margin-top:6px">
+                    {{ __('auctions.show.winner_pays_rest') }}
+                </div>
+
+                {{-- Condition-book access CTA: download / buy / KYC / sign-in / pending --}}
+                <div style="margin-top:14px">
+                    @auth
+                        @if($hasBookAccess)
+                            @if($conditionBook)
+                                <a href="{{ route('documents.download', $conditionBook) }}" class="doc-dl">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    {{ __('auctions.show.read_condition_book') }}
+                                    <span class="pdf">PDF</span>
+                                </a>
+                            @else
+                                <div style="font-size:12px;color:var(--ink-2);text-align:center">{{ __('auctions.show.book_pending') }}</div>
+                            @endif
+                        @elseif($auction->book_price)
+                            @if(auth()->user()->isKycComplete() && auth()->user()->canBid() && !auth()->user()->isBlacklisted() && !auth()->user()->isLocked())
+                                <form method="POST" action="{{ route('auctions.buy-book', $auction) }}">
+                                    @csrf
+                                    <button type="submit" class="doc-dl" style="width:100%;border:0;cursor:pointer;font:inherit">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                                        {{ __('auctions.show.buy_condition_book') }}
+                                        <span class="pdf"><x-money :centimes="$auction->book_price" /></span>
+                                    </button>
+                                </form>
+                            @else
+                                <a href="{{ route('citizen.kyc') }}" class="doc-dl">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                    {{ __('auctions.show.buy_needs_kyc') }}
+                                </a>
+                            @endif
+                        @endif
+                    @else
+                        <a href="{{ route('login') }}" class="doc-dl">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                            {{ __('auctions.show.login_to_buy_book') }}
+                        </a>
+                    @endauth
+                </div>
+            </div>
 
             {{-- Bid History (Sidebar) --}}
             <div class="card">
@@ -631,10 +708,42 @@
                     @endforelse
                 </div>
             </div>
+
+            {{-- Asset location — a static Leaflet map of the asset's point, with a
+                 directions link. Rendered only when the admin set coordinates. --}}
+            @if($auction->latitude && $auction->longitude)
+                <div class="card asset-loc-card">
+                    <div class="card-h">
+                        <h3>{{ __('auctions.show.location_card_title') }}</h3>
+                        <a class="asset-loc-dir" target="_blank" rel="noopener"
+                           href="https://www.google.com/maps/dir/?api=1&destination={{ $auction->latitude }},{{ $auction->longitude }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                            {{ __('auctions.show.get_directions') }}
+                        </a>
+                    </div>
+                    <div class="asset-map" data-lat="{{ $auction->latitude }}" data-lng="{{ $auction->longitude }}"></div>
+                    @if($auction->asset_location)
+                        <div class="asset-loc-addr">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <span>{{ $auction->asset_location }}</span>
+                        </div>
+                    @endif
+                </div>
+            @endif
         </div>
     </div>
 </div>
 @endsection
+
+@if($auction->latitude && $auction->longitude)
+    @push('styles')
+        <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
+    @endpush
+    @push('scripts')
+        <script src="/vendor/leaflet/leaflet.js"></script>
+        <script src="/js/auction-map-view.js?v={{ filemtime(public_path('js/auction-map-view.js')) }}"></script>
+    @endpush
+@endif
 
 @push('scripts')
 <script>

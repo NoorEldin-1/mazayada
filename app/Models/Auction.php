@@ -6,6 +6,8 @@ use App\Enums\AssetClass;
 use App\Enums\AssetCondition;
 use App\Enums\AuctionStatus;
 use App\Enums\AuctionType;
+use App\Enums\PaymentStatus;
+use App\Enums\PaymentType;
 use App\Models\Concerns\BelongsToEntity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -24,9 +26,9 @@ class Auction extends Model
 
     protected $fillable = [
         'entity_id', 'category_id', 'title_ar', 'title_fr', 'title_en',
-        'description_ar', 'description_fr', 'condition', 'unit_count',
+        'description_ar', 'description_fr', 'specifications', 'condition', 'unit_count',
         'asset_location', 'latitude', 'longitude',
-        'opening_price', 'deposit_amount', 'entry_fee', 'book_price',
+        'opening_price', 'deposit_amount', 'deposit_percent', 'entry_fee', 'book_price',
         'start_time', 'end_time', 'extension_trigger_seconds', 'extension_duration_minutes',
         'status', 'winner_user_id', 'final_price',
         'auction_type', 'asset_class', 'lease_duration_years', 'lease_renewals',
@@ -54,6 +56,7 @@ class Auction extends Model
             'settled_at' => 'datetime',
             'opening_price' => 'integer',
             'deposit_amount' => 'integer',
+            'deposit_percent' => 'decimal:2',
             'entry_fee' => 'integer',
             'book_price' => 'integer',
             'final_price' => 'integer',
@@ -61,6 +64,7 @@ class Auction extends Model
             'extension_count' => 'integer',
             'requires_commerce_register' => 'boolean',
             'requires_newspaper_announcement' => 'boolean',
+            'specifications' => 'array',
         ];
     }
 
@@ -266,6 +270,28 @@ class Auction extends Model
         return $this->title_ar ?? '';
     }
 
+    /**
+     * Admin-authored asset specifications resolved for the active locale. Each
+     * entry collapses to a { title, body } pair, falling back to Arabic when the
+     * current locale's value is empty (en has no stored value, so it falls back
+     * too). Fully-empty rows are dropped.
+     *
+     * @return array<int, array{title: string, body: string}>
+     */
+    public function localizedSpecifications(): array
+    {
+        $locale = app()->getLocale();
+
+        return collect($this->specifications ?? [])
+            ->map(fn (array $spec) => [
+                'title' => ($spec['title_'.$locale] ?? null) ?: ($spec['title_ar'] ?? ''),
+                'body' => ($spec['body_'.$locale] ?? null) ?: ($spec['body_ar'] ?? ''),
+            ])
+            ->filter(fn (array $spec) => $spec['title'] !== '' || $spec['body'] !== '')
+            ->values()
+            ->all();
+    }
+
     public function isCustoms(): bool
     {
         return $this->asset_class === AssetClass::CUSTOMS;
@@ -291,5 +317,24 @@ class Auction extends Model
         }
 
         return now()->betweenIncluded($this->inspection_start, $this->inspection_end);
+    }
+
+    /**
+     * Whether $user may read the condition book (دفتر الشروط). The book is no
+     * longer a free download — it is readable only when it carries no price
+     * (book_price = 0) or the user has a CONFIRMED book purchase. Buying the
+     * book is also a prerequisite for registering to bid (see PaymentService).
+     */
+    public function hasBookAccess(User $user): bool
+    {
+        if ((int) $this->book_price <= 0) {
+            return true;
+        }
+
+        return $this->payments()
+            ->where('user_id', $user->id)
+            ->where('payment_type', PaymentType::BOOK_PURCHASE)
+            ->where('status', PaymentStatus::CONFIRMED)
+            ->exists();
     }
 }

@@ -192,10 +192,10 @@ class AuctionController extends ApiController
         return [
             'can_bid' => $user->canBid(),
             'is_participant' => $participant?->isFullyRegistered() ?? false,
-            'condition_book_acknowledged' => $participant?->condition_book_acknowledged_at !== null,
-            'deposit_paid' => (bool) ($participant?->deposit_paid ?? false),
-            'entry_fee_paid' => (bool) ($participant?->entry_fee_paid ?? false),
+            // Book access (free or purchased) is the prerequisite for registering.
+            'has_book_access' => $auction->hasBookAccess($user),
             'book_purchased' => (bool) ($participant?->book_purchased ?? false),
+            'deposit_paid' => (bool) ($participant?->deposit_paid ?? false),
             'is_winner' => $auction->winner_user_id === $user->id,
         ];
     }

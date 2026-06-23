@@ -25,11 +25,13 @@ class DocumentService
     {
         $auction->loadMissing(['entity', 'category', 'wilaya']);
 
+        // NOT public: the condition book is a paid download now. Access is gated
+        // in DocumentPolicy by Auction::hasBookAccess (free book or paid).
         return $this->make(
             type: DocumentType::CONDITION_BOOK,
             auction: $auction,
             userId: null,
-            isPublic: true,
+            isPublic: false,
             title: __('documents.condition_book.title', ['auction' => $auction->localizedTitle()]),
             view: 'documents.condition-book',
             data: ['auction' => $auction],

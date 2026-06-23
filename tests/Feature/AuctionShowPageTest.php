@@ -115,6 +115,35 @@ class AuctionShowPageTest extends TestCase
         $response->assertDontSee(__('auctions.live'));
     }
 
+    public function test_asset_location_map_renders_when_coordinates_set(): void
+    {
+        $auction = $this->makeAuction([
+            'status' => AuctionStatus::ACTIVE,
+            'asset_location' => 'مستودع البلدية، بسكرة',
+            'latitude' => 34.85,
+            'longitude' => 5.7333,
+        ]);
+
+        $response = $this->get(route('auctions.show', $auction))->assertOk();
+        $response->assertSee(__('auctions.show.location_card_title'));
+        $response->assertSee(__('auctions.show.get_directions'));
+        $response->assertSee('مستودع البلدية، بسكرة');
+        // The read-only map container carries the point for the Leaflet view JS.
+        $response->assertSee('class="asset-map"', false);
+        $response->assertSee('data-lat="34.85', false);
+        // Self-hosted Leaflet assets are loaded only when there is a point.
+        $response->assertSee('/vendor/leaflet/leaflet.js', false);
+    }
+
+    public function test_asset_location_map_absent_without_coordinates(): void
+    {
+        $auction = $this->makeAuction(['status' => AuctionStatus::ACTIVE]);
+
+        $response = $this->get(route('auctions.show', $auction))->assertOk();
+        $response->assertDontSee(__('auctions.show.get_directions'));
+        $response->assertDontSee('/vendor/leaflet/leaflet.js', false);
+    }
+
     public function test_closed_auction_with_winner_renders(): void
     {
         $winner = $this->makeCitizen();

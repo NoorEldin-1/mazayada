@@ -85,11 +85,11 @@ class AuctionController extends Controller
             ->latest()
             ->get();
 
-        // §4 step 2 — the published (public) condition book, downloadable before
-        // acknowledging. §4 step 6 — the award report, fetched only for the winner.
+        // §4 step 2 — the condition book (a PAID download now; access is gated by
+        // DocumentPolicy via hasBookAccess, so we don't filter on is_public here).
+        // §4 step 6 — the award report, fetched only for the winner.
         $conditionBook = $auction->documents()
             ->where('type', DocumentType::CONDITION_BOOK)
-            ->where('is_public', true)
             ->latest()
             ->first();
 
@@ -97,33 +97,34 @@ class AuctionController extends Controller
             ? $auction->documents()->where('type', DocumentType::AWARD)->latest()->first()
             : null;
 
+        // Whether the viewer may read the condition book (free book or purchased).
+        // Drives the buy-vs-download UI and the registration gate.
+        $hasBookAccess = auth()->check() && $auction->hasBookAccess(auth()->user());
+
         return view('auctions.show', compact(
             'auction', 'bids', 'participant', 'isParticipant',
-            'questions', 'conditionBook', 'awardDocument',
+            'questions', 'conditionBook', 'awardDocument', 'hasBookAccess',
         ));
     }
 
     /**
-     * §10.3 — record that the citizen has read the condition book. Required
-     * before registration. Creates (or updates) the participation stub.
+     * §4 step 2 — begin a paid condition-book purchase through the gateway.
+     * Buying the book unlocks its download and is a prerequisite for registering.
      */
-    public function acknowledgeConditionBook(Auction $auction): RedirectResponse
+    public function buyConditionBook(Auction $auction, PaymentService $payments): RedirectResponse
     {
-        $participant = AuctionParticipant::firstOrNew([
-            'auction_id' => $auction->id,
-            'user_id' => auth()->id(),
-        ]);
+        try {
+            $result = $payments->initiateBookPurchase($auction, auth()->user());
+        } catch (RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
-        $participant->condition_book_acknowledged_at = now();
-        $participant->registered_at = $participant->registered_at ?? now();
-        $participant->save();
-
-        return back()->with('success', __('auctions.flash_book_acknowledged'));
+        return redirect()->away($result['redirect_url']);
     }
 
     /**
-     * §4 step 3 — begin paid registration (deposit + entry fee + condition book)
-     * through the payment gateway. Replaces the old flag-flipping stub.
+     * §4 step 3 — begin paid registration (the participation deposit) through the
+     * payment gateway. The condition book must already be purchased.
      */
     public function startRegistration(Auction $auction, PaymentService $payments): RedirectResponse
     {

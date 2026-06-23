@@ -25,28 +25,24 @@ class RegistrationPaymentApiTest extends ApiTestCase
         Storage::fake('documents');
     }
 
-    public function test_acknowledge_book_records_the_timestamp(): void
+    public function test_buy_book_returns_a_gateway_redirect(): void
     {
-        $auction = $this->makeAuction(['status' => AuctionStatus::ACTIVE]);
+        $auction = $this->makeAuction(['status' => AuctionStatus::ACTIVE, 'book_price' => 300_000]);
         $user = $this->makeCitizen();
         Sanctum::actingAs($user, ['access']);
 
-        $this->postJson("/api/v1/auctions/{$auction->id}/acknowledge-book")
+        $this->postJson("/api/v1/auctions/{$auction->id}/buy-book")
             ->assertOk()
-            ->assertJsonPath('data.condition_book_acknowledged', true);
+            ->assertJsonStructure(['data' => ['redirect_url', 'ref']]);
 
-        $participant = AuctionParticipant::where('auction_id', $auction->id)->where('user_id', $user->id)->first();
-        $this->assertNotNull($participant->condition_book_acknowledged_at);
+        $this->assertSame(1, Payment::where('auction_id', $auction->id)->where('status', PaymentStatus::PENDING)->count());
     }
 
     public function test_start_registration_returns_a_gateway_redirect(): void
     {
-        $auction = $this->makeAuction(['status' => AuctionStatus::ACTIVE, 'deposit_amount' => 100_000, 'entry_fee' => 50_000, 'book_price' => 0]);
+        // A free book lets registration proceed directly, charging only the deposit.
+        $auction = $this->makeAuction(['status' => AuctionStatus::ACTIVE, 'deposit_amount' => 100_000, 'book_price' => 0]);
         $user = $this->makeCitizen();
-        $this->makeParticipant($auction, $user, [
-            'deposit_paid' => false, 'entry_fee_paid' => false,
-            'condition_book_acknowledged_at' => now(),
-        ]);
         Sanctum::actingAs($user, ['access']);
 
         $response = $this->postJson("/api/v1/auctions/{$auction->id}/register")
@@ -54,14 +50,13 @@ class RegistrationPaymentApiTest extends ApiTestCase
             ->assertJsonStructure(['data' => ['redirect_url', 'ref']]);
 
         $this->assertStringContainsString('ref=', $response->json('data.redirect_url'));
-        $this->assertSame(2, Payment::where('auction_id', $auction->id)->where('status', PaymentStatus::PENDING)->count());
+        $this->assertSame(1, Payment::where('auction_id', $auction->id)->where('status', PaymentStatus::PENDING)->count());
     }
 
-    public function test_register_without_acknowledging_returns_422(): void
+    public function test_register_without_buying_priced_book_returns_422(): void
     {
-        $auction = $this->makeAuction(['status' => AuctionStatus::ACTIVE]);
+        $auction = $this->makeAuction(['status' => AuctionStatus::ACTIVE, 'book_price' => 300_000]);
         $user = $this->makeCitizen();
-        $this->makeParticipant($auction, $user, ['deposit_paid' => false, 'entry_fee_paid' => false]);
         Sanctum::actingAs($user, ['access']);
 
         $this->postJson("/api/v1/auctions/{$auction->id}/register")
@@ -71,12 +66,8 @@ class RegistrationPaymentApiTest extends ApiTestCase
 
     public function test_callback_confirms_payment_and_status_reflects_it(): void
     {
-        $auction = $this->makeAuction(['status' => AuctionStatus::ACTIVE, 'deposit_amount' => 100_000, 'entry_fee' => 50_000, 'book_price' => 0]);
+        $auction = $this->makeAuction(['status' => AuctionStatus::ACTIVE, 'deposit_amount' => 100_000, 'book_price' => 0]);
         $user = $this->makeCitizen();
-        $this->makeParticipant($auction, $user, [
-            'deposit_paid' => false, 'entry_fee_paid' => false,
-            'condition_book_acknowledged_at' => now(),
-        ]);
         Sanctum::actingAs($user, ['access']);
 
         $ref = $this->postJson("/api/v1/auctions/{$auction->id}/register")->json('data.ref');

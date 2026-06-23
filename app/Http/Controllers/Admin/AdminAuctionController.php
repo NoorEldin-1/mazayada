@@ -90,6 +90,10 @@ class AdminAuctionController extends Controller
         // create within their own entity — never trust a client-supplied value.
         $isSuperAdmin = auth()->user()->hasRole(UserRole::SUPER_ADMIN->value);
 
+        // Drop fully-empty specification rows before validation so a trailing
+        // blank row never trips the per-row required rules.
+        $request->merge(['specifications' => $this->normalizeSpecifications($request)]);
+
         $validated = $request->validate([
             'entity_id' => [$isSuperAdmin ? 'required' : 'nullable', 'exists:entities,id'],
             'entity_user_id' => ['nullable', 'exists:entity_users,id'],
@@ -98,11 +102,19 @@ class AdminAuctionController extends Controller
             'title_fr' => ['nullable', 'string', 'max:255'],
             'description_ar' => ['required', 'string'],
             'description_fr' => ['nullable', 'string'],
+            // Repeatable, admin-authored asset specifications (ar required per
+            // row, fr optional). Empty rows are pruned above before validation.
+            'specifications' => ['nullable', 'array', 'max:30'],
+            'specifications.*.title_ar' => ['required', 'string', 'max:150'],
+            'specifications.*.title_fr' => ['nullable', 'string', 'max:150'],
+            'specifications.*.body_ar' => ['required', 'string', 'max:2000'],
+            'specifications.*.body_fr' => ['nullable', 'string', 'max:2000'],
             'condition' => ['required', 'string'],
             'auction_type' => ['required', 'string'],
             'opening_price' => ['required', 'numeric', 'min:0'],
-            'deposit_amount' => ['required', 'numeric', 'min:0'],
-            'entry_fee' => ['nullable', 'numeric', 'min:0'],
+            // Participation deposit is a PERCENTAGE of the opening price (default
+            // 10%); the centimes amount is derived, never entered directly.
+            'deposit_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'book_price' => ['nullable', 'numeric', 'min:0'],
             'start_time' => ['required', 'date', 'after:now'],
             'end_time' => ['required', 'date', 'after:start_time'],
@@ -111,6 +123,9 @@ class AdminAuctionController extends Controller
             'commune_id' => ['nullable', Rule::exists('communes', 'id')->where('wilaya_id', $request->wilaya_id)],
             'mayor_name' => ['nullable', 'string', 'max:255'],
             'asset_location' => ['nullable', 'string', 'max:255'],
+            // Map coordinates (Leaflet picker). Both-or-neither so a point is always complete.
+            'latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_with:longitude'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:latitude'],
             // Asset photos (spec §4 step 1).
             'photos' => ['nullable', 'array', 'max:10'],
             'photos.*' => ['image', 'mimes:jpeg,png,webp', 'max:4096'],
@@ -130,23 +145,27 @@ class AdminAuctionController extends Controller
 
         // Convert DZD to centimes
         $validated['opening_price'] = (int) ($validated['opening_price'] * 100);
-        $validated['deposit_amount'] = (int) ($validated['deposit_amount'] * 100);
-
-        if (isset($validated['entry_fee'])) {
-            $validated['entry_fee'] = (int) ($validated['entry_fee'] * 100);
-        }
 
         if (isset($validated['book_price'])) {
             $validated['book_price'] = (int) ($validated['book_price'] * 100);
         }
 
-        // entry_fee / book_price are NOT NULL — a blank field must become 0, not null.
-        $validated['entry_fee'] = $validated['entry_fee'] ?? 0;
+        // The participation deposit is DERIVED from the opening price by a
+        // per-auction percentage (default 10%) — never entered directly. The
+        // legacy entry fee is removed from the flow (kept at 0).
+        $validated['deposit_percent'] = $validated['deposit_percent'] ?? 10;
+        $validated['deposit_amount'] = (int) round($validated['opening_price'] * $validated['deposit_percent'] / 100);
+        $validated['entry_fee'] = 0;
+        // book_price is NOT NULL — a blank field means a free book (0).
         $validated['book_price'] = $validated['book_price'] ?? 0;
 
         $validated['asset_class'] = $validated['asset_class'] ?? 'MOVABLE';
         $validated['requires_commerce_register'] = $request->boolean('requires_commerce_register');
         $validated['max_extensions'] = $validated['max_extensions'] ?? 10;
+        // Geocode a typed address when no map pin was dropped, so the public map renders.
+        $validated = $this->fillCoordinatesFromAddress($validated);
+        // Store an empty spec list as null to keep the column clean.
+        $validated['specifications'] = $validated['specifications'] ?: null;
         $validated = $this->normalizeLeaseFields($validated);
         // §2.4 — assets above the threshold must also be announced in a national
         // newspaper (the platform announcement supplements, not replaces, it).
@@ -208,6 +227,11 @@ class AdminAuctionController extends Controller
         // Reassigning an auction to another entity is a SUPER_ADMIN-only action.
         $isSuperAdmin = auth()->user()->hasRole(UserRole::SUPER_ADMIN->value);
 
+        // The edit form re-renders every existing spec as a row, so the submit
+        // is the full desired set — pruning empty rows lets a cleared list reach
+        // the assignment below as [] and clear the column.
+        $request->merge(['specifications' => $this->normalizeSpecifications($request)]);
+
         $validated = $request->validate([
             'entity_id' => ['sometimes', 'exists:entities,id'],
             'entity_user_id' => ['nullable', 'exists:entity_users,id'],
@@ -216,11 +240,15 @@ class AdminAuctionController extends Controller
             'title_fr' => ['nullable', 'string', 'max:255'],
             'description_ar' => ['sometimes', 'string'],
             'description_fr' => ['nullable', 'string'],
+            'specifications' => ['nullable', 'array', 'max:30'],
+            'specifications.*.title_ar' => ['required', 'string', 'max:150'],
+            'specifications.*.title_fr' => ['nullable', 'string', 'max:150'],
+            'specifications.*.body_ar' => ['required', 'string', 'max:2000'],
+            'specifications.*.body_fr' => ['nullable', 'string', 'max:2000'],
             'condition' => ['sometimes', 'string'],
             'auction_type' => ['sometimes', 'string'],
             'opening_price' => ['sometimes', 'numeric', 'min:0'],
-            'deposit_amount' => ['sometimes', 'numeric', 'min:0'],
-            'entry_fee' => ['nullable', 'numeric', 'min:0'],
+            'deposit_percent' => ['sometimes', 'numeric', 'min:0', 'max:100'],
             'book_price' => ['nullable', 'numeric', 'min:0'],
             'start_time' => ['sometimes', 'date'],
             'end_time' => ['sometimes', 'date'],
@@ -228,6 +256,9 @@ class AdminAuctionController extends Controller
             'commune_id' => ['nullable', Rule::exists('communes', 'id')->where('wilaya_id', $request->input('wilaya_id', $auction->wilaya_id))],
             'mayor_name' => ['nullable', 'string', 'max:255'],
             'asset_location' => ['nullable', 'string', 'max:255'],
+            // Map coordinates (Leaflet picker). Both-or-neither so a point is always complete.
+            'latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_with:longitude'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:latitude'],
             'photos' => ['nullable', 'array', 'max:10'],
             'photos.*' => ['image', 'mimes:jpeg,png,webp', 'max:4096'],
             'video' => ['nullable', 'file', 'mimetypes:video/mp4', 'mimes:mp4', 'max:51200'],
@@ -246,14 +277,6 @@ class AdminAuctionController extends Controller
             $validated['opening_price'] = (int) ($validated['opening_price'] * 100);
         }
 
-        if (isset($validated['deposit_amount'])) {
-            $validated['deposit_amount'] = (int) ($validated['deposit_amount'] * 100);
-        }
-
-        if (isset($validated['entry_fee'])) {
-            $validated['entry_fee'] = (int) ($validated['entry_fee'] * 100);
-        }
-
         if (isset($validated['book_price'])) {
             $validated['book_price'] = (int) ($validated['book_price'] * 100);
         }
@@ -262,23 +285,36 @@ class AdminAuctionController extends Controller
             $validated['requires_commerce_register'] = $request->boolean('requires_commerce_register');
         }
 
-        // NOT NULL columns: a submitted-but-blank value must not become null.
-        if (array_key_exists('entry_fee', $validated) && $validated['entry_fee'] === null) {
-            $validated['entry_fee'] = 0;
-        }
+        // book_price is NOT NULL — a submitted-but-blank value means a free book.
         if (array_key_exists('book_price', $validated) && $validated['book_price'] === null) {
             $validated['book_price'] = 0;
         }
         if (array_key_exists('max_extensions', $validated) && $validated['max_extensions'] === null) {
             $validated['max_extensions'] = 10;
         }
+        // The legacy entry fee is no longer charged — keep it zeroed.
+        $validated['entry_fee'] = 0;
+        // Always present (merged above); store an empty list as null.
+        $validated['specifications'] = ($validated['specifications'] ?? null) ?: null;
         $validated = $this->normalizeLeaseFields($validated, $auction);
 
-        // Recompute the newspaper-announcement flag against the (possibly new) price.
         $price = $validated['opening_price'] ?? $auction->opening_price;
+
+        // Re-derive the participation deposit whenever the opening price or the
+        // percentage changes (deposit_amount is never submitted directly).
+        if (array_key_exists('opening_price', $validated) || array_key_exists('deposit_percent', $validated)) {
+            $percent = $validated['deposit_percent'] ?? (float) $auction->deposit_percent;
+            $validated['deposit_percent'] = $percent;
+            $validated['deposit_amount'] = (int) round($price * $percent / 100);
+        }
+
+        // Recompute the newspaper-announcement flag against the (possibly new) price.
         $threshold = (int) setting('fees.newspaper_announcement_threshold_centimes',
             config('mazayada.fees.newspaper_announcement_threshold_centimes', 20_000_000));
         $validated['requires_newspaper_announcement'] = $price > $threshold;
+
+        // Geocode a typed address when no map pin was dropped, so the public map renders.
+        $validated = $this->fillCoordinatesFromAddress($validated);
 
         if (! $isSuperAdmin) {
             unset($validated['entity_id']);
@@ -410,6 +446,35 @@ class AdminAuctionController extends Controller
     }
 
     /**
+     * Normalize the submitted specifications: trim every field, keep the four
+     * known keys per row, and drop rows that are entirely empty. Rows with a
+     * partial value (e.g. a body but no title) survive so validation can flag
+     * the missing required field. Re-indexed to a clean 0..n list.
+     *
+     * @return array<int, array{title_ar: string, title_fr: string, body_ar: string, body_fr: string}>
+     */
+    private function normalizeSpecifications(Request $request): array
+    {
+        $rows = $request->input('specifications', []);
+
+        if (! is_array($rows)) {
+            return [];
+        }
+
+        return collect($rows)
+            ->map(fn ($row) => [
+                'title_ar' => trim((string) (is_array($row) ? ($row['title_ar'] ?? '') : '')),
+                'title_fr' => trim((string) (is_array($row) ? ($row['title_fr'] ?? '') : '')),
+                'body_ar' => trim((string) (is_array($row) ? ($row['body_ar'] ?? '') : '')),
+                'body_fr' => trim((string) (is_array($row) ? ($row['body_fr'] ?? '') : '')),
+            ])
+            ->reject(fn (array $row) => $row['title_ar'] === '' && $row['title_fr'] === ''
+                && $row['body_ar'] === '' && $row['body_fr'] === '')
+            ->values()
+            ->all();
+    }
+
+    /**
      * Pre-rendered staff roster for the form. A SUPER_ADMIN picks the entity and
      * the list is fetched live (admin.entities.staff), so we return an empty set;
      * other staff are pinned to their own entity, so we hand back its roster.
@@ -426,6 +491,30 @@ class AdminAuctionController extends Controller
             ->where('is_active', true)
             ->orderBy('full_name')
             ->get();
+    }
+
+    /**
+     * When the admin supplied an asset address but no map pin, best-effort
+     * geocode the address (Nominatim) so the public location map still renders.
+     * Coordinates already chosen via the picker are never overwritten.
+     *
+     * @param  array<string, mixed>  $validated
+     * @return array<string, mixed>
+     */
+    private function fillCoordinatesFromAddress(array $validated): array
+    {
+        $hasCoords = ! empty($validated['latitude'] ?? null) && ! empty($validated['longitude'] ?? null);
+        $address = $validated['asset_location'] ?? null;
+
+        if ($hasCoords || empty($address)) {
+            return $validated;
+        }
+
+        if ($coords = app(\App\Services\GeocodingService::class)->geocode($address)) {
+            [$validated['latitude'], $validated['longitude']] = $coords;
+        }
+
+        return $validated;
     }
 
     /**

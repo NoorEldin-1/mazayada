@@ -30,8 +30,8 @@
                 __('admin.auctions.f_asset_location') => $auction->asset_location ?: '—',
                 __('admin.auctions.f_opening_price') => dzd($auction->opening_price),
                 __('admin.auctions.current_price') => dzd($auction->currentPrice()),
-                __('admin.auctions.f_deposit') => dzd($auction->deposit_amount),
-                __('admin.auctions.f_entry_fee') => dzd($auction->entry_fee),
+                __('admin.auctions.f_deposit') => dzd($auction->deposit_amount).' ('.rtrim(rtrim(number_format((float) $auction->deposit_percent, 2, '.', ''), '0'), '.').'%)',
+                __('admin.auctions.f_book_price') => $auction->book_price ? dzd($auction->book_price) : __('admin.auctions.book_free'),
                 __('admin.auctions.f_start_time') => optional($auction->start_time)->format('Y-m-d H:i') ?? '—',
                 __('admin.auctions.f_end_time') => optional($auction->end_time)->format('Y-m-d H:i') ?? '—',
                 __('admin.auctions.winner') => $auction->winner?->fullNameAr() ?? '—',
@@ -55,6 +55,28 @@
         </div>
     @endif
 </x-ui.card>
+
+{{-- ===== Asset specifications (dynamic) ===== --}}
+@if(!empty($auction->specifications))
+<x-ui.card :title="__('admin.auctions.sec_specifications')" class="mb-6">
+    <div style="display:flex;flex-direction:column">
+        @foreach($auction->specifications as $spec)
+            <div style="padding:0.75rem 0;{{ $loop->last ? '' : 'border-bottom:1px solid var(--line)' }}">
+                <div class="text-ink font-medium mb-1">{{ $spec['title_ar'] ?? '—' }}</div>
+                <p class="text-ink text-sm" style="white-space:pre-line;margin:0">{{ $spec['body_ar'] ?? '' }}</p>
+                @if(!empty($spec['title_fr']) || !empty($spec['body_fr']))
+                    <div class="text-xs text-muted mt-2" dir="ltr" style="text-align:start">
+                        <span class="font-medium">{{ $spec['title_fr'] }}</span>
+                        @if(!empty($spec['body_fr']))
+                            <span style="white-space:pre-line">{{ !empty($spec['title_fr']) ? ' — ' : '' }}{{ $spec['body_fr'] }}</span>
+                        @endif
+                    </div>
+                @endif
+            </div>
+        @endforeach
+    </div>
+</x-ui.card>
+@endif
 
 {{-- ===== Bids ===== --}}
 <x-ui.card :title="__('admin.auctions.sec_bids') . ' (' . $bids->count() . ')'" class="mb-6">
@@ -93,7 +115,6 @@
             <tr>
                 <th>{{ __('admin.auctions.col_user') }}</th>
                 <th>{{ __('admin.auctions.col_deposit') }}</th>
-                <th>{{ __('admin.auctions.col_entry_fee') }}</th>
                 <th>{{ __('admin.auctions.col_book') }}</th>
                 <th>{{ __('admin.auctions.col_acknowledged') }}</th>
                 <th>{{ __('admin.auctions.col_original_owner') }}</th>
@@ -105,14 +126,13 @@
                 <tr>
                     <td>{{ $p->user?->fullNameAr() ?: '—' }}</td>
                     <td><span class="chip {{ $p->deposit_paid ? 'chip-ok' : 'chip-muted' }}">{{ $p->deposit_paid ? __('common.yes') : __('common.no') }}</span></td>
-                    <td><span class="chip {{ $p->entry_fee_paid ? 'chip-ok' : 'chip-muted' }}">{{ $p->entry_fee_paid ? __('common.yes') : __('common.no') }}</span></td>
                     <td><span class="chip {{ $p->book_purchased ? 'chip-ok' : 'chip-muted' }}">{{ $p->book_purchased ? __('common.yes') : __('common.no') }}</span></td>
                     <td class="num">{{ optional($p->condition_book_acknowledged_at)->format('Y-m-d H:i') ?? '—' }}</td>
                     <td><span class="chip {{ $p->is_original_owner ? 'chip-warn' : 'chip-muted' }}">{{ $p->is_original_owner ? __('common.yes') : __('common.no') }}</span></td>
                     <td class="num">{{ optional($p->registered_at)->format('Y-m-d H:i') ?? '—' }}</td>
                 </tr>
             @empty
-                <tr><td colspan="7" class="text-center text-muted py-6">{{ __('admin.auctions.none_participants') }}</td></tr>
+                <tr><td colspan="6" class="text-center text-muted py-6">{{ __('admin.auctions.none_participants') }}</td></tr>
             @endforelse
         </tbody>
     </x-ui.table>

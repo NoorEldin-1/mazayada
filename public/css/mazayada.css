@@ -1044,3 +1044,33 @@ html[dir="rtl"] .legal-related-card .arr{transform:scaleX(-1)}
 .doc-dl:hover{background:#E6BB52;transform:translateY(-1px)}
 .doc-dl svg{width:18px;height:18px;flex-shrink:0}
 .doc-dl .pdf{margin-inline-start:auto;font-size:10px;font-weight:800;background:rgba(58,42,8,.16);padding:2px 7px;border-radius:6px;letter-spacing:.04em}
+
+/* ============================================================
+   Asset location map (Leaflet + OSM) — public display + admin picker
+   ============================================================ */
+/* Strip Leaflet's default divIcon box so the custom SVG pin floats cleanly. */
+.mz-pin{background:none;border:0}
+.mz-pin svg{filter:drop-shadow(0 2px 3px rgba(15,30,43,.35))}
+/* Map tiles/controls are inherently LTR; keep them so under RTL pages too. */
+.asset-map{direction:ltr;position:relative;z-index:0;height:200px;width:100%;background:var(--line)}
+
+/* --- Public: asset-location card in the auction sidebar --- */
+.asset-loc-card{overflow:hidden}
+.asset-loc-dir{margin-inline-start:auto;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--primary);text-decoration:none}
+.asset-loc-dir svg{width:14px;height:14px}
+.asset-loc-dir:hover{text-decoration:underline}
+.asset-loc-addr{display:flex;align-items:flex-start;gap:7px;padding:12px 24px;font-size:13px;color:var(--ink);line-height:1.6}
+.asset-loc-addr svg{width:15px;height:15px;color:var(--muted);flex-shrink:0;margin-top:2px}
+
+/* --- Admin: location picker in the create/edit form --- */
+.map-picker{position:relative}
+.map-picker > label{display:block;font-size:.85rem;font-weight:600;margin-block-end:.4rem}
+.map-picker-search{position:relative;display:flex;gap:.5rem;margin-block-end:.6rem}
+.map-picker-search .input{flex:1}
+.map-picker-btn{flex-shrink:0;display:inline-grid;place-items:center;width:42px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);cursor:pointer}
+.map-picker-btn:hover{background:var(--bg)}
+.map-search-results{position:absolute;inset-inline:0;top:100%;z-index:1100;margin:4px 0 0;padding:4px;list-style:none;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);max-height:220px;overflow-y:auto;display:none}
+.map-search-results li{padding:8px 10px;border-radius:7px;font-size:.85rem;cursor:pointer;line-height:1.4}
+.map-search-results li:hover{background:var(--bg)}
+.asset-map--picker{height:320px;border-radius:12px;border:1px solid var(--line)}
+.map-picker-hint{display:block;margin-block-start:.45rem;font-size:.78rem;color:var(--muted)}

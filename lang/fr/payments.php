@@ -3,6 +3,10 @@
 return [
     'not_eligible' => 'Vous ne pouvez pas vous inscrire pour le moment. Vérifiez que votre identité est validée et que votre compte n’est pas suspendu.',
     'must_acknowledge_book' => 'Vous devez confirmer la lecture du cahier des charges avant de vous inscrire.',
+    'must_purchase_book' => 'Vous devez acheter le cahier des charges avant de vous inscrire à l’enchère.',
+    'book_purchase_description' => 'Achat du cahier des charges de l’enchère « :auction »',
+    'already_bought_book' => 'Vous avez déjà acheté le cahier des charges.',
+    'book_free' => 'Le cahier des charges est gratuit pour cette enchère.',
     'commerce_register_required' => 'Ce bien exige un registre du commerce valide pour participer.',
     'already_registered' => 'Vous êtes déjà inscrit à cette enchère.',
     'nothing_due' => 'Aucun montant n’est dû pour l’inscription.',

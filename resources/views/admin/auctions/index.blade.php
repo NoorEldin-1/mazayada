@@ -72,7 +72,7 @@
                         {{-- §4 step 2 — condition book: generate (then download) for any pre-close auction --}}
                         @can('documents.generate')
                             @if(in_array($auction->status, [\App\Enums\AuctionStatus::DRAFT, \App\Enums\AuctionStatus::PUBLISHED, \App\Enums\AuctionStatus::ACTIVE, \App\Enums\AuctionStatus::EXTENDED], true))
-                                @php $cb = $auction->documents()->where('type', 'CONDITION_BOOK')->where('is_public', true)->latest()->first(); @endphp
+                                @php $cb = $auction->documents()->where('type', 'CONDITION_BOOK')->latest()->first(); @endphp
                                 @if($cb)
                                     <x-ui.btn variant="ghost" size="sm" :href="route('documents.download', $cb)">↓ {{ __('admin.auctions.cb_download') }}</x-ui.btn>
                                 @else

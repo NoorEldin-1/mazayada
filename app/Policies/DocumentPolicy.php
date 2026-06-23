@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\DocumentType;
 use App\Models\Document;
 use App\Models\User;
 
@@ -13,10 +14,19 @@ class DocumentPolicy
 {
     public function download(User $user, Document $document): bool
     {
-        // Public documents (e.g. a published condition book) are downloadable by
-        // any authenticated user.
+        // Public documents are downloadable by any authenticated user.
         if ($document->is_public) {
             return true;
+        }
+
+        // The condition book (دفتر الشروط) is a PAID download: readable only when
+        // it is free (no price) or the user has purchased it. Staff / winner
+        // still pass through the broader checks below.
+        if ($document->type === DocumentType::CONDITION_BOOK) {
+            $document->loadMissing('auction');
+            if ($document->auction && $document->auction->hasBookAccess($user)) {
+                return true;
+            }
         }
 
         // The owner (winner / purchaser) of the document.

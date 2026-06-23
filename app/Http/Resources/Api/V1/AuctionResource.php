@@ -41,6 +41,14 @@ class AuctionResource extends JsonResource
                 'ar' => $this->description_ar,
                 'fr' => $this->description_fr,
             ],
+            // Admin-authored asset specifications: localized title/body for the
+            // active locale, plus the per-language maps for client-side switching.
+            'specifications' => collect($this->specifications ?? [])->map(fn (array $spec) => [
+                'title' => ($spec['title_'.app()->getLocale()] ?? null) ?: ($spec['title_ar'] ?? ''),
+                'body' => ($spec['body_'.app()->getLocale()] ?? null) ?: ($spec['body_ar'] ?? ''),
+                'titles' => ['ar' => $spec['title_ar'] ?? null, 'fr' => $spec['title_fr'] ?? null],
+                'bodies' => ['ar' => $spec['body_ar'] ?? null, 'fr' => $spec['body_fr'] ?? null],
+            ])->values()->all(),
             'status' => $this->status?->value,
             'auction_type' => $this->auction_type?->value,
             'asset_class' => $this->asset_class?->value,
@@ -76,9 +84,13 @@ class AuctionResource extends JsonResource
 
             'opening_price' => $this->money($this->opening_price),
             'current_price' => $this->money($this->currentPrice()),
+            // Participation deposit = a % of the opening price (refundable to
+            // losers, credited to the winner). The legacy entry fee is removed.
             'deposit_amount' => $this->money($this->deposit_amount),
-            'entry_fee' => $this->money($this->entry_fee),
+            'deposit_percent' => (float) $this->deposit_percent,
             'book_price' => $this->money($this->book_price),
+            // Whether the current user may download the condition book (free or paid).
+            'has_book_access' => $request->user() ? $this->hasBookAccess($request->user()) : false,
 
             'bid_count' => $this->bidCount(),
             'start_time' => $this->start_time?->toIso8601String(),
@@ -127,12 +139,15 @@ class AuctionResource extends JsonResource
         return (int) now()->diffInSeconds($this->end_time);
     }
 
-    /** Public condition book (downloadable before registration), if published. */
+    /**
+     * Condition-book reference (id + download URL). The binary itself is gated:
+     * downloading requires the book to be free or purchased (see has_book_access
+     * and DocumentPolicy). Returning the reference just tells the client it exists.
+     */
     protected function conditionBookRef(): ?array
     {
         $doc = $this->documents()
             ->where('type', DocumentType::CONDITION_BOOK)
-            ->where('is_public', true)
             ->latest()
             ->first();
 
