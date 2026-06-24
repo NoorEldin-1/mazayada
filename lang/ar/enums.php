@@ -55,11 +55,13 @@ return [
     ],
 
     'appeal_status' => [
-        'SUBMITTED' => 'مقدّم',
-        'UNDER_REVIEW' => 'قيد المراجعة',
-        'RESOLVED' => 'تمت التسوية',
-        'REJECTED' => 'مرفوض',
-        'ESCALATED' => 'مُصعَّد',
+        // PENDING/APPROVED/REJECTED double as the citizen-facing 3 states.
+        'PENDING' => 'قيد المراجعة',
+        'FORWARDED_TO_ENTITY' => 'محال إلى الجهة',
+        'ENTITY_APPROVED' => 'وافقت الجهة',
+        'ENTITY_REJECTED' => 'رفضت الجهة',
+        'APPROVED' => 'موافقة',
+        'REJECTED' => 'رفض',
     ],
 
     'entity_type' => [

@@ -142,6 +142,10 @@
                 <a href="#sec-overview" class="is-active" data-navlink="sec-overview">{{ __('auctions.show.tab_overview') }}</a>
                 <a href="#sec-inspection" data-navlink="sec-inspection">{{ __('auctions.show.tab_inspection') }}</a>
                 <a href="#sec-bids" data-navlink="sec-bids">{{ __('auctions.show.tab_bids') }}</a>
+                {{-- § الطعون — only for an eligible bidder or someone who already filed. --}}
+                @if($canAppeal || $userAppeal)
+                    <a href="#sec-appeals" data-navlink="sec-appeals">{{ __('appeals.tab') }}</a>
+                @endif
             </nav>
 
             {{-- Section: Overview — merged "details + specifications" tab (default,
@@ -418,6 +422,61 @@
                     </table>
                 </div>
             </section>
+
+            {{-- Section: Appeals (§ الطعون) — file an appeal against the result, or
+                 track an already-filed one. Rendered only for an eligible bidder
+                 ($canAppeal) or someone who already filed ($userAppeal). --}}
+            @if($canAppeal || $userAppeal)
+            <section id="sec-appeals" class="detail-sec" style="display:none">
+                @if($userAppeal)
+                    {{-- Status tracking — the citizen sees only the 3 public states. --}}
+                    <div class="card">
+                        <div class="card-h">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 11V7a4 4 0 0 0-8 0v4"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg>
+                            <h3>{{ __('appeals.your_appeal_title') }}</h3>
+                        </div>
+                        <div class="card-pad">
+                            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px">
+                                <strong style="font-size:14px;color:var(--ink)">{{ $userAppeal->subject }}</strong>
+                                <span class="chip {{ $userAppeal->status->publicChipClass() }}">{{ $userAppeal->status->publicLabel() }}</span>
+                            </div>
+                            <p style="margin:0 0 12px;font-size:13.5px;line-height:1.8;color:var(--ink-2);white-space:pre-line">{{ $userAppeal->reason }}</p>
+                            @if($userAppeal->status->isTerminal() && $userAppeal->admin_response)
+                                <div style="padding:12px 14px;background:var(--bg-2, #f6f7f5);border-radius:10px;font-size:13px;line-height:1.7;color:var(--ink-2)">
+                                    <strong style="color:var(--primary)">{{ __('appeals.admin_response') }}</strong> {{ $userAppeal->admin_response }}
+                                </div>
+                            @endif
+                            <p style="margin:12px 0 0;font-size:12px;color:var(--muted)">{{ __('appeals.submitted_on') }} {{ $userAppeal->created_at->format('Y-m-d') }}</p>
+                        </div>
+                    </div>
+                @else
+                    {{-- Submit form — eligible bidder who has not yet filed. --}}
+                    <div class="card">
+                        <div class="card-h">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 12h3v8h6v-5h2v5h6v-8h3z"/></svg>
+                            <h3>{{ __('appeals.auction_tab_title') }}</h3>
+                        </div>
+                        <div class="card-pad">
+                            <p style="margin:0 0 16px;font-size:13px;color:var(--muted);line-height:1.7">{{ __('appeals.window_hint', ['days' => $auction->appealWindowDays()]) }}</p>
+                            <form method="POST" action="{{ route('auctions.appeals.store', $auction) }}">
+                                @csrf
+                                <div style="margin-bottom:14px">
+                                    <label style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px">{{ __('appeals.subject') }} <span style="color:var(--danger)">*</span></label>
+                                    <input class="input" name="subject" value="{{ old('subject') }}" maxlength="255" required placeholder="{{ __('appeals.subject_placeholder') }}" style="width:100%">
+                                    @error('subject')<small style="display:block;color:var(--danger);font-size:12px;margin-top:4px">{{ $message }}</small>@enderror
+                                </div>
+                                <div style="margin-bottom:16px">
+                                    <label style="display:block;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px">{{ __('appeals.details') }} <span style="color:var(--danger)">*</span></label>
+                                    <textarea class="input" name="reason" rows="5" maxlength="2000" required placeholder="{{ __('appeals.details_placeholder') }}" style="width:100%;resize:vertical">{{ old('reason') }}</textarea>
+                                    @error('reason')<small style="display:block;color:var(--danger);font-size:12px;margin-top:4px">{{ $message }}</small>@enderror
+                                </div>
+                                <button type="submit" class="btn btn-primary">{{ __('appeals.submit') }}</button>
+                            </form>
+                        </div>
+                    </div>
+                @endif
+            </section>
+            @endif
         </div>
 
         {{-- Right Column (Sidebar) --}}

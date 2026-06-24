@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\AccountStatus;
 use App\Enums\AccountType;
+use App\Enums\AppealStatus;
 use App\Enums\AuctionStatus;
 use App\Enums\AuctionType;
 use App\Enums\EntityType;
@@ -133,26 +134,73 @@ class EntityReadOnlyTest extends TestCase
         $this->actingAs($viewer)->get(route('admin.entity-staff.index'))->assertForbidden();
     }
 
-    public function test_viewer_can_list_appeals_but_cannot_respond(): void
+    public function test_viewer_can_list_appeals(): void
     {
-        $viewer = $this->viewer($this->entityA->id);
-
-        $this->actingAs($viewer)
+        $this->actingAs($this->viewer($this->entityA->id))
             ->get(route('admin.appeals.index'))
             ->assertOk();
+    }
 
-        $appeal = Appeal::create([
-            'user_id' => $this->makeCitizen()->id,
-            'auction_id' => $this->auctionA->id,
-            'subject' => 'موضوع',
-            'reason' => 'سبب',
-            'status' => 'SUBMITTED',
+    public function test_viewer_cannot_forward_or_confirm_appeals(): void
+    {
+        // Forwarding and confirming are the PLATFORM admin's actions — denied to
+        // an entity account even on its own auction.
+        $viewer = $this->viewer($this->entityA->id);
+
+        $pending = $this->makeAppeal($this->auctionA, AppealStatus::PENDING);
+        $this->actingAs($viewer)
+            ->post(route('admin.appeals.forward', $pending))
+            ->assertForbidden();
+
+        $entityApproved = $this->makeAppeal($this->auctionA, AppealStatus::ENTITY_APPROVED, [
+            'entity_decision' => AppealStatus::APPROVED,
         ]);
+        $this->actingAs($viewer)
+            ->post(route('admin.appeals.confirm', $entityApproved), [
+                'decision' => 'APPROVED', 'admin_response' => 'رد',
+            ])
+            ->assertForbidden();
+    }
+
+    public function test_viewer_can_decide_a_forwarded_appeal_for_its_own_auction(): void
+    {
+        // The single deliberate write exception: an appeal the platform forwarded
+        // to this entity may be approved/rejected.
+        $viewer = $this->viewer($this->entityA->id);
+        $appeal = $this->makeAppeal($this->auctionA, AppealStatus::FORWARDED_TO_ENTITY);
 
         $this->actingAs($viewer)
-            ->post(route('admin.appeals.respond', $appeal), [
-                'admin_response' => 'رد',
-                'status' => 'RESOLVED',
+            ->post(route('admin.appeals.decide', $appeal), [
+                'decision' => 'APPROVED',
+                'entity_response' => 'قرار الجهة',
+            ])
+            ->assertRedirect();
+
+        $appeal->refresh();
+        $this->assertSame(AppealStatus::ENTITY_APPROVED, $appeal->status);
+        $this->assertSame(AppealStatus::APPROVED, $appeal->entity_decision);
+    }
+
+    public function test_viewer_cannot_decide_a_not_yet_forwarded_appeal(): void
+    {
+        $viewer = $this->viewer($this->entityA->id);
+        $pending = $this->makeAppeal($this->auctionA, AppealStatus::PENDING);
+
+        $this->actingAs($viewer)
+            ->post(route('admin.appeals.decide', $pending), [
+                'decision' => 'APPROVED', 'entity_response' => 'قرار',
+            ])
+            ->assertForbidden();
+    }
+
+    public function test_viewer_cannot_decide_another_entitys_appeal(): void
+    {
+        $viewer = $this->viewer($this->entityA->id);
+        $foreign = $this->makeAppeal($this->auctionB, AppealStatus::FORWARDED_TO_ENTITY);
+
+        $this->actingAs($viewer)
+            ->post(route('admin.appeals.decide', $foreign), [
+                'decision' => 'APPROVED', 'entity_response' => 'قرار',
             ])
             ->assertForbidden();
     }
@@ -360,6 +408,17 @@ class EntityReadOnlyTest extends TestCase
         $user->assignRole(UserRole::SUPER_ADMIN->value);
 
         return $user;
+    }
+
+    private function makeAppeal(Auction $auction, AppealStatus $status, array $overrides = []): Appeal
+    {
+        return Appeal::create(array_merge([
+            'user_id' => $this->makeCitizen()->id,
+            'auction_id' => $auction->id,
+            'subject' => 'موضوع',
+            'reason' => 'سبب',
+            'status' => $status,
+        ], $overrides));
     }
 
     private function makeCitizen(): User

@@ -4,6 +4,9 @@ return [
     'common' => [
         'doc_id' => 'N° du document',
         'issued_at' => 'Date d’émission',
+        'platform_tagline' => 'Plateforme nationale des enchères publiques',
+        'organizing_entity' => 'Entité organisatrice',
+        'qr_caption' => 'Scannez pour vérifier',
         'verify_footer' => 'Ce document est généré et signé électroniquement. Vérifiez son authenticité sur :',
         'electronic_signature' => 'Signature électronique — conforme à la loi 15-04',
     ],
@@ -42,6 +45,8 @@ return [
         'financial_section' => 'Récapitulatif financier',
         'delivery_section' => 'Conditions de livraison',
         'delivery_note' => 'La livraison a lieu après le paiement intégral sous :days jours, sur présentation du procès-verbal et du reçu de paiement.',
+        'terms' => 'Conditions et clauses',
+        'terms_body' => 'L’adjudicataire déclare avoir pris connaissance de l’état du bien et l’accepter en l’état, et s’engage à effectuer le paiement et les formalités de livraison dans les délais légaux en vigueur.',
         'legal_notice' => 'Document juridiquement contraignant au titre du Code civil (art. 96) et du Code de procédure civile. La propriété est transférée après paiement intégral.',
     ],
 

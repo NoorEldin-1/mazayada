@@ -105,6 +105,13 @@ return [
         'max_renewals' => 2,
     ],
 
+    // Appeals (الطعون) — a result may be contested only after the auction
+    // closes, and only within this window. Mirrored into system_settings so a
+    // Super Admin can tune it via the setting() helper without a deploy.
+    'appeals' => [
+        'window_days' => (int) env('APPEAL_WINDOW_DAYS', 8),
+    ],
+
     'security' => [
         'login_max_attempts' => (int) env('LOGIN_MAX_ATTEMPTS', 5),
         'login_decay_minutes' => (int) env('LOGIN_DECAY_MINUTES', 15),

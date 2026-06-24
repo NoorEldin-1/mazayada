@@ -4,6 +4,9 @@ return [
     'common' => [
         'doc_id' => 'Document no.',
         'issued_at' => 'Issued at',
+        'platform_tagline' => 'National public auctions platform',
+        'organizing_entity' => 'Organizing entity',
+        'qr_caption' => 'Scan to verify',
         'verify_footer' => 'This document was electronically generated and signed. Verify its authenticity at:',
         'electronic_signature' => 'Electronic signature — per Law 15-04',
     ],
@@ -42,6 +45,8 @@ return [
         'financial_section' => 'Financial summary',
         'delivery_section' => 'Delivery terms',
         'delivery_note' => 'Delivery takes place after full payment within :days days, upon presenting the award document and payment receipt.',
+        'terms' => 'Terms & clauses',
+        'terms_body' => 'The winner acknowledges having reviewed and accepted the asset in its current state, and undertakes to complete payment and delivery formalities within the applicable legal deadlines.',
         'legal_notice' => 'A legally binding document under the Civil Code (Art. 96) and the Code of Civil Procedure. Ownership transfers after full payment.',
     ],
 

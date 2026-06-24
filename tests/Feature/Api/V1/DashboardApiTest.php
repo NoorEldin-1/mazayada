@@ -3,6 +3,7 @@
 namespace Tests\Feature\Api\V1;
 
 use App\Enums\AuctionStatus;
+use App\Models\Bid;
 use App\Models\UserNotification;
 use Database\Seeders\RolesPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -76,21 +77,29 @@ class DashboardApiTest extends ApiTestCase
             ->assertJsonValidationErrors('phone');
     }
 
-    public function test_appeal_store_requires_participation_for_linked_auction(): void
+    public function test_appeal_store_requires_eligibility(): void
     {
-        $auction = $this->makeAuction(['status' => AuctionStatus::ACTIVE]);
+        // An appeal is filed against a CLOSED auction the user took part in with
+        // at least one valid bid; the client only ever sees the public states.
+        $auction = $this->makeAuction(['status' => AuctionStatus::CLOSED, 'closed_at' => now()]);
         $user = $this->makeCitizen();
         Sanctum::actingAs($user, ['access']);
 
-        // Not a participant -> linking the auction is rejected.
-        $this->postJson('/api/v1/appeals', [
-            'subject' => 'Test', 'reason' => 'Reason', 'auction_id' => $auction->id,
-        ])->assertStatus(422)->assertJsonValidationErrors('auction_id');
+        // Not a participant / no bid -> rejected.
+        $this->postJson("/api/v1/auctions/{$auction->id}/appeals", [
+            'subject' => 'Test', 'reason' => 'Reason',
+        ])->assertStatus(422);
 
-        // Without a linked auction it succeeds.
-        $this->postJson('/api/v1/appeals', ['subject' => 'Test', 'reason' => 'Reason'])
-            ->assertCreated()
-            ->assertJsonPath('data.status', 'SUBMITTED');
+        // Eligible: registered participant with a valid bid.
+        $this->makeParticipant($auction, $user);
+        Bid::create([
+            'auction_id' => $auction->id, 'user_id' => $user->id,
+            'amount' => 1_100_000, 'bid_time' => now(), 'is_valid' => true,
+        ]);
+
+        $this->postJson("/api/v1/auctions/{$auction->id}/appeals", [
+            'subject' => 'Test', 'reason' => 'Reason',
+        ])->assertCreated()->assertJsonPath('data.status', 'PENDING');
     }
 
     public function test_notifications_list_and_mark_read(): void

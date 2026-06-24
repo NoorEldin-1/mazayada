@@ -62,9 +62,10 @@ class AdminAuctionController extends Controller
         $payments = $auction->payments()->with('user')->latest()->get();
         $questions = $auction->inspectionQuestions()->with(['user', 'answeredBy'])->latest()->get();
         $documents = $auction->documents()->latest()->get();
+        $appeals = $auction->appeals()->with('user')->latest()->get();
 
         return view('admin.auctions.show', compact(
-            'auction', 'bids', 'participants', 'payments', 'questions', 'documents',
+            'auction', 'bids', 'participants', 'payments', 'questions', 'documents', 'appeals',
         ));
     }
 
@@ -102,6 +103,14 @@ class AdminAuctionController extends Controller
             'title_fr' => ['nullable', 'string', 'max:255'],
             'description_ar' => ['required', 'string'],
             'description_fr' => ['nullable', 'string'],
+            // Admin-authored condition-book terms — rendered verbatim in the
+            // generated كراسة الشروط PDF (ar primary, fr optional).
+            'condition_terms_ar' => ['nullable', 'string', 'max:5000'],
+            'condition_terms_fr' => ['nullable', 'string', 'max:5000'],
+            // Admin-authored award-document clauses — rendered in the وثيقة الترسية
+            // PDF produced at auction close (ar primary, fr optional).
+            'award_terms_ar' => ['nullable', 'string', 'max:5000'],
+            'award_terms_fr' => ['nullable', 'string', 'max:5000'],
             // Repeatable, admin-authored asset specifications (ar required per
             // row, fr optional). Empty rows are pruned above before validation.
             'specifications' => ['nullable', 'array', 'max:30'],
@@ -240,6 +249,10 @@ class AdminAuctionController extends Controller
             'title_fr' => ['nullable', 'string', 'max:255'],
             'description_ar' => ['sometimes', 'string'],
             'description_fr' => ['nullable', 'string'],
+            'condition_terms_ar' => ['nullable', 'string', 'max:5000'],
+            'condition_terms_fr' => ['nullable', 'string', 'max:5000'],
+            'award_terms_ar' => ['nullable', 'string', 'max:5000'],
+            'award_terms_fr' => ['nullable', 'string', 'max:5000'],
             'specifications' => ['nullable', 'array', 'max:30'],
             'specifications.*.title_ar' => ['required', 'string', 'max:150'],
             'specifications.*.title_fr' => ['nullable', 'string', 'max:150'],

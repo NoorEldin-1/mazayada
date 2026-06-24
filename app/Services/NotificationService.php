@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\UserRole;
 use App\Models\Appeal;
 use App\Models\Auction;
 use App\Models\Delivery;
@@ -9,6 +10,7 @@ use App\Models\InspectionQuestion;
 use App\Models\Payment;
 use App\Models\User;
 use App\Notifications\AuctionEventNotification;
+use Illuminate\Support\Collection;
 
 /**
  * Single dispatch point for the auction lifecycle notifications (spec §10.1).
@@ -129,13 +131,63 @@ class NotificationService
             $delivery->auction ? route('auctions.show', $delivery->auction) : null));
     }
 
-    public function appealUpdated(Appeal $appeal): void
+    // ===== Appeals workflow (§ الطعون) — one handoff per method =====
+
+    /** New appeal filed → notify the platform admins who triage it. */
+    public function appealSubmitted(Appeal $appeal): void
+    {
+        $appeal->loadMissing('auction');
+        $params = ['auction' => $appeal->auction?->localizedTitle() ?? ''];
+        foreach ($this->platformAdmins() as $admin) {
+            $admin->notify(new AuctionEventNotification('appeal_submitted', $params, route('admin.appeals.index')));
+        }
+    }
+
+    /** Admin forwarded the appeal → notify the organising entity's account. */
+    public function appealForwarded(Appeal $appeal): void
+    {
+        $appeal->loadMissing('auction.entity.account');
+        $account = $appeal->auction?->entity?->account;
+        if (! $account) {
+            return; // entity has no institutional login provisioned yet
+        }
+        $params = ['auction' => $appeal->auction?->localizedTitle() ?? ''];
+        $account->notify(new AuctionEventNotification('appeal_forwarded', $params, route('admin.appeals.index')));
+    }
+
+    /** Entity decided → notify the platform admins who confirm the decision. */
+    public function appealEntityDecided(Appeal $appeal): void
+    {
+        $appeal->loadMissing('auction');
+        $params = [
+            'auction' => $appeal->auction?->localizedTitle() ?? '',
+            'decision' => $appeal->entity_decision?->label() ?? '',
+        ];
+        foreach ($this->platformAdmins() as $admin) {
+            $admin->notify(new AuctionEventNotification('appeal_entity_decided', $params, route('admin.appeals.index')));
+        }
+    }
+
+    /** Final decision confirmed → notify the citizen with the public status. */
+    public function appealResolved(Appeal $appeal): void
     {
         $appeal->loadMissing('user');
         if (! $appeal->user) {
             return;
         }
-        $params = ['status' => $appeal->status->label()];
+        $params = ['status' => $appeal->status->publicLabel()];
         $appeal->user->notify(new AuctionEventNotification('appeal_updated', $params, route('citizen.appeals')));
+    }
+
+    /**
+     * Platform-wide admins (entity_id null) who triage/confirm appeals.
+     *
+     * @return Collection<int, User>
+     */
+    private function platformAdmins(): Collection
+    {
+        return User::role(UserRole::SUPER_ADMIN->value)
+            ->whereNull('entity_id')
+            ->get();
     }
 }

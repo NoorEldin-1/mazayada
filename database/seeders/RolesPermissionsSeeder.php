@@ -77,7 +77,8 @@ class RolesPermissionsSeeder extends Seeder
 
         // Appeals
         'appeals.viewAny',
-        'appeals.respond',
+        'appeals.respond', // platform admin: forward / confirm / reject-at-intake
+        'appeals.decide',  // organising entity: approve / reject a forwarded appeal
         'appeals.create',
     ];
 
@@ -126,15 +127,17 @@ class RolesPermissionsSeeder extends Seeder
         ],
 
         // Read-only entity account (institutional login + its staff). Strictly
-        // observes its own entity's auctions and appeals — no create/update/
-        // publish/cancel/extend/delete/respond/manage. Per-entity isolation is
-        // enforced by EntityScope + the policies' sameEntity() check.
+        // observes its own entity's auctions — no create/update/publish/cancel/
+        // extend/delete/manage. The ONE deliberate write exception is appeals:
+        // an appeal the platform forwards to this entity may be approved/rejected
+        // (appeals.decide). Per-entity isolation is enforced by EntityScope + the
+        // policies' sameEntity() check.
         UserRole::ENTITY_VIEWER->value => [
             'auctions.viewAny', 'auctions.view',
             'bids.viewAny',
             'payments.viewAny',
             'documents.download',
-            'appeals.viewAny',
+            'appeals.viewAny', 'appeals.decide',
         ],
 
         UserRole::CITIZEN->value => [

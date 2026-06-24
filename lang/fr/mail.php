@@ -102,5 +102,17 @@ return [
             'subject' => 'Mise à jour de votre recours — Mazayada',
             'line' => 'Le statut de votre recours est passé à : :status.',
         ],
+        'appeal_submitted' => [
+            'subject' => 'Nouveau recours — Mazayada',
+            'line' => 'Un nouveau recours a été déposé sur l’enchère « :auction » et attend examen.',
+        ],
+        'appeal_forwarded' => [
+            'subject' => 'Recours qui vous est transmis — Mazayada',
+            'line' => 'Un recours sur l’enchère « :auction » vous a été transmis pour décision.',
+        ],
+        'appeal_entity_decided' => [
+            'subject' => 'Décision de l’organisme sur un recours — Mazayada',
+            'line' => 'L’organisme a rendu sa décision (:decision) sur un recours relatif à l’enchère « :auction », en attente de votre confirmation.',
+        ],
     ],
 ];

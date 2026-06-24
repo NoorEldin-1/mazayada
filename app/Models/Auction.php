@@ -26,7 +26,9 @@ class Auction extends Model
 
     protected $fillable = [
         'entity_id', 'category_id', 'title_ar', 'title_fr', 'title_en',
-        'description_ar', 'description_fr', 'specifications', 'condition', 'unit_count',
+        'description_ar', 'description_fr', 'specifications',
+        'condition_terms_ar', 'condition_terms_fr',
+        'award_terms_ar', 'award_terms_fr', 'condition', 'unit_count',
         'asset_location', 'latitude', 'longitude',
         'opening_price', 'deposit_amount', 'deposit_percent', 'entry_fee', 'book_price',
         'start_time', 'end_time', 'extension_trigger_seconds', 'extension_duration_minutes',
@@ -140,6 +142,11 @@ class Auction extends Model
     public function inspectionQuestions(): HasMany
     {
         return $this->hasMany(InspectionQuestion::class);
+    }
+
+    public function appeals(): HasMany
+    {
+        return $this->hasMany(Appeal::class);
     }
 
     public function delivery(): HasOne
@@ -292,6 +299,34 @@ class Auction extends Model
             ->all();
     }
 
+    /**
+     * Admin-authored condition-book terms resolved for the active locale, falling
+     * back to Arabic when the current locale's value is empty. Returns null when
+     * the admin left the terms blank, so the condition-book PDF can fall back to
+     * its static default text. Mirrors localizedTitle()/localizedSpecifications().
+     */
+    public function localizedConditionTerms(): ?string
+    {
+        $locale = app()->getLocale();
+        $value = ($this->{'condition_terms_'.$locale} ?? null) ?: ($this->condition_terms_ar ?? null);
+
+        return $value !== '' ? $value : null;
+    }
+
+    /**
+     * Admin-authored award-document clauses resolved for the active locale,
+     * falling back to Arabic when the current locale's value is empty. Returns
+     * null when blank, so the award PDF falls back to its static default text.
+     * Mirrors localizedConditionTerms().
+     */
+    public function localizedAwardTerms(): ?string
+    {
+        $locale = app()->getLocale();
+        $value = ($this->{'award_terms_'.$locale} ?? null) ?: ($this->award_terms_ar ?? null);
+
+        return $value !== '' ? $value : null;
+    }
+
     public function isCustoms(): bool
     {
         return $this->asset_class === AssetClass::CUSTOMS;
@@ -336,5 +371,48 @@ class Auction extends Model
             ->where('payment_type', PaymentType::BOOK_PURCHASE)
             ->where('status', PaymentStatus::CONFIRMED)
             ->exists();
+    }
+
+    /**
+     * Number of days after closing during which a result may still be appealed
+     * (طعن). Configurable per deployment; defaults to 8 days.
+     */
+    public function appealWindowDays(): int
+    {
+        return (int) setting('appeals.window_days', config('mazayada.appeals.window_days', 8));
+    }
+
+    /** The appeal window is open: the auction has closed and we are still inside it. */
+    public function isWithinAppealWindow(): bool
+    {
+        return $this->closed_at !== null
+            && now()->lessThanOrEqualTo($this->closed_at->copy()->addDays($this->appealWindowDays()));
+    }
+
+    /**
+     * Whether $user may file an appeal against this auction's result. The appeal
+     * is about the OUTCOME, so it requires: a closed auction still inside the
+     * appeal window, the user being a registered participant, and at least one
+     * valid bid placed by them (mere registration is not enough).
+     */
+    public function canBeAppealedBy(User $user): bool
+    {
+        if ($this->status !== AuctionStatus::CLOSED || ! $this->isWithinAppealWindow()) {
+            return false;
+        }
+
+        $isParticipant = $this->participants()->where('user_id', $user->id)->exists();
+        $hasValidBid = $this->bids()
+            ->where('user_id', $user->id)
+            ->where('is_valid', true)
+            ->exists();
+
+        return $isParticipant && $hasValidBid;
+    }
+
+    /** This user's appeal on this auction, if any (one per user per auction). */
+    public function appealBy(User $user): ?Appeal
+    {
+        return $this->appeals()->where('user_id', $user->id)->latest()->first();
     }
 }

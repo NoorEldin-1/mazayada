@@ -59,5 +59,17 @@ return [
             'title' => 'Update on your appeal',
             'body' => 'Your appeal status: :status.',
         ],
+        'appeal_submitted' => [
+            'title' => 'New appeal',
+            'body' => 'A new appeal has been filed on the auction “:auction”.',
+        ],
+        'appeal_forwarded' => [
+            'title' => 'An appeal forwarded to you',
+            'body' => 'An appeal on the auction “:auction” has been forwarded to you for a decision.',
+        ],
+        'appeal_entity_decided' => [
+            'title' => 'Entity decision on an appeal',
+            'body' => 'The entity issued its decision (:decision) on an appeal regarding the auction “:auction”.',
+        ],
     ],
 ];

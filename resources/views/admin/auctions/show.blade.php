@@ -248,4 +248,35 @@
     @endif
 </x-ui.card>
 
+{{-- Appeals (§ الطعون) filed against this auction — read-only; the workflow
+     actions (forward / decide / confirm) live on the appeals management page. --}}
+<x-ui.card :title="__('admin.auctions.sec_appeals') . ' (' . $appeals->count() . ')'" class="mb-6">
+    <x-ui.table>
+        <thead>
+            <tr>
+                <th>{{ __('appeals.th_user') }}</th>
+                <th>{{ __('appeals.th_subject') }}</th>
+                <th>{{ __('common.status') }}</th>
+                <th>{{ __('common.date') }}</th>
+                <th>{{ __('common.actions') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($appeals as $appeal)
+                <tr>
+                    <td>{{ $appeal->user?->fullNameAr() ?: '—' }}</td>
+                    <td>{{ $appeal->subject }}</td>
+                    <td><span class="chip {{ $appeal->status->chipClass() }}">{{ $appeal->status->label() }}</span></td>
+                    <td class="num">{{ $appeal->created_at->format('Y-m-d') }}</td>
+                    <td>
+                        <a href="{{ route('admin.appeals.index') }}" class="chip chip-info" style="text-decoration:none">{{ __('common.view') }}</a>
+                    </td>
+                </tr>
+            @empty
+                <tr><td colspan="5" class="text-center text-muted py-6">{{ __('admin.auctions.none_appeals') }}</td></tr>
+            @endforelse
+        </tbody>
+    </x-ui.table>
+</x-ui.card>
+
 @endsection

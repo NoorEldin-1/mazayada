@@ -122,6 +122,10 @@ class DocumentService
             'qrImage' => $qrImage,
             'verifyUrl' => $verifyUrl,
             'issuedAt' => now(),
+            // Shared header (documents._layout): the platform logo and the name
+            // of the organizing entity, shown above the document number.
+            'logo' => $this->logoDataUri(),
+            'entityName' => $auction?->entity?->name,
         ]))->render();
 
         $binary = $this->renderPdf($html);
@@ -210,6 +214,28 @@ class DocumentService
         }
 
         return rtrim($base, '/').'?doc='.$docId.'&sig='.$signature;
+    }
+
+    /**
+     * Platform logo as a base64 SVG data-URI for the document header. mpdf
+     * renders an <img> with a data:image/svg+xml source (the same channel the
+     * QR uses). Reads the shipped favicon.svg; returns '' if it is unreadable so
+     * the header degrades to text only.
+     */
+    private function logoDataUri(): string
+    {
+        try {
+            $path = public_path('favicon.svg');
+            if (! is_readable($path)) {
+                return '';
+            }
+
+            return 'data:image/svg+xml;base64,'.base64_encode((string) file_get_contents($path));
+        } catch (\Throwable $e) {
+            Log::warning('Logo embedding failed', ['error' => $e->getMessage()]);
+
+            return '';
+        }
     }
 
     /**

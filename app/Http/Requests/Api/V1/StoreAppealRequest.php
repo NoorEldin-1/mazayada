@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Api\V1;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StoreAppealRequest extends FormRequest
 {
@@ -13,6 +12,10 @@ class StoreAppealRequest extends FormRequest
     }
 
     /**
+     * Eligibility (closed + within window + participant + valid bid) and the
+     * one-per-auction rule are enforced by AppealService so the controller can
+     * return a friendly message instead of a bare 403.
+     *
      * @return array<string, mixed>
      */
     public function rules(): array
@@ -20,11 +23,6 @@ class StoreAppealRequest extends FormRequest
         return [
             'subject' => ['required', 'string', 'max:255'],
             'reason' => ['required', 'string', 'max:2000'],
-            // Only an auction the user actually participated in may be referenced.
-            'auction_id' => [
-                'nullable',
-                Rule::exists('auction_participants', 'auction_id')->where('user_id', $this->user()?->id),
-            ],
         ];
     }
 }

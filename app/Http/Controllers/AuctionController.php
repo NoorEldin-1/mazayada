@@ -101,9 +101,16 @@ class AuctionController extends Controller
         // Drives the buy-vs-download UI and the registration gate.
         $hasBookAccess = auth()->check() && $auction->hasBookAccess(auth()->user());
 
+        // § الطعون — appeal eligibility + this user's existing appeal (if any).
+        // The tab renders when either is truthy: an eligible bidder may file one,
+        // or a user who already filed can track its status.
+        $canAppeal = auth()->check() && $auction->canBeAppealedBy(auth()->user());
+        $userAppeal = auth()->check() ? $auction->appealBy(auth()->user()) : null;
+
         return view('auctions.show', compact(
             'auction', 'bids', 'participant', 'isParticipant',
             'questions', 'conditionBook', 'awardDocument', 'hasBookAccess',
+            'canAppeal', 'userAppeal',
         ));
     }
 

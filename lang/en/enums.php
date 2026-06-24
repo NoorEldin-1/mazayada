@@ -55,11 +55,13 @@ return [
     ],
 
     'appeal_status' => [
-        'SUBMITTED' => 'Submitted',
-        'UNDER_REVIEW' => 'Under review',
-        'RESOLVED' => 'Resolved',
+        // PENDING/APPROVED/REJECTED double as the citizen-facing 3 states.
+        'PENDING' => 'Under review',
+        'FORWARDED_TO_ENTITY' => 'Forwarded to entity',
+        'ENTITY_APPROVED' => 'Approved by entity',
+        'ENTITY_REJECTED' => 'Rejected by entity',
+        'APPROVED' => 'Approved',
         'REJECTED' => 'Rejected',
-        'ESCALATED' => 'Escalated',
     ],
 
     'entity_type' => [

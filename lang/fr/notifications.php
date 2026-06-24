@@ -59,5 +59,17 @@ return [
             'title' => 'Mise à jour de votre recours',
             'body' => 'Statut de votre recours : :status.',
         ],
+        'appeal_submitted' => [
+            'title' => 'Nouveau recours',
+            'body' => 'Un nouveau recours a été déposé sur l’enchère « :auction ».',
+        ],
+        'appeal_forwarded' => [
+            'title' => 'Recours qui vous est transmis',
+            'body' => 'Un recours sur l’enchère « :auction » vous a été transmis pour décision.',
+        ],
+        'appeal_entity_decided' => [
+            'title' => 'Décision de l’organisme sur un recours',
+            'body' => 'L’organisme a rendu sa décision (:decision) sur un recours relatif à l’enchère « :auction ».',
+        ],
     ],
 ];

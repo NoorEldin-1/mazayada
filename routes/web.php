@@ -70,8 +70,8 @@ Route::middleware('auth')->prefix('dashboard')->name('citizen.')->group(function
     Route::post('/kyc/upload/{type}', [KycController::class, 'upload'])->name('kyc.upload');
     Route::post('/kyc/submit', [KycController::class, 'submit'])->name('kyc.submit');
     Route::get('/kyc/document/{type}', [KycController::class, 'document'])->name('kyc.document');
+    // Appeals are now filed from the auction page; this stays as the tracking list.
     Route::get('/appeals', [AppealController::class, 'index'])->name('appeals');
-    Route::post('/appeals', [AppealController::class, 'store'])->name('appeals.store');
     Route::get('/my-auctions', [CitizenController::class, 'myAuctions'])->name('my-auctions');
     Route::get('/notifications', [CitizenController::class, 'notifications'])->name('notifications');
     Route::post('/notifications/{notification}/read', [CitizenController::class, 'markNotificationRead'])->name('notifications.read');
@@ -99,6 +99,8 @@ Route::middleware(['auth', 'kyc.verified'])->group(function () {
     // §4 step 4 — bidder inspection question.
     Route::post('/auctions/{auction}/questions', [AuctionController::class, 'askQuestion'])->name('auctions.questions');
     Route::post('/auctions/{auction}/bid', [AuctionController::class, 'bid'])->middleware('throttle:bidding')->name('auctions.bid');
+    // § الطعون — file an appeal against a closed auction the user took part in.
+    Route::post('/auctions/{auction}/appeals', [AppealController::class, 'store'])->name('auctions.appeals.store');
 });
 
 // Admin — open to every staff role; per-action access is enforced by policies
@@ -178,7 +180,11 @@ Route::middleware(['auth', 'admin.2fa', 'role:'.implode(',', \App\Enums\UserRole
     Route::post('/kyc/{user}/approve', [AdminKycController::class, 'approve'])->name('kyc.approve');
     Route::post('/kyc/{user}/reject', [AdminKycController::class, 'reject'])->name('kyc.reject');
     Route::get('/appeals', [AdminAppealController::class, 'index'])->name('appeals.index');
-    Route::post('/appeals/{appeal}/respond', [AdminAppealController::class, 'respond'])->name('appeals.respond');
+    // Appeals workflow: admin forward / reject-at-intake / confirm; entity decide.
+    Route::post('/appeals/{appeal}/forward', [AdminAppealController::class, 'forward'])->name('appeals.forward');
+    Route::post('/appeals/{appeal}/reject', [AdminAppealController::class, 'rejectAtIntake'])->name('appeals.reject');
+    Route::post('/appeals/{appeal}/decide', [AdminAppealController::class, 'decide'])->name('appeals.decide');
+    Route::post('/appeals/{appeal}/confirm', [AdminAppealController::class, 'confirm'])->name('appeals.confirm');
     Route::get('/audit-logs', [AdminController::class, 'auditLogs'])->name('audit-logs');
 });
 

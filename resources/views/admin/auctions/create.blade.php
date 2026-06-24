@@ -58,6 +58,44 @@
         </template>
     </x-ui.card>
 
+    {{-- Section 1c: Condition-book terms — admin-authored text rendered verbatim
+         in the "Terms" section of the generated كراسة الشروط PDF. Left blank, the
+         document falls back to its default legal wording. --}}
+    <x-ui.card :title="__('admin.auctions.sec_condition_terms')" class="mb-6">
+        <p style="font-size:0.85rem;color:var(--ink-muted);margin-bottom:1rem">{{ __('admin.auctions.condition_terms_hint') }}</p>
+
+        <div class="field">
+            <label for="condition_terms_ar">{{ __('admin.auctions.f_condition_terms_ar') }}</label>
+            <textarea id="condition_terms_ar" name="condition_terms_ar" class="textarea" rows="6" maxlength="5000">{{ old('condition_terms_ar') }}</textarea>
+            @error('condition_terms_ar') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
+        </div>
+
+        <div class="field">
+            <label for="condition_terms_fr">{{ __('admin.auctions.f_condition_terms_fr') }}</label>
+            <textarea id="condition_terms_fr" name="condition_terms_fr" class="textarea" rows="6" maxlength="5000" dir="ltr">{{ old('condition_terms_fr') }}</textarea>
+            @error('condition_terms_fr') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
+        </div>
+    </x-ui.card>
+
+    {{-- Section 1d: Award-document clauses — admin-authored text rendered in the
+         "Terms & clauses" section of the وثيقة الترسية PDF (produced at close).
+         Left blank, the document falls back to its default wording. --}}
+    <x-ui.card :title="__('admin.auctions.sec_award_terms')" class="mb-6">
+        <p style="font-size:0.85rem;color:var(--ink-muted);margin-bottom:1rem">{{ __('admin.auctions.award_terms_hint') }}</p>
+
+        <div class="field">
+            <label for="award_terms_ar">{{ __('admin.auctions.f_award_terms_ar') }}</label>
+            <textarea id="award_terms_ar" name="award_terms_ar" class="textarea" rows="6" maxlength="5000">{{ old('award_terms_ar') }}</textarea>
+            @error('award_terms_ar') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
+        </div>
+
+        <div class="field">
+            <label for="award_terms_fr">{{ __('admin.auctions.f_award_terms_fr') }}</label>
+            <textarea id="award_terms_fr" name="award_terms_fr" class="textarea" rows="6" maxlength="5000" dir="ltr">{{ old('award_terms_fr') }}</textarea>
+            @error('award_terms_fr') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
+        </div>
+    </x-ui.card>
+
     {{-- Section 2: Classification --}}
     <x-ui.card :title="__('admin.auctions.sec_classification')" class="mb-6">
 

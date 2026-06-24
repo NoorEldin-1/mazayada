@@ -55,11 +55,13 @@ return [
     ],
 
     'appeal_status' => [
-        'SUBMITTED' => 'Soumis',
-        'UNDER_REVIEW' => 'En cours d’examen',
-        'RESOLVED' => 'Résolu',
+        // PENDING/APPROVED/REJECTED double as the citizen-facing 3 states.
+        'PENDING' => 'En cours d’examen',
+        'FORWARDED_TO_ENTITY' => 'Transmis à l’organisme',
+        'ENTITY_APPROVED' => 'Approuvé par l’organisme',
+        'ENTITY_REJECTED' => 'Rejeté par l’organisme',
+        'APPROVED' => 'Accepté',
         'REJECTED' => 'Rejeté',
-        'ESCALATED' => 'Escaladé',
     ],
 
     'entity_type' => [

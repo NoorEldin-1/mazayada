@@ -52,6 +52,17 @@
         <p style="font-size:11px">{{ __('documents.award.delivery_note', ['days' => $auction->finalPaymentDeadlineDays()]) }}</p>
     </div>
 
+    <div class="section">
+        <h3>{{ __('documents.award.terms') }}</h3>
+        {{-- Admin-authored award clauses (newlines → line breaks) when present;
+             otherwise the platform's default wording. --}}
+        @if($terms = $auction->localizedAwardTerms())
+            <p style="font-size:11px">{!! nl2br(e($terms)) !!}</p>
+        @else
+            <p style="font-size:11px">{{ __('documents.award.terms_body') }}</p>
+        @endif
+    </div>
+
     <div class="legal">{{ __('documents.award.legal_notice') }}</div>
 
     <div class="section" style="margin-top:18px">

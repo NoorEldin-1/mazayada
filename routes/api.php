@@ -116,9 +116,9 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
             Route::get('/document/{type}', [KycController::class, 'document'])->name('document');
         });
 
-        // Appeals.
+        // Appeals — list mine, and file one against a closed auction I took part in.
         Route::get('/appeals', [AppealController::class, 'index'])->name('appeals.index');
-        Route::post('/appeals', [AppealController::class, 'store'])->name('appeals.store');
+        Route::post('/auctions/{auction}/appeals', [AppealController::class, 'store'])->name('appeals.store');
 
         // Notifications.
         Route::prefix('notifications')->name('notifications.')->group(function (): void {

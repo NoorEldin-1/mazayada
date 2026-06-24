@@ -24,7 +24,13 @@
 
     <div class="section">
         <h3>{{ __('documents.condition_book.terms') }}</h3>
-        <p style="font-size:11px">{{ __('documents.condition_book.terms_body') }}</p>
+        {{-- Admin-authored terms (newlines → line breaks) when present; otherwise
+             the platform's default legal wording. --}}
+        @if($terms = $auction->localizedConditionTerms())
+            <p style="font-size:11px">{!! nl2br(e($terms)) !!}</p>
+        @else
+            <p style="font-size:11px">{{ __('documents.condition_book.terms_body') }}</p>
+        @endif
         @if($auction->requires_commerce_register)
             <p style="font-size:11px">— {{ __('documents.condition_book.requires_commerce_register') }}</p>
         @endif

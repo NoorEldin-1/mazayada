@@ -60,5 +60,17 @@ return [
             'title' => 'تحديث على طعنك',
             'body' => 'حالة طعنك الآن: :status.',
         ],
+        'appeal_submitted' => [
+            'title' => 'طعن جديد',
+            'body' => 'تم تقديم طعن جديد على مزايدة «:auction».',
+        ],
+        'appeal_forwarded' => [
+            'title' => 'طعن محال إليكم',
+            'body' => 'تمت إحالة طعن على مزايدة «:auction» إليكم للبتّ فيه.',
+        ],
+        'appeal_entity_decided' => [
+            'title' => 'قرار الجهة على طعن',
+            'body' => 'أصدرت الجهة قرارها (:decision) بشأن طعن على مزايدة «:auction».',
+        ],
     ],
 ];

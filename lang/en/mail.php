@@ -102,5 +102,17 @@ return [
             'subject' => 'Update on your appeal — Mazayada',
             'line' => 'Your appeal status changed to: :status.',
         ],
+        'appeal_submitted' => [
+            'subject' => 'New appeal — Mazayada',
+            'line' => 'A new appeal has been filed on the auction “:auction” and awaits review.',
+        ],
+        'appeal_forwarded' => [
+            'subject' => 'An appeal forwarded to you — Mazayada',
+            'line' => 'An appeal on the auction “:auction” has been forwarded to you for a decision.',
+        ],
+        'appeal_entity_decided' => [
+            'subject' => 'Entity decision on an appeal — Mazayada',
+            'line' => 'The entity issued its decision (:decision) on an appeal regarding the auction “:auction”, awaiting your confirmation.',
+        ],
     ],
 ];

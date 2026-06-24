@@ -13,13 +13,18 @@ class Appeal extends Model
 
     protected $fillable = [
         'user_id', 'auction_id', 'subject', 'reason',
-        'status', 'admin_response', 'resolved_at',
+        'status', 'admin_response', 'entity_decision', 'entity_response',
+        'forwarded_by', 'resolved_by',
+        'forwarded_at', 'entity_decided_at', 'resolved_at',
     ];
 
     protected function casts(): array
     {
         return [
             'status' => AppealStatus::class,
+            'entity_decision' => AppealStatus::class,
+            'forwarded_at' => 'datetime',
+            'entity_decided_at' => 'datetime',
             'resolved_at' => 'datetime',
         ];
     }
@@ -32,5 +37,17 @@ class Appeal extends Model
     public function auction(): BelongsTo
     {
         return $this->belongsTo(Auction::class);
+    }
+
+    /** Platform admin who forwarded the appeal to the entity. */
+    public function forwardedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'forwarded_by');
+    }
+
+    /** Platform admin who confirmed the final decision. */
+    public function resolvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'resolved_by');
     }
 }

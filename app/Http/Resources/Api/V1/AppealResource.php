@@ -7,7 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * A citizen appeal/complaint with its (optional) admin response.
+ * A citizen appeal against an auction result. The client sees only the 3 public
+ * states (the internal admin↔entity handoffs collapse to PENDING), and the
+ * admin's final note only once the appeal is terminal.
  *
  * @mixin Appeal
  */
@@ -22,8 +24,9 @@ class AppealResource extends JsonResource
             'id' => $this->id,
             'subject' => $this->subject,
             'reason' => $this->reason,
-            'status' => $this->status?->value,
-            'admin_response' => $this->admin_response,
+            'status' => $this->status?->publicStatus()->value,
+            'status_label' => $this->status?->publicLabel(),
+            'admin_response' => $this->status?->isTerminal() ? $this->admin_response : null,
             'auction' => $this->whenLoaded('auction', fn () => $this->auction ? [
                 'id' => $this->auction->id,
                 'title' => $this->auction->localizedTitle(),
