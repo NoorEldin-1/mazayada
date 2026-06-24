@@ -24,6 +24,7 @@ return [
         'dgi' => 'Directorate General of Taxes',
     ],
     'entity_auctions' => 'auctions',
+    'entities_trust' => 'Trusted by Algerian government institutions',
 
     // ===== Features =====
     'features_eyebrow' => 'Why Mazayada?',

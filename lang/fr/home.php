@@ -24,6 +24,7 @@ return [
         'dgi' => 'Direction Générale des Impôts',
     ],
     'entity_auctions' => 'enchères',
+    'entities_trust' => 'La confiance des institutions publiques algériennes',
 
     // ===== Features =====
     'features_eyebrow' => 'Pourquoi Mazayada ?',

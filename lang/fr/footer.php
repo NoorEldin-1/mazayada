@@ -21,6 +21,11 @@ return [
     'contact_us' => 'Contactez-nous',
     'address' => 'Alger',
 
+    // Social links (used as aria-labels on the footer social icons).
+    'follow_facebook' => 'Suivez-nous sur Facebook',
+    'follow_twitter' => 'Suivez-nous sur X (Twitter)',
+    'follow_linkedin' => 'Suivez-nous sur LinkedIn',
+
     // :year and :app are passed in from the view.
     'rights' => '© :year :app. Tous droits réservés.',
 ];

@@ -20,6 +20,7 @@ return [
     'loading' => 'جارٍ التحميل...',
     'general' => 'عام',
     'toggle_theme' => 'تبديل المظهر',
+    'back_to_top' => 'العودة إلى الأعلى',
 
     // Generic verbs / labels reused across admin tables, forms and lists.
     'edit' => 'تعديل',

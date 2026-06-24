@@ -16,12 +16,17 @@
         <form action="{{ route('auctions.index') }}" method="GET" class="hero-search" style="max-width:640px;margin:0 auto">
             <div class="seg-fld">
                 <span class="lbl">{{ __('home.search_keyword_label') }}</span>
-                <input type="text" name="search" class="val" placeholder="{{ __('home.search_placeholder') }}">
+                <input type="text" name="q" value="{{ request('q') }}" class="val" placeholder="{{ __('home.search_placeholder') }}">
             </div>
-            <div class="seg-fld">
+            <label class="seg-fld">
                 <span class="lbl">{{ __('home.search_wilaya_label') }}</span>
-                <span class="val" style="color:var(--muted)">{{ __('home.all_wilayas') }}</span>
-            </div>
+                <select name="wilaya" class="val">
+                    <option value="">{{ __('home.all_wilayas') }}</option>
+                    @foreach($wilayas ?? [] as $w)
+                        <option value="{{ $w->id }}" @selected(request('wilaya') == $w->id)>{{ $w->name }}</option>
+                    @endforeach
+                </select>
+            </label>
             <button type="submit" class="btn btn-primary" style="border-radius:11px;margin:4px">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 {{ __('common.search') }}
@@ -39,6 +44,7 @@
 {{-- ===== Entities ===== --}}
 <div class="entities-strip">
     <div class="container">
+        <div class="ent-trust reveal">{{ __('home.entities_trust') }}</div>
         <div class="entities-grid">
             @foreach([
                 ['code' => 'DGD', 'name' => __('home.entities.dgd'), 'count' => '+320', 'bg' => 'linear-gradient(135deg,#1B4D3E,#2D6A4F)'],
@@ -46,9 +52,9 @@
                 ['code' => 'APC', 'name' => __('home.entities.apc'), 'count' => '+540', 'bg' => 'linear-gradient(135deg,#D4A843,#B8852E)'],
                 ['code' => 'HUI', 'name' => __('home.entities.hui'), 'count' => '+95', 'bg' => 'linear-gradient(135deg,#6B45B7,#4A2B91)'],
                 ['code' => 'DGI', 'name' => __('home.entities.dgi'), 'count' => '+210', 'bg' => 'linear-gradient(135deg,#B14641,#D9544E)'],
-            ] as $ent)
-            <div class="ent-cell">
-                <div class="ent-logo" style="background:{{ $ent['bg'] }}">{{ $ent['code'] }}</div>
+            ] as $i => $ent)
+            <div class="ent-cell reveal" style="--i:{{ $i }}">
+                <div class="ent-logo" style="background:{{ $ent['bg'] }}"><span>{{ $ent['code'] }}</span></div>
                 <div class="ent-name">{{ $ent['name'] }}</div>
                 <div class="ent-count num">{{ $ent['count'] }} {{ __('home.entity_auctions') }}</div>
             </div>
@@ -71,8 +77,8 @@
                 ['num' => '02', 'ic' => 'ic-rose', 'title' => __('home.feature_2_title'), 'desc' => __('home.feature_2_desc'), 'svg' => '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'],
                 ['num' => '03', 'ic' => 'ic-blue', 'title' => __('home.feature_3_title'), 'desc' => __('home.feature_3_desc'), 'svg' => '<path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/>'],
                 ['num' => '04', 'ic' => 'ic-gold', 'title' => __('home.feature_4_title'), 'desc' => __('home.feature_4_desc'), 'svg' => '<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>'],
-            ] as $f)
-            <div class="fcard">
+            ] as $i => $f)
+            <div class="fcard reveal" style="--i:{{ $i }}" data-spotlight>
                 <div class="num-large">{{ $f['num'] }}</div>
                 <div class="ic {{ $f['ic'] }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{!! $f['svg'] !!}</svg></div>
                 <h3>{{ $f['title'] }}</h3>
@@ -175,12 +181,15 @@
             $catColors = ['ic-blue','ic-mint','ic-gold','ic-violet','ic-rose','ic-sky','ic-mint','ic-blue'];
             @endphp
             @foreach ($categories as $i => $category)
-            <a href="{{ route('auctions.index', ['category_id' => $category->id]) }}" class="cat-tile" style="text-decoration:none">
+            <a href="{{ route('auctions.index', ['category_id' => $category->id]) }}" class="cat-tile reveal" style="--i:{{ $i }};text-decoration:none">
                 <div class="ic {{ $catColors[$i % 8] }}">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">{!! $catIcons[$category->icon] ?? $catIcons['package'] !!}</svg>
                 </div>
                 <h4>{{ $category->name }}</h4>
                 <div class="ct num">{{ $category->auctions_count }} {{ __('home.entity_auctions') }}</div>
+                <span class="cat-go" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </span>
             </a>
             @endforeach
         </div>
@@ -238,4 +247,82 @@
         </div>
     </div>
 </section>
+
+{{-- ===== Scroll-to-top (landing only) ===== --}}
+<button type="button" class="to-top" data-to-top aria-label="{{ __('common.back_to_top') }}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+</button>
+
+@push('scripts')
+<script>
+(function () {
+    var btn = document.querySelector('[data-to-top]');
+    if (!btn) return;
+
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var ticking = false;
+
+    function update() {
+        var doc = document.documentElement;
+        var scrolled = window.scrollY || doc.scrollTop || 0;
+        var max = doc.scrollHeight - doc.clientHeight;
+        var pct = max > 0 ? (scrolled / max) * 100 : 0;
+        btn.style.setProperty('--p', pct.toFixed(1) + '%');
+        btn.classList.toggle('is-visible', scrolled > 400);
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', function () {
+        if (!ticking) { window.requestAnimationFrame(update); ticking = true; }
+    }, { passive: true });
+    update();
+
+    btn.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    });
+})();
+</script>
+
+{{-- Scroll-reveal: fade + rise each .reveal as it enters the viewport (once) --}}
+<script>
+(function () {
+    var els = document.querySelectorAll('.reveal');
+    if (!els.length) return;
+
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || !('IntersectionObserver' in window)) {
+        els.forEach(function (el) { el.classList.add('is-in'); });
+        return;
+    }
+
+    var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+            if (e.isIntersecting) {
+                e.target.classList.add('is-in');
+                io.unobserve(e.target);
+            }
+        });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
+
+    els.forEach(function (el) { io.observe(el); });
+})();
+</script>
+
+{{-- Cursor spotlight: feed pointer position into the feature cards' radial glow --}}
+<script>
+(function () {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var cards = document.querySelectorAll('[data-spotlight]');
+    if (!cards.length) return;
+
+    cards.forEach(function (card) {
+        card.addEventListener('pointermove', function (e) {
+            var r = card.getBoundingClientRect();
+            card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%');
+            card.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%');
+        });
+    });
+})();
+</script>
+@endpush
 @endsection

@@ -21,6 +21,11 @@ return [
     'contact_us' => 'تواصل معنا',
     'address' => 'الجزائر العاصمة',
 
+    // Social links (used as aria-labels on the footer social icons).
+    'follow_facebook' => 'تابعنا على فيسبوك',
+    'follow_twitter' => 'تابعنا على إكس (تويتر)',
+    'follow_linkedin' => 'تابعنا على لينكدإن',
+
     // :year and :app are passed in from the view.
     'rights' => '© :year :app. جميع الحقوق محفوظة.',
 ];

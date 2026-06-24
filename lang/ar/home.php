@@ -24,6 +24,7 @@ return [
         'dgi' => 'المديرية العامة للضرائب',
     ],
     'entity_auctions' => 'مزايدة',
+    'entities_trust' => 'بثقة الهيئات الحكومية الجزائرية',
 
     // ===== Features =====
     'features_eyebrow' => 'لماذا مزايدة؟',
