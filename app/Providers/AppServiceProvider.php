@@ -4,8 +4,7 @@ namespace App\Providers;
 
 use App\Enums\KycStatus;
 use App\Models\User;
-use App\Services\Payments\CibWebGateway;
-use App\Services\Payments\MockPaymentGateway;
+use App\Services\Payments\PaymentDriver;
 use App\Services\Payments\PaymentGatewayInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\Paginator;
@@ -18,13 +17,10 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        // Payment gateway: mock by default (spec §7 / CIBWEB_MOCK=true), real
-        // CIBWeb/SATIM client once credentials are configured and mock is off.
-        $this->app->bind(PaymentGatewayInterface::class, function () {
-            return setting('payments.mock', config('mazayada.payments.mock', true))
-                ? new MockPaymentGateway()
-                : new CibWebGateway();
-        });
+        // Payment gateway driver (mock | chargily | cibweb) — resolved from a
+        // single source of truth so the bound gateway always matches the value
+        // PaymentService records on payments.gateway. See PaymentDriver.
+        $this->app->bind(PaymentGatewayInterface::class, fn () => PaymentDriver::make());
     }
 
     public function boot(): void

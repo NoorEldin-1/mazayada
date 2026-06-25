@@ -595,7 +595,7 @@
                                 <div class="bid-input">
                                     <input type="text" inputmode="numeric" autocomplete="off" name="amount" id="bidAmount" placeholder="{{ __('auctions.show.amount_placeholder') }}" data-current="{{ $auction->currentPrice() }}" aria-describedby="bidMinHint" required>
                                 </div>
-                                <div id="bidMinHint" class="num" style="margin:8px 0 0;font-size:12px;color:rgba(255,255,255,.7)">{{ __('auctions.show.min_bid_hint', ['price' => number_format($minNextDinars, 0, ',', ' ') . ' ' . __('common.currency')]) }}</div>
+                                <div id="bidMinHint" style="margin:8px 0 0;font-size:12px;color:rgba(255,255,255,.7)">{!! __('auctions.show.min_bid_hint', ['price' => dzd_html($minNextDinars * 100)]) !!}</div>
                                 <div id="bidError" style="display:none;margin:8px 0 0;font-size:12px;font-weight:600;color:#FCD9D6;background:rgba(217,84,78,.18);border:1px solid rgba(217,84,78,.45);border-radius:10px;padding:8px 12px"></div>
                                 <button type="submit" id="bidSubmit" class="bid-cta">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5l6 6M3 21l1.5-4.5L17 4a1.41 1.41 0 0 1 2 2L6.5 18.5 3 21z"/></svg>
@@ -633,10 +633,17 @@
                             {{-- §4 step 7 — the winner pays the final amount within the legal deadline --}}
                             @auth
                                 @if(auth()->id() === $auction->winner_user_id)
-                                    <form method="POST" action="{{ route('auctions.final-payment', $auction) }}" style="margin-top:12px">
-                                        @csrf
-                                        <button type="submit" class="bid-cta">{{ __('auctions.show.pay_final') }}</button>
-                                    </form>
+                                    @if($finalPaymentConfirmed)
+                                        {{-- Final payment already settled — show confirmation, hide the CTA. --}}
+                                        <div style="margin-top:12px;padding:10px 12px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.4);border-radius:10px;font-size:13px;font-weight:600;color:#16a34a">
+                                            {{ __('auctions.show.final_paid') }}
+                                        </div>
+                                    @else
+                                        <form method="POST" action="{{ route('auctions.final-payment', $auction) }}" style="margin-top:12px">
+                                            @csrf
+                                            <button type="submit" class="bid-cta">{{ __('auctions.show.pay_final') }}</button>
+                                        </form>
+                                    @endif
                                     {{-- §4 step 6 — the winner's signed award report (PDF + QR) --}}
                                     @if($awardDocument)
                                         <a href="{{ route('documents.download', $awardDocument) }}" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;color:var(--accent);font-size:13px;font-weight:600;text-decoration:none">

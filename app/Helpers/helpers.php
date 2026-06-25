@@ -182,3 +182,68 @@ if (! function_exists('dzd_short')) {
         return $dinars . ' ' . $currency;
     }
 }
+
+if (! function_exists('dzd_html')) {
+    /**
+     * Money as the isolated `.money` markup — the SAME structure the <x-money>
+     * Blade component and auction.js emit. Use this (with `{!! !!}`) for string /
+     * array contexts that can't drop in the component (stat-tile value, generic
+     * label=>value field lists). The CSS (`.money`) places the currency on the
+     * document's reading side (AR: left, FR/EN: right) and keeps the amount LTR.
+     *
+     * Kept separate from dzd(): dzd() must stay a plain, control-char-free string
+     * for the mobile JSON API. This returns HTML — never expose it through the API.
+     *
+     * Returns an HtmlString (Htmlable), so it renders raw through `{{ }}` while
+     * sibling plain-text values in the same loop stay escaped — letting generic
+     * label=>value field lists hold money + text safely without manual escaping.
+     */
+    function dzd_html(int|null $centimes, bool $short = false): \Illuminate\Support\HtmlString
+    {
+        $dinars = intdiv((int) ($centimes ?? 0), 100);
+        $currency = __('common.currency');
+
+        if ($short && $dinars >= 1_000_000) {
+            $amount = rtrim(rtrim(number_format($dinars / 1_000_000, 1, '.', ''), '0'), '.') . __('common.million_suffix');
+        } elseif ($short && $dinars >= 1_000) {
+            $amount = rtrim(rtrim(number_format($dinars / 1_000, 1, '.', ''), '0'), '.') . __('common.thousand_suffix');
+        } else {
+            $amount = number_format($dinars, 0, ',', ' ');
+        }
+
+        return new \Illuminate\Support\HtmlString(
+            '<span class="money"><span class="amt">' . e($amount) . '</span> <span class="cur">' . e($currency) . '</span></span>'
+        );
+    }
+}
+
+if (! function_exists('dzd_pdf')) {
+    /**
+     * Money for the mpdf-rendered documents (condition book / award / receipt).
+     *
+     * mpdf runs the bidi algorithm: a plain "4 000 000 دج" in an RTL document gets
+     * its space-separated groups reversed ("000 000 4"). Wrapping just the amount
+     * in an explicit LTR span keeps it a coherent token, and mpdf's bidi then sits
+     * the currency on the document's reading side (AR: left, FR/EN: right) — same
+     * outcome as the web .money unit, without flexbox (which mpdf doesn't support).
+     *
+     * Returns an HtmlString — render with `{!! !!}`. Never expose through the API.
+     */
+    function dzd_pdf(int|null $centimes, bool $short = false): \Illuminate\Support\HtmlString
+    {
+        $dinars = intdiv((int) ($centimes ?? 0), 100);
+        $currency = __('common.currency');
+
+        if ($short && $dinars >= 1_000_000) {
+            $amount = rtrim(rtrim(number_format($dinars / 1_000_000, 1, '.', ''), '0'), '.') . __('common.million_suffix');
+        } elseif ($short && $dinars >= 1_000) {
+            $amount = rtrim(rtrim(number_format($dinars / 1_000, 1, '.', ''), '0'), '.') . __('common.thousand_suffix');
+        } else {
+            $amount = number_format($dinars, 0, ',', ' ');
+        }
+
+        return new \Illuminate\Support\HtmlString(
+            '<span dir="ltr">' . e($amount) . '</span> ' . e($currency)
+        );
+    }
+}

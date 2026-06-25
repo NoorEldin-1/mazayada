@@ -8,7 +8,7 @@
 @php
     $bio = $user->biometrics;
     $docs = ['id-front' => __('kyc.doc_id_front'), 'id-back' => __('kyc.doc_id_back'), 'selfie-with-id' => __('kyc.doc_selfie')];
-    $income = $user->expected_income ? number_format($user->expected_income, 0, ',', ' ').' '.__('common.currency') : null;
+    $income = $user->expected_income ? dzd_html((int) $user->expected_income * 100) : null;
     $identity = [
         'admin.kyc.f_name_ar' => $user->fullNameAr(),
         'kyc.f_first_name_fr' => $user->fullNameFr() ?: null,

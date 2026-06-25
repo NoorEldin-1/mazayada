@@ -5,6 +5,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\AuctionController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\ChargilyWebhookController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\Citizen\CitizenController;
 use App\Http\Controllers\Citizen\KycController;
@@ -79,6 +80,12 @@ Route::middleware('auth')->prefix('dashboard')->name('citizen.')->group(function
     Route::get('/profile', [CitizenController::class, 'profile'])->name('profile');
     Route::put('/profile', [CitizenController::class, 'updateProfile'])->name('profile.update');
 });
+
+// Chargily Pay server-to-server webhook — the AUTHORITATIVE payment confirmation
+// (the browser return URL above is UX only). Public + CSRF-exempt (see
+// bootstrap/app.php); the controller verifies Chargily's HMAC signature.
+Route::post('/payments/chargily/webhook', [ChargilyWebhookController::class, 'handle'])
+    ->name('payments.chargily.webhook');
 
 // Authenticated, non-KYC-gated document + payment-callback routes.
 Route::middleware('auth')->group(function () {

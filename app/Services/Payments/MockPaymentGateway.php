@@ -9,8 +9,9 @@ use Illuminate\Support\Str;
  * In-process mock of the CIBWeb gateway (Phase 1 / dev / testing). It never
  * talks to a real PSP: charge() returns a redirect to our own callback route
  * that simulates a successful (or failed) payment, and confirm()/refund()
- * resolve immediately. Active whenever setting('payments.mock') is true
- * (default — see .env CIBWEB_MOCK=true).
+ * resolve immediately. Active when PaymentDriver::current() === 'mock'
+ * (PAYMENTS_DRIVER=mock, the default; also the safe fallback when 'chargily' has
+ * no secret key configured).
  */
 class MockPaymentGateway implements PaymentGatewayInterface
 {

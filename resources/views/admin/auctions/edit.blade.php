@@ -291,7 +291,7 @@
                 <label for="deposit_percent">{{ __('admin.auctions.f_deposit_percent') }}</label>
                 <input type="number" id="deposit_percent" name="deposit_percent" class="input num" value="{{ old('deposit_percent', rtrim(rtrim(number_format((float) $auction->deposit_percent, 2, '.', ''), '0'), '.')) }}" min="0" max="100" step="0.01">
                 <small style="color:var(--ink-muted)">{{ __('admin.auctions.deposit_percent_hint') }}</small>
-                <small id="deposit-preview" class="num" data-prefix="{{ __('admin.auctions.deposit_computed_prefix') }}" data-currency="{{ __('common.currency') }}" style="color:var(--primary);font-weight:600;display:block;margin-block-start:4px"></small>
+                <small id="deposit-preview" data-prefix="{{ __('admin.auctions.deposit_computed_prefix') }}" data-currency="{{ __('common.currency') }}" style="color:var(--primary);font-weight:600;display:block;margin-block-start:4px"></small>
                 @error('deposit_percent') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
             </div>
 

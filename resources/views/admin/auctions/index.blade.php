@@ -58,7 +58,7 @@
                 <td>{{ $auction->title_ar }}</td>
                 <td>{{ $auction->entity?->name ?? '—' }}</td>
                 <td>{{ $auction->category?->name ?? '—' }}</td>
-                <td class="num">{{ dzd($auction->opening_price) }}</td>
+                <td class="num"><x-money :centimes="$auction->opening_price" /></td>
                 <td class="num">{{ $auction->bidCount() }}</td>
                 <td>
                     <span class="chip {{ $auction->status->chipClass() }}">{{ $auction->status->label() }}</span>

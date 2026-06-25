@@ -1030,8 +1030,15 @@ html[dir="rtl"] .legal-related-card .arr{transform:scaleX(-1)}
    Colors use existing CSS variables; logical props keep RTL.
    ============================================================ */
 
-/* --- Money: amount + currency unit, isolated so RTL never reorders/splits --- */
-.money{direction:ltr;unicode-bidi:isolate;white-space:nowrap;display:inline-flex;align-items:baseline;gap:.28em;font-family:"Inter","IBM Plex Sans Arabic",sans-serif;font-feature-settings:"tnum"}
+/* --- Money: amount + currency unit. The currency follows the DOCUMENT reading
+   direction (AR → دج on the left of the amount; FR/EN → DA on the right), while
+   the amount itself stays a canonical LTR token that RTL never splits/reverses.
+   Direction is pinned to <html dir> (not inherited) so a .money nested inside a
+   force-LTR .num cell — stat tiles, dashboard tables — still renders correctly. */
+.money{unicode-bidi:isolate;white-space:nowrap;display:inline-flex;align-items:baseline;gap:.28em;font-family:"Inter","IBM Plex Sans Arabic",sans-serif;font-feature-settings:"tnum"}
+.money .amt{direction:ltr;unicode-bidi:isolate}
+[dir="rtl"] .money{direction:rtl}
+[dir="ltr"] .money{direction:ltr}
 .money .cur{font-size:.7em;font-weight:600;color:var(--muted);letter-spacing:0}
 /* On the dark bid panel / coloured footers the muted grey is illegible. */
 .bid-panel .money .cur,.auc-foot .money .cur{color:currentColor;opacity:.6}

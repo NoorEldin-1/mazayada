@@ -7,7 +7,7 @@
         <table class="kv">
             <tr><td class="k">{{ __('documents.receipt.payer') }}</td><td>{{ $payment->user?->fullNameAr() }}</td></tr>
             <tr><td class="k">{{ __('documents.receipt.payment_type') }}</td><td>{{ $payment->payment_type->label() }}</td></tr>
-            <tr><td class="k">{{ __('documents.receipt.amount') }}</td><td>{{ dzd((int) $payment->amount) }}</td></tr>
+            <tr><td class="k">{{ __('documents.receipt.amount') }}</td><td>{!! dzd_pdf((int) $payment->amount) !!}</td></tr>
             <tr><td class="k">{{ __('documents.receipt.status') }}</td><td>{{ $payment->status->value }}</td></tr>
             <tr><td class="k">{{ __('documents.receipt.reference') }}</td><td>{{ $payment->gateway_ref }}</td></tr>
             <tr><td class="k">{{ __('documents.receipt.confirmed_at') }}</td><td>{{ optional($payment->confirmed_at)->format('Y-m-d H:i') }}</td></tr>

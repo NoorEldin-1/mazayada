@@ -1,7 +1,10 @@
 @props(['centimes' => 0, 'short' => false])
 @php
     // Render a DZD amount as an isolated, non-wrapping unit so RTL never reorders
-    // or splits it, with the currency in a smaller muted span for a polished look.
+    // or splits it. The markup (.money > .amt + .cur) and the currency-side logic
+    // live in dzd_html() + the .money CSS, shared with auction.js so server- and
+    // client-rendered prices stay identical. Attribute merge keeps callers able to
+    // add classes/styles to the outer .money span.
     $centimes = (int) ($centimes ?? 0);
     $dinars = intdiv($centimes, 100);
     $currency = __('common.currency');

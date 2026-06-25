@@ -121,6 +121,7 @@ return [
         'ack_book' => 'Je confirme avoir lu et accepté le cahier des charges.',
         'ack_submit' => 'Confirmer et continuer',
         'pay_final' => 'Effectuer le paiement final',
+        'final_paid' => 'Le paiement final a été effectué avec succès.',
         'cta_blocked' => 'Vous ne pouvez pas participer — votre compte est sur liste noire.',
         'cta_locked' => 'Votre compte est temporairement verrouillé, réessayez plus tard.',
         'cta_complete_kyc' => 'Complétez votre vérification d’identité pour participer',

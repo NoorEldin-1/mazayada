@@ -124,7 +124,7 @@
                 <div class="auc-foot">
                     <div class="pr">
                         <div class="lbl">{{ __('auctions.current_price') }}</div>
-                        <div class="pv num">{{ dzd($auction->currentPrice()) }}</div>
+                        <div class="pv num"><x-money :centimes="$auction->currentPrice()" /></div>
                     </div>
                     <div class="bids">
                         <div class="n num">{{ $auction->bids_count }}</div>
@@ -145,7 +145,7 @@
                     <div class="auc-loc"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> {{ __('auctions.default_location') }}</div>
                 </div>
                 <div class="auc-foot">
-                    <div class="pr"><div class="lbl">{{ __('auctions.starting_price') }}</div><div class="pv num">— {{ __('common.currency') }}</div></div>
+                    <div class="pr"><div class="lbl">{{ __('auctions.starting_price') }}</div><div class="pv"><span class="money"><span class="amt">—</span> <span class="cur">{{ __('common.currency') }}</span></span></div></div>
                     <div class="bids"><div class="n num">0</div> {{ __('auctions.bids_word') }}</div>
                 </div>
             </div>

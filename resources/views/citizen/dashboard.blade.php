@@ -35,7 +35,7 @@
                         <div class="text-sm font-semibold text-ink truncate">{{ $auction->localizedTitle() }}</div>
                         <div class="text-xs text-muted num">{{ ($auction->closed_at ?? $auction->updated_at)->format('Y-m-d') }}</div>
                     </div>
-                    <div class="num font-bold text-primary text-[15px] shrink-0">{{ dzd($auction->final_price ?? $auction->currentPrice()) }}</div>
+                    <div class="num font-bold text-primary text-[15px] shrink-0"><x-money :centimes="$auction->final_price ?? $auction->currentPrice()" /></div>
                 </a>
             @endforeach
         </div>

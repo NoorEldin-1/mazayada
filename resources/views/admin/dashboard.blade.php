@@ -18,7 +18,7 @@
     <x-ui.stat-tile tone="danger" :label="__('admin.stat_total_bids')" :value="$stats['total_bids']">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
     </x-ui.stat-tile>
-    <x-ui.stat-tile tone="gold" :label="__('admin.stat_revenue')" :value="dzd($stats['revenue'])">
+    <x-ui.stat-tile tone="gold" :label="__('admin.stat_revenue')" :value="$stats['revenue']" money>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
     </x-ui.stat-tile>
     <x-ui.stat-tile tone="ok" :label="__('admin.stat_active_bidders')" :value="$stats['active_bidders']">
@@ -59,7 +59,7 @@
                     <td class="font-semibold text-ink">{{ Str::limit($auc->title_ar, 40) }}</td>
                     <td>{{ $auc->entity?->name ? Str::limit($auc->entity->name, 20) : '—' }}</td>
                     <td>{{ $auc->category?->name ?? '—' }}</td>
-                    <td class="num">{{ dzd($auc->opening_price) }}</td>
+                    <td class="num"><x-money :centimes="$auc->opening_price" /></td>
                     <td class="num">{{ $auc->bids_count }}</td>
                     <td><span class="chip {{ $auc->status->chipClass() }}"><span class="dot"></span>{{ $auc->status->label() }}</span></td>
                 </tr>

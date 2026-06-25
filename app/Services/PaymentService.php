@@ -9,6 +9,7 @@ use App\Models\AuctionParticipant;
 use App\Models\AuditLog;
 use App\Models\Payment;
 use App\Models\User;
+use App\Services\Payments\PaymentDriver;
 use App\Services\Payments\PaymentGatewayInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -186,15 +187,22 @@ class PaymentService
      */
     public function handleCallback(string $ref, string $decision): void
     {
-        $payments = Payment::where('gateway_ref', $ref)
-            ->where('status', PaymentStatus::PENDING)
+        // The reference can be the gateway's order/checkout id (server webhook) OR
+        // our own payment id (the browser return URL we embed in success/failure
+        // URLs — the gateway doesn't echo its id back to us on redirect).
+        $payments = Payment::where('status', PaymentStatus::PENDING)
+            ->where(fn ($q) => $q->where('gateway_ref', $ref)->orWhere('id', $ref))
             ->get();
 
         if ($payments->isEmpty()) {
             return;
         }
 
-        $confirmed = $decision === 'success' && $this->gateway->confirm($ref)->isConfirmed();
+        // Always re-verify against the gateway using ITS reference, never the
+        // browser-supplied value, so a tampered return URL can't confirm an order.
+        $gatewayRef = $payments->first()->gateway_ref ?? $ref;
+
+        $confirmed = $decision === 'success' && $this->gateway->confirm($gatewayRef)->isConfirmed();
 
         DB::transaction(function () use ($payments, $confirmed) {
             foreach ($payments as $payment) {
@@ -352,6 +360,6 @@ class PaymentService
 
     private function driverName(): string
     {
-        return setting('payments.mock', config('mazayada.payments.mock', true)) ? 'mock' : 'cibweb';
+        return PaymentDriver::current();
     }
 }

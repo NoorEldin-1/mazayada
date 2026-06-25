@@ -15,13 +15,20 @@
         return n.toLocaleString('en-US', { maximumFractionDigits: 2 }).replace(/,/g, ' ');
     }
 
-    // Build the value node once (LTR + bidi-isolated, like the money helper)
-    // so the number + currency never jumble against the RTL Arabic label.
+    // Build the value as the same .money markup the server emits: only the amount
+    // is the bidi-isolated LTR token (.amt, via CSS) while the currency (.cur)
+    // follows the page direction — so دج sits on the left of the number in Arabic.
     var labelEl = document.createElement('span');
     var valueEl = document.createElement('span');
-    valueEl.setAttribute('dir', 'ltr');
-    valueEl.style.unicodeBidi = 'isolate';
-    valueEl.style.whiteSpace = 'nowrap';
+    valueEl.className = 'money';
+    var amtEl = document.createElement('span');
+    amtEl.className = 'amt';
+    var curEl = document.createElement('span');
+    curEl.className = 'cur';
+    curEl.textContent = currency;
+    valueEl.appendChild(amtEl);
+    valueEl.appendChild(document.createTextNode(' '));
+    valueEl.appendChild(curEl);
 
     function render() {
         var opening = parseFloat(openingEl.value);
@@ -32,7 +39,7 @@
         }
         var deposit = Math.round(opening * percent) / 100;
         labelEl.textContent = prefix + ' ';
-        valueEl.textContent = fmt(deposit) + ' ' + currency;
+        amtEl.textContent = fmt(deposit);
         previewEl.textContent = '';
         previewEl.appendChild(labelEl);
         previewEl.appendChild(valueEl);

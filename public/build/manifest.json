@@ -62,7 +62,7 @@
     "isDynamicEntry": true
   },
   "resources/css/app.css": {
-    "file": "assets/app-BIGi9ERK.css",
+    "file": "assets/app-CdAGjVEW.css",
     "name": "app",
     "names": [
       "app.css"
@@ -89,7 +89,7 @@
     ]
   },
   "resources/js/auction.js": {
-    "file": "assets/auction-DS-51pHP.js",
+    "file": "assets/auction-dAYv5uFJ.js",
     "name": "auction",
     "src": "resources/js/auction.js",
     "isEntry": true,

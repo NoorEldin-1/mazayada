@@ -3,6 +3,7 @@
     'value' => '',
     'tone' => 'mint',
     'hint' => null,
+    'money' => false,   // when true, $value is centimes → rendered as a .money unit
 ])
 @php
     $tones = [
@@ -22,7 +23,7 @@
     </div>
     <div class="min-w-0">
         <div class="text-[13px] text-muted font-medium mb-1">{{ $label }}</div>
-        <div class="text-[26px] sm:text-[28px] font-bold tracking-tight num text-ink leading-none">{{ $value }}</div>
+        <div class="text-[26px] sm:text-[28px] font-bold tracking-tight num text-ink leading-none">{{ $money ? dzd_html((int) $value) : $value }}</div>
         @if ($hint)
             <div class="text-xs text-muted mt-1.5">{{ $hint }}</div>
         @endif

@@ -13,8 +13,8 @@ use RuntimeException;
  * The request/response mapping follows SATIM's hosted-payment API
  * (register.do / getOrderStatus.do / refund.do, currency 012 = DZD). Wired but
  * inert until real credentials are configured; it is selected only when
- * setting('payments.mock') is false. Until then the platform runs on
- * MockPaymentGateway.
+ * PaymentDriver::current() === 'cibweb' (PAYMENTS_DRIVER=cibweb). The platform
+ * otherwise runs on the mock or the Chargily driver.
  *
  * IMPORTANT (spec §7.4): credentials come from env only; never store card data.
  */

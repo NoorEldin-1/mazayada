@@ -5,9 +5,9 @@ namespace App\Services\Payments;
 use App\Models\Payment;
 
 /**
- * Contract for the national payment gateway (CIBWeb / SATIM — spec §7) and its
- * mock. The concrete binding is chosen in AppServiceProvider based on
- * setting('payments.mock').
+ * Contract for the payment gateway (Chargily Pay / CIBWeb-SATIM — spec §7) and
+ * its mock. The concrete driver is resolved in PaymentDriver (mock | chargily |
+ * cibweb) and bound in AppServiceProvider.
  */
 interface PaymentGatewayInterface
 {

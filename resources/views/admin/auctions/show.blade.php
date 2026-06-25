@@ -28,14 +28,14 @@
                 __('admin.auctions.f_wilaya') => $auction->wilaya?->name ?? '—',
                 __('admin.auctions.f_commune') => $auction->commune?->name ?? '—',
                 __('admin.auctions.f_asset_location') => $auction->asset_location ?: '—',
-                __('admin.auctions.f_opening_price') => dzd($auction->opening_price),
-                __('admin.auctions.current_price') => dzd($auction->currentPrice()),
-                __('admin.auctions.f_deposit') => dzd($auction->deposit_amount).' ('.rtrim(rtrim(number_format((float) $auction->deposit_percent, 2, '.', ''), '0'), '.').'%)',
-                __('admin.auctions.f_book_price') => $auction->book_price ? dzd($auction->book_price) : __('admin.auctions.book_free'),
+                __('admin.auctions.f_opening_price') => dzd_html($auction->opening_price),
+                __('admin.auctions.current_price') => dzd_html($auction->currentPrice()),
+                __('admin.auctions.f_deposit') => new \Illuminate\Support\HtmlString(dzd_html($auction->deposit_amount).' ('.rtrim(rtrim(number_format((float) $auction->deposit_percent, 2, '.', ''), '0'), '.').'%)'),
+                __('admin.auctions.f_book_price') => $auction->book_price ? dzd_html($auction->book_price) : __('admin.auctions.book_free'),
                 __('admin.auctions.f_start_time') => optional($auction->start_time)->format('Y-m-d H:i') ?? '—',
                 __('admin.auctions.f_end_time') => optional($auction->end_time)->format('Y-m-d H:i') ?? '—',
                 __('admin.auctions.winner') => $auction->winner?->fullNameAr() ?? '—',
-                __('admin.auctions.final_price') => $auction->final_price ? dzd($auction->final_price) : '—',
+                __('admin.auctions.final_price') => $auction->final_price ? dzd_html($auction->final_price) : '—',
                 __('admin.auctions.created_by') => $auction->createdByUser?->fullNameAr() ?? '—',
                 __('admin.auctions.responsible_staff') => $auction->entityUser?->full_name ?? '—',
             ];
@@ -93,7 +93,7 @@
             @forelse($bids as $bid)
                 <tr>
                     <td>{{ $bid->user?->fullNameAr() ?: '—' }}</td>
-                    <td class="num">{{ dzd($bid->amount) }}</td>
+                    <td class="num"><x-money :centimes="$bid->amount" /></td>
                     <td class="num">{{ optional($bid->bid_time)->format('Y-m-d H:i') }}</td>
                     <td>
                         <span class="chip {{ $bid->is_valid ? 'chip-ok' : 'chip-muted' }}">
@@ -162,7 +162,7 @@
                 <tr>
                     <td>{{ $pay->user?->fullNameAr() ?: '—' }}</td>
                     <td>{{ __('enums.payment_type.' . $pay->payment_type->value) }}</td>
-                    <td class="num">{{ dzd($pay->amount) }}</td>
+                    <td class="num"><x-money :centimes="$pay->amount" /></td>
                     <td><span class="chip {{ $payChip }}">{{ __('enums.payment_status.' . $pay->status->value) }}</span></td>
                     <td class="num">{{ optional($pay->confirmed_at)->format('Y-m-d H:i') ?? '—' }}</td>
                     <td class="num">{{ optional($pay->due_at)->format('Y-m-d H:i') ?? '—' }}</td>

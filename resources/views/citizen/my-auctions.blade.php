@@ -36,7 +36,7 @@
             <div class="auc-loc"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>{{ $auction->wilaya?->name }}</div>
         </div>
         <div class="auc-foot">
-            <div class="pr"><div class="lbl">{{ __('auctions.current_price') }}</div><div class="pv num">{{ dzd($auction->currentPrice()) }}</div></div>
+            <div class="pr"><div class="lbl">{{ __('auctions.current_price') }}</div><div class="pv num"><x-money :centimes="$auction->currentPrice()" /></div></div>
             <div class="bids"><div class="n num">{{ $auction->bidCount() }}</div> {{ __('auctions.bids_word') }}</div>
         </div>
     </a>

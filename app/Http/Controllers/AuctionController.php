@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\DocumentType;
 use App\Enums\InspectionQuestionStatus;
+use App\Enums\PaymentStatus;
 use App\Models\Auction;
 use App\Models\AuctionParticipant;
 use App\Models\InspectionQuestion;
@@ -51,7 +52,7 @@ class AuctionController extends Controller
         return view('auctions.index', compact('auctions', 'categories', 'wilayas'));
     }
 
-    public function show(Auction $auction, AuctionService $auctions): View
+    public function show(Auction $auction, AuctionService $auctions, PaymentService $payments): View
     {
         // Lazy close-on-view: if the clock ran out but the auctions:close cron
         // hasn't run yet, finalise now so this visitor sees the canonical closed
@@ -107,10 +108,16 @@ class AuctionController extends Controller
         $canAppeal = auth()->check() && $auction->canBeAppealedBy(auth()->user());
         $userAppeal = auth()->check() ? $auction->appealBy(auth()->user()) : null;
 
+        // §4 step 7 — has the winner already completed the final payment? Drives
+        // the pay-final CTA vs a "paid" confirmation on the closed panel.
+        $finalPaymentConfirmed = auth()->check()
+            && $auction->winner_user_id === auth()->id()
+            && $payments->confirmedFinalPayment($auction, auth()->user());
+
         return view('auctions.show', compact(
             'auction', 'bids', 'participant', 'isParticipant',
             'questions', 'conditionBook', 'awardDocument', 'hasBookAccess',
-            'canAppeal', 'userAppeal',
+            'canAppeal', 'userAppeal', 'finalPaymentConfirmed',
         ));
     }
 
@@ -167,7 +174,10 @@ class AuctionController extends Controller
         $ref = (string) $request->query('ref');
         $decision = (string) $request->query('decision', 'success');
 
-        $payment = Payment::where('gateway_ref', $ref)->with('auction')->first();
+        // The ref may be the gateway's reference (mock/CIBWeb) or our own payment
+        // id (Chargily browser return) — resolve either so the redirect lands on
+        // the right auction.
+        $payment = Payment::where('gateway_ref', $ref)->orWhere('id', $ref)->with('auction')->first();
 
         if ($ref) {
             $payments->handleCallback($ref, $decision);
@@ -176,7 +186,11 @@ class AuctionController extends Controller
         $auction = $payment?->auction;
         $route = $auction ? redirect()->route('auctions.show', $auction) : redirect()->route('citizen.dashboard');
 
-        return $decision === 'success'
+        // Report the ACTUAL outcome, not just the gateway's decision hint —
+        // handleCallback re-verifies the order with the gateway before confirming.
+        $confirmed = $payment && $payment->fresh()?->status === PaymentStatus::CONFIRMED;
+
+        return $confirmed
             ? $route->with('success', __('payments.flash_confirmed'))
             : $route->with('error', __('payments.flash_failed'));
     }

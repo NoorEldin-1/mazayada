@@ -197,7 +197,13 @@ import './echo';
     function updateMinHint() {
         if (!minHintEl || !i18n.min_bid) return;
         const minNext = currentPriceDinars() + 1;
-        minHintEl.textContent = i18n.min_bid.replace('{price}', groupDinars(minNext) + ' ' + (cfg.currency || ''));
+        // Build the price as the same .money markup the server emits so the CSS
+        // places the currency on the document's reading side (AR: left) and keeps
+        // the amount a coherent LTR token. The label template is our own trusted
+        // translation; only the (server-provided) currency is escaped.
+        const priceHtml = '<span class="money"><span class="amt">' + groupDinars(minNext)
+            + '</span> <span class="cur">' + escapeHtml(cfg.currency || '') + '</span></span>';
+        minHintEl.innerHTML = i18n.min_bid.replace('{price}', priceHtml);
     }
 
     function setPrice(centimes) {

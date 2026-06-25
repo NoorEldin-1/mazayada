@@ -121,6 +121,7 @@ return [
         'ack_book' => 'I acknowledge that I have read and accept the condition book.',
         'ack_submit' => 'Acknowledge & continue',
         'pay_final' => 'Make the final payment',
+        'final_paid' => 'The final payment has been completed successfully.',
         'cta_blocked' => 'You cannot participate — your account is blacklisted.',
         'cta_locked' => 'Your account is temporarily locked, please try again later.',
         'cta_complete_kyc' => 'Complete identity verification to participate',

@@ -33,6 +33,11 @@
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
         <env name="CIBWEB_MOCK" value="true"/>
+        <!-- Force the in-process payment mock for the whole suite, regardless of
+             the developer's .env (so a real Chargily key never makes tests hit
+             the network). Chargily-specific tests opt in via config()->set(). -->
+        <env name="PAYMENTS_DRIVER" value="mock"/>
+        <env name="CHARGILY_SECRET_KEY" value=""/>
         <env name="ALIAS_SECRET" value="testing-alias-secret-do-not-use-in-prod"/>
         <env name="LOGIN_MAX_ATTEMPTS" value="5"/>
         <env name="LOGIN_DECAY_MINUTES" value="1"/>

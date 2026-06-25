@@ -46,6 +46,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // server-rendered <html data-theme> (no flash of wrong theme).
         $middleware->encryptCookies(except: ['theme']);
 
+        // Chargily's signed webhook is a server-to-server POST with no session/CSRF
+        // token; it is authenticated by its HMAC signature in the controller.
+        $middleware->validateCsrfTokens(except: ['payments/chargily/webhook']);
+
         $middleware->alias([
             'role'           => EnsureRole::class,
             'kyc.verified'   => KycVerified::class,

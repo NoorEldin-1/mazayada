@@ -8,9 +8,9 @@
             <tr><td class="k">{{ __('documents.award.asset_title') }}</td><td>{{ $auction->localizedTitle() }}</td></tr>
             <tr><td class="k">{{ __('documents.award.entity') }}</td><td>{{ $auction->entity?->name }}</td></tr>
             <tr><td class="k">{{ __('documents.award.category') }}</td><td>{{ $auction->category?->name }}</td></tr>
-            <tr><td class="k">{{ __('documents.condition_book.opening_price') }}</td><td>{{ dzd((int) $auction->opening_price) }}</td></tr>
-            <tr><td class="k">{{ __('documents.condition_book.deposit') }}</td><td>{{ dzd((int) $auction->deposit_amount) }}</td></tr>
-            <tr><td class="k">{{ __('documents.condition_book.book_price') }}</td><td>{{ dzd((int) $auction->book_price) }}</td></tr>
+            <tr><td class="k">{{ __('documents.condition_book.opening_price') }}</td><td>{!! dzd_pdf((int) $auction->opening_price) !!}</td></tr>
+            <tr><td class="k">{{ __('documents.condition_book.deposit') }}</td><td>{!! dzd_pdf((int) $auction->deposit_amount) !!}</td></tr>
+            <tr><td class="k">{{ __('documents.condition_book.book_price') }}</td><td>{!! dzd_pdf((int) $auction->book_price) !!}</td></tr>
             <tr><td class="k">{{ __('documents.condition_book.start') }}</td><td>{{ optional($auction->start_time)->format('Y-m-d H:i') }}</td></tr>
         </table>
     </div>

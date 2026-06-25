@@ -38,11 +38,11 @@
             @foreach($fees->lines() as $line)
                 <tr class="{{ $line['key'] === 'fees.line.buyer_total' ? 'total' : '' }}">
                     <td>{{ __($line['key']) }}</td>
-                    <td style="text-align:end">{{ dzd($line['amount']) }}</td>
+                    <td style="text-align:end">{!! dzd_pdf($line['amount']) !!}</td>
                 </tr>
             @endforeach
             @if($fees->customsImmediateDue !== null)
-                <tr><td>{{ __('fees.line.customs_immediate') }}</td><td style="text-align:end">{{ dzd($fees->customsImmediateDue) }}</td></tr>
+                <tr><td>{{ __('fees.line.customs_immediate') }}</td><td style="text-align:end">{!! dzd_pdf($fees->customsImmediateDue) !!}</td></tr>
             @endif
         </table>
     </div>

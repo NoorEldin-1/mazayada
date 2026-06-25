@@ -47,8 +47,30 @@ return [
     ],
 
     'payments' => [
-        // When true, use the in-process mock CIBWeb client (Phase 1 / dev / testing).
+        // Active payment driver: 'mock' | 'chargily' | 'cibweb'. Defaults to the
+        // legacy CIBWEB_MOCK flag so existing deployments keep their behaviour;
+        // set PAYMENTS_DRIVER explicitly to switch — it wins over CIBWEB_MOCK.
+        'driver' => env('PAYMENTS_DRIVER', env('CIBWEB_MOCK', true) ? 'mock' : 'cibweb'),
+
+        // Legacy master switch — kept for backward compatibility. When true (and
+        // PAYMENTS_DRIVER is unset) the default 'driver' above resolves to 'mock'.
         'mock' => (bool) env('CIBWEB_MOCK', true),
+
+        // Chargily Pay v2 (EDAHABIA of Algérie Poste / CIB via SATIM). TEST mode by
+        // default: the hosted checkout page is REAL — only the credentials and the
+        // money are test. Going live is an ENV-ONLY change (base_url + secret_key).
+        // NOTE: Chargily amounts are in WHOLE dinars (min 50 DZD); our Payment
+        // amounts are in centimes, so ChargilyGateway divides by 100. Chargily Pay
+        // v2 has NO refund API — losing-deposit refunds are recorded locally only.
+        'chargily' => [
+            'base_url' => env('CHARGILY_BASE_URL', 'https://pay.chargily.net/test/api/v2'),
+            'secret_key' => env('CHARGILY_SECRET_KEY'),
+            // Chargily signs webhooks with the API secret key; override only if a
+            // dedicated webhook signing secret is configured in the dashboard.
+            'webhook_secret' => env('CHARGILY_WEBHOOK_SECRET', env('CHARGILY_SECRET_KEY')),
+            // Hosted-checkout method: 'cib' | 'edahabia' | 'chargily_app'.
+            'payment_method' => env('CHARGILY_PAYMENT_METHOD', 'cib'),
+        ],
 
         'cibweb' => [
             'base_url' => env('CIBWEB_BASE_URL'),

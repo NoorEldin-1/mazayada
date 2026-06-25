@@ -20,7 +20,7 @@
         'kyc.f_full_address' => $user->address,
         'kyc.f_postal_code' => $user->postal_code,
         'kyc.f_profession' => $user->profession,
-        'kyc.f_expected_income' => $user->expected_income ? number_format($user->expected_income, 0, ',', ' ').' '.__('common.currency') : null,
+        'kyc.f_expected_income' => $user->expected_income ? dzd_html((int) $user->expected_income * 100) : null,
         'kyc.f_rip' => $user->rip,
     ];
 @endphp
