@@ -39,7 +39,7 @@ class NotificationService
         $payment->loadMissing('auction');
         $params = [
             'auction' => $payment->auction?->localizedTitle() ?? '',
-            'amount' => dzd((int) $payment->amount),
+            'amount' => dzd_text((int) $payment->amount),
             'type' => $payment->payment_type->label(),
         ];
         $user->notify(new AuctionEventNotification('payment_confirmed', $params,
@@ -72,7 +72,7 @@ class NotificationService
     {
         $params = [
             'auction' => $auction->localizedTitle(),
-            'amount' => dzd($newPriceCentimes),
+            'amount' => dzd_text($newPriceCentimes),
         ];
         $user->notify(new AuctionEventNotification('outbid', $params, route('auctions.show', $auction)));
     }
@@ -81,7 +81,7 @@ class NotificationService
     {
         $params = [
             'auction' => $auction->localizedTitle(),
-            'amount' => dzd((int) $auction->final_price),
+            'amount' => dzd_text((int) $auction->final_price),
             'days' => $auction->finalPaymentDeadlineDays(),
         ];
         $user->notify(new AuctionEventNotification('auction_won', $params, route('auctions.show', $auction)));
@@ -106,7 +106,7 @@ class NotificationService
     {
         $params = [
             'auction' => $auction->localizedTitle(),
-            'amount' => dzd($amountCentimes),
+            'amount' => dzd_text($amountCentimes),
         ];
         $user->notify(new AuctionEventNotification('deposit_refunded', $params, route('auctions.show', $auction)));
     }

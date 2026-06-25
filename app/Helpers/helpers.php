@@ -247,3 +247,33 @@ if (! function_exists('dzd_pdf')) {
         );
     }
 }
+
+if (! function_exists('dzd_text')) {
+    /**
+     * Money for PLAIN-TEXT strings rendered in an RTL context where no HTML/CSS is
+     * available — notification bodies, email copy, flash messages. A bare
+     * "3 086 354 دج" dropped into an Arabic sentence has its space-separated groups
+     * reversed by the bidi algorithm ("354 086 3"); wrapping the amount in a Unicode
+     * LTR isolate (U+2066 … U+2069) keeps it a coherent token while the currency
+     * stays a normal word after it (so دج sits on the number's reading side).
+     *
+     * Safe across channels (DB-stored body, email, mobile app): the isolates are
+     * standard, invisible bidi controls. Distinct from dzd() so the API stays clean.
+     */
+    function dzd_text(int|null $centimes, bool $short = false): string
+    {
+        $dinars = intdiv((int) ($centimes ?? 0), 100);
+        $currency = __('common.currency');
+
+        if ($short && $dinars >= 1_000_000) {
+            $amount = rtrim(rtrim(number_format($dinars / 1_000_000, 1, '.', ''), '0'), '.') . __('common.million_suffix');
+        } elseif ($short && $dinars >= 1_000) {
+            $amount = rtrim(rtrim(number_format($dinars / 1_000, 1, '.', ''), '0'), '.') . __('common.thousand_suffix');
+        } else {
+            $amount = number_format($dinars, 0, ',', ' ');
+        }
+
+        // U+2066 LEFT-TO-RIGHT ISOLATE … U+2069 POP DIRECTIONAL ISOLATE.
+        return "\u{2066}" . $amount . "\u{2069}" . ' ' . $currency;
+    }
+}
