@@ -5,6 +5,7 @@ return [
     'account_user' => 'Utilisateur',
     'nav_dashboard' => 'Tableau de bord',
     'nav_my_auctions' => 'Mes enchères',
+    'nav_reports' => 'Mes rapports financiers',
     'nav_identity' => 'Vérification d’identité',
     'nav_appeals' => 'Mes recours',
     'nav_notifications' => 'Notifications',

@@ -1,0 +1,100 @@
+<?php
+
+return [
+    // ===== Page shell =====
+    'title' => 'Rapports financiers',
+    'title_personal' => 'Mes rapports financiers',
+    'subtitle_platform' => 'Tous les flux financiers de la plateforme',
+    'subtitle_entity' => 'Les flux financiers des enchères de votre entité',
+    'subtitle_personal' => 'Récapitulatif de vos paiements et opérations',
+
+    // ===== Summary (KPI tiles) =====
+    'section_summary' => 'Récapitulatif financier',
+    'kpi_net_revenue' => 'Revenu net',
+    'kpi_net_revenue_hint' => 'Paiements finaux + ventes de cahiers + cautions confisquées (hors cautions remboursables).',
+    'kpi_net_spent' => 'Net dépensé',
+    'kpi_net_spent_hint' => 'Total réellement dépensé, hors cautions remboursées.',
+    'kpi_gross_confirmed' => 'Encaissements confirmés',
+    'kpi_gross_confirmed_hint' => 'Somme de tous les paiements confirmés.',
+    'kpi_final_payments' => 'Paiements finaux',
+    'kpi_deposits_held' => 'Cautions retenues',
+    'kpi_deposits_held_hint' => 'Cautions confirmées remboursables — pas un revenu.',
+    'kpi_book_sales' => 'Ventes de cahiers',
+    'kpi_refunded' => 'Remboursements',
+    'kpi_forfeited' => 'Confiscations',
+    'kpi_pending' => 'En attente',
+    'kpi_transactions' => 'Nombre d’opérations',
+    'kpi_avg_transaction' => 'Opération moyenne',
+
+    // ===== Filters =====
+    'filters_title' => 'Filtres avancés',
+    'f_from' => 'Du',
+    'f_to' => 'Au',
+    'f_type' => 'Type de paiement',
+    'f_status' => 'Statut',
+    'f_category' => 'Catégorie',
+    'f_wilaya' => 'Wilaya',
+    'f_entity' => 'Entité',
+    'f_min_amount' => 'Montant min (DA)',
+    'f_max_amount' => 'Montant max (DA)',
+    'f_search' => 'Recherche',
+    'f_search_placeholder' => 'Titre de l’enchère…',
+    'all_types' => 'Tous les types',
+    'all_statuses' => 'Tous les statuts',
+    'all_categories' => 'Toutes les catégories',
+    'all_wilayas' => 'Toutes les wilayas',
+    'all_entities' => 'Toutes les entités',
+    'apply' => 'Appliquer',
+    'reset' => 'Réinitialiser',
+    'date_note' => 'Filtrage selon la date de création de l’opération (heure d’Alger).',
+    'active_filters' => 'Filtres actifs',
+
+    // ===== Range presets =====
+    'preset_today' => 'Aujourd’hui',
+    'preset_7d' => '7 jours',
+    'preset_30d' => '30 jours',
+    'preset_this_month' => 'Ce mois',
+    'preset_quarter' => 'Ce trimestre',
+    'preset_this_year' => 'Cette année',
+    'preset_all' => 'Toute la période',
+    'range_all_time' => 'Toute la période',
+
+    // ===== Analytics / charts =====
+    'section_analytics' => 'Analyses',
+    'chart_revenue_over_time' => 'Revenu dans le temps',
+    'chart_by_type' => 'Répartition par type de paiement',
+    'chart_by_status' => 'Répartition par statut',
+    'chart_by_category' => 'Encaissements par catégorie',
+    'chart_by_wilaya' => 'Encaissements par wilaya',
+    'chart_by_entity' => 'Encaissements par entité',
+    'series_revenue' => 'Revenu',
+    'no_chart_data' => 'Données insuffisantes pour le graphique.',
+
+    // ===== Fee breakdown =====
+    'section_fees' => 'Détail des frais (enchères adjugées)',
+    'fees_note' => 'Total des composantes de frais calculées sur les enchères adjugées selon les filtres actuels.',
+    'no_fees_data' => 'Aucune enchère adjugée pour ces filtres.',
+    'fee_awarded_count' => 'Enchères adjugées',
+
+    // ===== Transactions table =====
+    'section_transactions' => 'Opérations',
+    'th_date' => 'Date',
+    'th_auction' => 'Enchère',
+    'th_user' => 'Utilisateur',
+    'th_type' => 'Type',
+    'th_status' => 'Statut',
+    'th_amount' => 'Montant',
+    'th_gateway' => 'Passerelle',
+    'no_transactions' => 'Aucune opération correspondant aux filtres.',
+    'showing_count' => 'Total des opérations correspondantes : :count',
+
+    // ===== Export =====
+    'export' => 'Exporter',
+    'export_csv' => 'Exporter CSV',
+    'export_pdf' => 'Exporter PDF',
+    'pdf_title' => 'Rapport financier',
+    'pdf_generated_at' => 'Généré le',
+    'pdf_range' => 'Période',
+    'pdf_scope' => 'Périmètre',
+    'scope_platform' => 'Toute la plateforme',
+];

@@ -75,6 +75,12 @@ class RolesPermissionsSeeder extends Seeder
         'system.parameters.manage',
         'system.auditlogs.view',
 
+        // Financial reports (التقارير المالية) — read-only viewing + export of
+        // the money figures. Entity accounts hold these too (scoped to their own
+        // auctions by EntityScope); export is a read action, safe for read-only.
+        'reports.view',
+        'reports.export',
+
         // Appeals
         'appeals.viewAny',
         'appeals.respond', // platform admin: forward / confirm / reject-at-intake
@@ -96,6 +102,7 @@ class RolesPermissionsSeeder extends Seeder
             'inspections.answer', 'deliveries.manage',
             'appeals.viewAny', 'appeals.respond',
             'system.auditlogs.view',
+            'reports.view', 'reports.export',
         ],
 
         UserRole::CONTENT_ADMIN->value => [
@@ -117,6 +124,7 @@ class RolesPermissionsSeeder extends Seeder
             'payments.viewAny', 'payments.confirm', 'payments.refund',
             'inspections.answer', 'deliveries.manage',
             'appeals.viewAny',
+            'reports.view', 'reports.export',
         ],
 
         UserRole::COMMITTEE_MEMBER->value => [
@@ -138,6 +146,9 @@ class RolesPermissionsSeeder extends Seeder
             'payments.viewAny',
             'documents.download',
             'appeals.viewAny', 'appeals.decide',
+            // Financial reports scoped to the entity's own auctions (view + export
+            // are read-only, so they don't breach the read-only account rule).
+            'reports.view', 'reports.export',
         ],
 
         UserRole::CITIZEN->value => [

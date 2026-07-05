@@ -112,6 +112,13 @@
         </x-ui.nav-link>
         @endcan
 
+        @can('reports.view')
+        <x-ui.nav-link tone="onPrimary" :href="route('admin.reports.index')" :active="request()->routeIs('admin.reports.*')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            <span>{{ __('admin.nav_reports') }}</span>
+        </x-ui.nav-link>
+        @endcan
+
         @can('system.auditlogs.view')
         <x-ui.nav-link tone="onPrimary" :href="route('admin.audit-logs')" :active="request()->routeIs('admin.audit-logs')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>

@@ -1,0 +1,100 @@
+<?php
+
+return [
+    // ===== Page shell =====
+    'title' => 'Financial Reports',
+    'title_personal' => 'My Financial Reports',
+    'subtitle_platform' => 'All financial flows across the platform',
+    'subtitle_entity' => 'Financial flows for your entity’s auctions',
+    'subtitle_personal' => 'A summary of your payments and transactions',
+
+    // ===== Summary (KPI tiles) =====
+    'section_summary' => 'Financial summary',
+    'kpi_net_revenue' => 'Net revenue',
+    'kpi_net_revenue_hint' => 'Final payments + book sales + forfeited deposits (excluding refundable deposits).',
+    'kpi_net_spent' => 'Net spent',
+    'kpi_net_spent_hint' => 'Total actually spent, excluding refunded deposits.',
+    'kpi_gross_confirmed' => 'Confirmed collections',
+    'kpi_gross_confirmed_hint' => 'Sum of all confirmed payments.',
+    'kpi_final_payments' => 'Final payments',
+    'kpi_deposits_held' => 'Deposits held',
+    'kpi_deposits_held_hint' => 'Confirmed refundable deposits — not revenue.',
+    'kpi_book_sales' => 'Condition-book sales',
+    'kpi_refunded' => 'Refunds',
+    'kpi_forfeited' => 'Forfeitures',
+    'kpi_pending' => 'Pending',
+    'kpi_transactions' => 'Transactions',
+    'kpi_avg_transaction' => 'Average transaction',
+
+    // ===== Filters =====
+    'filters_title' => 'Advanced filters',
+    'f_from' => 'From',
+    'f_to' => 'To',
+    'f_type' => 'Payment type',
+    'f_status' => 'Status',
+    'f_category' => 'Category',
+    'f_wilaya' => 'Wilaya',
+    'f_entity' => 'Entity',
+    'f_min_amount' => 'Min amount (DA)',
+    'f_max_amount' => 'Max amount (DA)',
+    'f_search' => 'Search',
+    'f_search_placeholder' => 'Auction title…',
+    'all_types' => 'All types',
+    'all_statuses' => 'All statuses',
+    'all_categories' => 'All categories',
+    'all_wilayas' => 'All wilayas',
+    'all_entities' => 'All entities',
+    'apply' => 'Apply',
+    'reset' => 'Reset',
+    'date_note' => 'Filtered by transaction creation date (Algiers time).',
+    'active_filters' => 'Active filters',
+
+    // ===== Range presets =====
+    'preset_today' => 'Today',
+    'preset_7d' => '7 days',
+    'preset_30d' => '30 days',
+    'preset_this_month' => 'This month',
+    'preset_quarter' => 'This quarter',
+    'preset_this_year' => 'This year',
+    'preset_all' => 'All time',
+    'range_all_time' => 'All time',
+
+    // ===== Analytics / charts =====
+    'section_analytics' => 'Analytics',
+    'chart_revenue_over_time' => 'Revenue over time',
+    'chart_by_type' => 'Distribution by payment type',
+    'chart_by_status' => 'Distribution by status',
+    'chart_by_category' => 'Collections by category',
+    'chart_by_wilaya' => 'Collections by wilaya',
+    'chart_by_entity' => 'Collections by entity',
+    'series_revenue' => 'Revenue',
+    'no_chart_data' => 'Not enough data to render the chart.',
+
+    // ===== Fee breakdown =====
+    'section_fees' => 'Fee breakdown (awarded auctions)',
+    'fees_note' => 'Total of fee components computed on awarded auctions within the current filters.',
+    'no_fees_data' => 'No awarded auctions for these filters.',
+    'fee_awarded_count' => 'Awarded auctions',
+
+    // ===== Transactions table =====
+    'section_transactions' => 'Transactions',
+    'th_date' => 'Date',
+    'th_auction' => 'Auction',
+    'th_user' => 'User',
+    'th_type' => 'Type',
+    'th_status' => 'Status',
+    'th_amount' => 'Amount',
+    'th_gateway' => 'Gateway',
+    'no_transactions' => 'No transactions match the filters.',
+    'showing_count' => 'Total matching transactions: :count',
+
+    // ===== Export =====
+    'export' => 'Export',
+    'export_csv' => 'Export CSV',
+    'export_pdf' => 'Export PDF',
+    'pdf_title' => 'Financial report',
+    'pdf_generated_at' => 'Generated at',
+    'pdf_range' => 'Period',
+    'pdf_scope' => 'Scope',
+    'scope_platform' => 'Entire platform',
+];

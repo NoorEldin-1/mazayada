@@ -11,6 +11,7 @@ return [
     'nav_inspections' => 'Inspection questions',
     'nav_deliveries' => 'Deliveries',
     'nav_audit' => 'Audit Log',
+    'nav_reports' => 'Financial Reports',
     'nav_entities' => 'Entities',
     'nav_entity_staff' => 'Entity staff',
     'nav_categories' => 'Categories',

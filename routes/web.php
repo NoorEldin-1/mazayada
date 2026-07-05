@@ -10,6 +10,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\Citizen\CitizenController;
 use App\Http\Controllers\Citizen\KycController;
 use App\Http\Controllers\Citizen\AppealController;
+use App\Http\Controllers\Citizen\ReportController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminAuctionController;
 use App\Http\Controllers\Admin\AdminUserController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\Admin\AdminSettingsController;
 use App\Http\Controllers\Admin\AdminEntityStaffController;
 use App\Http\Controllers\Admin\AdminInspectionController;
 use App\Http\Controllers\Admin\AdminDeliveryController;
+use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Api\GeoController;
 
 // Public
@@ -74,6 +76,10 @@ Route::middleware('auth')->prefix('dashboard')->name('citizen.')->group(function
     // Appeals are now filed from the auction page; this stays as the tracking list.
     Route::get('/appeals', [AppealController::class, 'index'])->name('appeals');
     Route::get('/my-auctions', [CitizenController::class, 'myAuctions'])->name('my-auctions');
+    // Personal financial report — the citizen's own payments, filtered + analysed.
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports');
+    Route::get('/reports/export/csv', [ReportController::class, 'exportCsv'])->name('reports.export.csv');
+    Route::get('/reports/export/pdf', [ReportController::class, 'exportPdf'])->name('reports.export.pdf');
     Route::get('/notifications', [CitizenController::class, 'notifications'])->name('notifications');
     Route::post('/notifications/{notification}/read', [CitizenController::class, 'markNotificationRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [CitizenController::class, 'markAllNotificationsRead'])->name('notifications.read-all');
@@ -193,6 +199,12 @@ Route::middleware(['auth', 'admin.2fa', 'role:'.implode(',', \App\Enums\UserRole
     Route::post('/appeals/{appeal}/decide', [AdminAppealController::class, 'decide'])->name('appeals.decide');
     Route::post('/appeals/{appeal}/confirm', [AdminAppealController::class, 'confirm'])->name('appeals.confirm');
     Route::get('/audit-logs', [AdminController::class, 'auditLogs'])->name('audit-logs');
+
+    // Financial reports (التقارير المالية) — platform-wide for SUPER_ADMIN, or
+    // scoped to the account's own entity (EntityScope) for entity staff/viewers.
+    Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/export/csv', [AdminReportController::class, 'exportCsv'])->name('reports.export.csv');
+    Route::get('/reports/export/pdf', [AdminReportController::class, 'exportPdf'])->name('reports.export.pdf');
 });
 
 // API (public)

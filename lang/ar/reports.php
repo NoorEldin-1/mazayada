@@ -1,0 +1,100 @@
+<?php
+
+return [
+    // ===== Page shell =====
+    'title' => 'التقارير المالية',
+    'title_personal' => 'تقاريري المالية',
+    'subtitle_platform' => 'كل الحركات المالية عبر المنصة',
+    'subtitle_entity' => 'الحركات المالية الخاصة بمزايدات جهتك',
+    'subtitle_personal' => 'ملخّص مدفوعاتك ومعاملاتك المالية',
+
+    // ===== Summary (KPI tiles) =====
+    'section_summary' => 'الملخّص المالي',
+    'kpi_net_revenue' => 'صافي الإيراد',
+    'kpi_net_revenue_hint' => 'الدفعات النهائية + بيع الدفاتر + الكفالات المصادَرة (دون الكفالات القابلة للاسترداد).',
+    'kpi_net_spent' => 'صافي ما دفعته',
+    'kpi_net_spent_hint' => 'إجمالي ما دفعته فعليًا دون الكفالات المُستردّة.',
+    'kpi_gross_confirmed' => 'إجمالي التحصيل المؤكَّد',
+    'kpi_gross_confirmed_hint' => 'مجموع كل المدفوعات المؤكَّدة.',
+    'kpi_final_payments' => 'الدفعات النهائية',
+    'kpi_deposits_held' => 'الكفالات المحتجزة',
+    'kpi_deposits_held_hint' => 'كفالات مؤكَّدة قابلة للاسترداد — ليست إيرادًا.',
+    'kpi_book_sales' => 'بيع دفاتر الشروط',
+    'kpi_refunded' => 'المستردّات',
+    'kpi_forfeited' => 'المصادرات',
+    'kpi_pending' => 'قيد الانتظار',
+    'kpi_transactions' => 'عدد المعاملات',
+    'kpi_avg_transaction' => 'متوسط المعاملة',
+
+    // ===== Filters =====
+    'filters_title' => 'تصفية متقدّمة',
+    'f_from' => 'من تاريخ',
+    'f_to' => 'إلى تاريخ',
+    'f_type' => 'نوع الدفع',
+    'f_status' => 'الحالة',
+    'f_category' => 'الفئة',
+    'f_wilaya' => 'الولاية',
+    'f_entity' => 'الجهة',
+    'f_min_amount' => 'أدنى مبلغ (دج)',
+    'f_max_amount' => 'أقصى مبلغ (دج)',
+    'f_search' => 'بحث',
+    'f_search_placeholder' => 'عنوان المزايدة…',
+    'all_types' => 'كل الأنواع',
+    'all_statuses' => 'كل الحالات',
+    'all_categories' => 'كل الفئات',
+    'all_wilayas' => 'كل الولايات',
+    'all_entities' => 'كل الجهات',
+    'apply' => 'تطبيق',
+    'reset' => 'إعادة تعيين',
+    'date_note' => 'التصفية حسب تاريخ إنشاء المعاملة (توقيت الجزائر).',
+    'active_filters' => 'فلاتر مُفعّلة',
+
+    // ===== Range presets =====
+    'preset_today' => 'اليوم',
+    'preset_7d' => '٧ أيام',
+    'preset_30d' => '٣٠ يومًا',
+    'preset_this_month' => 'هذا الشهر',
+    'preset_quarter' => 'هذا الربع',
+    'preset_this_year' => 'هذه السنة',
+    'preset_all' => 'كل الفترات',
+    'range_all_time' => 'كل الفترات',
+
+    // ===== Analytics / charts =====
+    'section_analytics' => 'تحليلات',
+    'chart_revenue_over_time' => 'الإيراد عبر الزمن',
+    'chart_by_type' => 'التوزيع حسب نوع الدفع',
+    'chart_by_status' => 'التوزيع حسب الحالة',
+    'chart_by_category' => 'التحصيل حسب الفئة',
+    'chart_by_wilaya' => 'التحصيل حسب الولاية',
+    'chart_by_entity' => 'التحصيل حسب الجهة',
+    'series_revenue' => 'الإيراد',
+    'no_chart_data' => 'لا توجد بيانات كافية لعرض الرسم.',
+
+    // ===== Fee breakdown =====
+    'section_fees' => 'تفكيك الرسوم (المزايدات المُرساة)',
+    'fees_note' => 'إجمالي مكوّنات الرسوم المحسوبة على المزايدات المُرساة ضمن الفلاتر الحالية.',
+    'no_fees_data' => 'لا توجد مزايدات مُرساة ضمن هذه الفلاتر.',
+    'fee_awarded_count' => 'مزايدات مُرساة',
+
+    // ===== Transactions table =====
+    'section_transactions' => 'المعاملات',
+    'th_date' => 'التاريخ',
+    'th_auction' => 'المزايدة',
+    'th_user' => 'المستخدم',
+    'th_type' => 'النوع',
+    'th_status' => 'الحالة',
+    'th_amount' => 'المبلغ',
+    'th_gateway' => 'بوابة الدفع',
+    'no_transactions' => 'لا توجد معاملات مطابقة للفلاتر.',
+    'showing_count' => 'إجمالي المعاملات المطابقة: :count',
+
+    // ===== Export =====
+    'export' => 'تصدير',
+    'export_csv' => 'تصدير CSV',
+    'export_pdf' => 'تصدير PDF',
+    'pdf_title' => 'تقرير مالي',
+    'pdf_generated_at' => 'أُنشئ في',
+    'pdf_range' => 'الفترة',
+    'pdf_scope' => 'النطاق',
+    'scope_platform' => 'كامل المنصة',
+];

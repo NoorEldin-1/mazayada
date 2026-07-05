@@ -11,6 +11,7 @@ return [
     'nav_inspections' => 'أسئلة المعاينة',
     'nav_deliveries' => 'التسليم',
     'nav_audit' => 'سجل المراجعة',
+    'nav_reports' => 'التقارير المالية',
     'nav_entities' => 'الجهات',
     'nav_entity_staff' => 'موظفو الجهات',
     'nav_categories' => 'الفئات',

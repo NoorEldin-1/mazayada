@@ -11,6 +11,7 @@ return [
     'nav_inspections' => 'Questions d’inspection',
     'nav_deliveries' => 'Livraisons',
     'nav_audit' => 'Journal d’audit',
+    'nav_reports' => 'Rapports financiers',
     'nav_entities' => 'Entités',
     'nav_entity_staff' => 'Personnel des entités',
     'nav_categories' => 'Catégories',
