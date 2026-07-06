@@ -54,6 +54,8 @@ class AuctionResource extends JsonResource
             'asset_class' => $this->asset_class?->value,
             'condition' => $this->condition?->value,
             'unit_count' => $this->unit_count,
+            'condition_terms' => $this->localizedConditionTerms(),
+            'award_terms' => $this->localizedAwardTerms(),
 
             'category' => $this->whenLoaded('category', fn () => [
                 'id' => $this->category->id,
@@ -108,6 +110,12 @@ class AuctionResource extends JsonResource
                 'end' => $this->inspection_end?->toIso8601String(),
                 'location' => $this->inspection_location,
                 'is_open' => $this->isInspectionOpen(),
+            ],
+
+            'appeal_window' => [
+                'days' => $this->appealWindowDays(),
+                'is_open' => $this->isWithinAppealWindow(),
+                'deadline' => $this->closed_at?->copy()->addDays($this->appealWindowDays())->toIso8601String(),
             ],
 
             'lease' => $this->when($this->auction_type === AuctionType::LEASE, fn () => [

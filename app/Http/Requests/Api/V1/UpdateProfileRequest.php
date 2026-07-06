@@ -31,6 +31,7 @@ class UpdateProfileRequest extends FormRequest
             'commune_id' => ['sometimes', 'nullable', 'exists:communes,id'],
             'postal_code' => ['sometimes', 'nullable', 'regex:/^\d{5}$/'],
             'profession' => ['sometimes', 'nullable', 'string', 'max:100'],
+            'locale' => ['sometimes', 'string', 'in:ar,fr,en'],
             'secret_question' => ['sometimes', 'nullable', Rule::in(array_keys((array) __('auth.secret_questions')))],
             'secret_answer' => [
                 Rule::requiredIf(fn () => $this->filled('secret_question') && ! $this->user()?->secret_answer),

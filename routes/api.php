@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\QuestionController;
 use App\Http\Controllers\Api\V1\RegistrationController;
+use App\Http\Controllers\Api\V1\ReportController;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
@@ -118,7 +119,14 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
 
         // Appeals — list mine, and file one against a closed auction I took part in.
         Route::get('/appeals', [AppealController::class, 'index'])->name('appeals.index');
+        Route::get('/appeals/{appeal}', [AppealController::class, 'show'])->name('appeals.show');
         Route::post('/auctions/{auction}/appeals', [AppealController::class, 'store'])->name('appeals.store');
+
+        // Financial Reports
+        Route::prefix('reports')->name('reports.')->group(function (): void {
+            Route::get('/summary', [ReportController::class, 'summary'])->name('summary');
+            Route::get('/transactions', [ReportController::class, 'transactions'])->name('transactions');
+        });
 
         // Notifications.
         Route::prefix('notifications')->name('notifications.')->group(function (): void {

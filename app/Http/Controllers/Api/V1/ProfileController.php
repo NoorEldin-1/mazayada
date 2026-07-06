@@ -20,7 +20,7 @@ class ProfileController extends ApiController
      */
     public function show(Request $request): JsonResponse
     {
-        return $this->ok(new UserResource($request->user()));
+        return $this->ok(new UserResource($request->user()->load('entity')));
     }
 
     /**
@@ -34,7 +34,7 @@ class ProfileController extends ApiController
         $user = $request->user();
 
         $fields = $request->safe()->only([
-            'phone', 'email', 'address', 'commune_id', 'postal_code', 'profession', 'secret_question',
+            'phone', 'email', 'address', 'commune_id', 'postal_code', 'profession', 'locale', 'secret_question',
         ]);
 
         // Only overwrite the stored answer when a new one was actually provided.

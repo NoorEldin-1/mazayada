@@ -74,8 +74,11 @@
                                                     <li class="tocify-item level-2" data-unique="appeals-GETapi-v1-appeals">
                                 <a href="#appeals-GETapi-v1-appeals">List my appeals</a>
                             </li>
-                                                                                <li class="tocify-item level-2" data-unique="appeals-POSTapi-v1-appeals">
-                                <a href="#appeals-POSTapi-v1-appeals">Submit an appeal</a>
+                                                                                <li class="tocify-item level-2" data-unique="appeals-GETapi-v1-appeals--id-">
+                                <a href="#appeals-GETapi-v1-appeals--id-">Get an appeal</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="appeals-POSTapi-v1-auctions--auction_id--appeals">
+                                <a href="#appeals-POSTapi-v1-auctions--auction_id--appeals">Submit an appeal</a>
                             </li>
                                                                         </ul>
                             </ul>
@@ -94,8 +97,8 @@
                     <a href="#auction-registration">Auction registration</a>
                 </li>
                                     <ul id="tocify-subheader-auction-registration" class="tocify-subheader">
-                                                    <li class="tocify-item level-2" data-unique="auction-registration-POSTapi-v1-auctions--auction_id--acknowledge-book">
-                                <a href="#auction-registration-POSTapi-v1-auctions--auction_id--acknowledge-book">Acknowledge the condition book</a>
+                                                    <li class="tocify-item level-2" data-unique="auction-registration-POSTapi-v1-auctions--auction_id--buy-book">
+                                <a href="#auction-registration-POSTapi-v1-auctions--auction_id--buy-book">Buy the condition book</a>
                             </li>
                                                                                 <li class="tocify-item level-2" data-unique="auction-registration-POSTapi-v1-auctions--auction_id--register">
                                 <a href="#auction-registration-POSTapi-v1-auctions--auction_id--register">Start registration</a>
@@ -213,6 +216,19 @@
                             </li>
                                                                         </ul>
                             </ul>
+                    <ul id="tocify-header-financial-reports" class="tocify-header">
+                <li class="tocify-item level-1" data-unique="financial-reports">
+                    <a href="#financial-reports">Financial Reports</a>
+                </li>
+                                    <ul id="tocify-subheader-financial-reports" class="tocify-subheader">
+                                                    <li class="tocify-item level-2" data-unique="financial-reports-GETapi-v1-reports-summary">
+                                <a href="#financial-reports-GETapi-v1-reports-summary">Report summary</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="financial-reports-GETapi-v1-reports-transactions">
+                                <a href="#financial-reports-GETapi-v1-reports-transactions">Financial transactions</a>
+                            </li>
+                                                                        </ul>
+                            </ul>
                     <ul id="tocify-header-kyc" class="tocify-header">
                 <li class="tocify-item level-1" data-unique="kyc">
                     <a href="#kyc">KYC</a>
@@ -299,7 +315,7 @@
     </ul>
 
     <ul class="toc-footer" id="last-updated">
-        <li>Last updated: June 17, 2026</li>
+        <li>Last updated: July 5, 2026</li>
     </ul>
 </div>
 
@@ -323,8 +339,10 @@ You can switch the language used with the tabs at the top right (or from the nav
 
         <h1 id="appeals">Appeals</h1>
 
-    <p>Citizen appeals/complaints, optionally linked to an auction the user took part
-in.</p>
+    <p>Citizen appeals (الطعون) against an auction result. An appeal is filed from a
+specific auction the user took part in, then routed through the platform admin
+and the organising entity. The client only ever sees the 3 public states
+(PENDING / APPROVED / REJECTED).</p>
 
                                 <h2 id="appeals-GETapi-v1-appeals">List my appeals</h2>
 
@@ -467,34 +485,28 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </div>
                         </form>
 
-                    <h2 id="appeals-POSTapi-v1-appeals">Submit an appeal</h2>
+                    <h2 id="appeals-GETapi-v1-appeals--id-">Get an appeal</h2>
 
 <p>
 </p>
 
+<p>Full detail for a single appeal owned by the authenticated user.</p>
 
-
-<span id="example-requests-POSTapi-v1-appeals">
+<span id="example-requests-GETapi-v1-appeals--id-">
 <blockquote>Example request:</blockquote>
 
 
 <div class="bash-example">
-    <pre><code class="language-bash">curl --request POST \
-    "https://mazayada.findosystem.com/api/v1/appeals" \
+    <pre><code class="language-bash">curl --request GET \
+    --get "https://mazayada.findosystem.com/api/v1/appeals/a216fb1d-403f-431b-bf29-b80079a51cbb" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
-    --header "Accept-Language: ar" \
-    --data "{
-    \"subject\": \"اعتراض على نتيجة المزاد\",
-    \"reason\": \"لم يتم احتساب مزايدتي الأخيرة.\",
-    \"auction_id\": \"consequatur\"
-}"
-</code></pre></div>
+    --header "Accept-Language: ar"</code></pre></div>
 
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://mazayada.findosystem.com/api/v1/appeals"
+    "https://mazayada.findosystem.com/api/v1/appeals/a216fb1d-403f-431b-bf29-b80079a51cbb"
 );
 
 const headers = {
@@ -503,67 +515,77 @@ const headers = {
     "Accept-Language": "ar",
 };
 
-let body = {
-    "subject": "اعتراض على نتيجة المزاد",
-    "reason": "لم يتم احتساب مزايدتي الأخيرة.",
-    "auction_id": "consequatur"
-};
 
 fetch(url, {
-    method: "POST",
+    method: "GET",
     headers,
-    body: JSON.stringify(body),
 }).then(response =&gt; response.json());</code></pre></div>
 
 </span>
 
-<span id="example-responses-POSTapi-v1-appeals">
-</span>
-<span id="execution-results-POSTapi-v1-appeals" hidden>
+<span id="example-responses-GETapi-v1-appeals--id-">
+            <blockquote>
+            <p>Example response (401):</p>
+        </blockquote>
+                <details class="annotation">
+            <summary style="cursor: pointer;">
+                <small onclick="textContent = parentElement.parentElement.open ? 'Show headers' : 'Hide headers'">Show headers</small>
+            </summary>
+            <pre><code class="language-http">cache-control: no-cache, private
+content-type: application/json
+access-control-allow-origin: *
+ </code></pre></details>         <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;يلزم تسجيل الدخول.&quot;
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-v1-appeals--id-" hidden>
     <blockquote>Received response<span
-                id="execution-response-status-POSTapi-v1-appeals"></span>:
+                id="execution-response-status-GETapi-v1-appeals--id-"></span>:
     </blockquote>
-    <pre class="json"><code id="execution-response-content-POSTapi-v1-appeals"
+    <pre class="json"><code id="execution-response-content-GETapi-v1-appeals--id-"
       data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
 </span>
-<span id="execution-error-POSTapi-v1-appeals" hidden>
+<span id="execution-error-GETapi-v1-appeals--id-" hidden>
     <blockquote>Request failed with error:</blockquote>
-    <pre><code id="execution-error-message-POSTapi-v1-appeals">
+    <pre><code id="execution-error-message-GETapi-v1-appeals--id-">
 
 Tip: Check that you&#039;re properly connected to the network.
 If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
 You can check the Dev Tools console for debugging information.</code></pre>
 </span>
-<form id="form-POSTapi-v1-appeals" data-method="POST"
-      data-path="api/v1/appeals"
+<form id="form-GETapi-v1-appeals--id-" data-method="GET"
+      data-path="api/v1/appeals/{id}"
       data-authed="0"
       data-hasfiles="0"
       data-isarraybody="0"
       autocomplete="off"
-      onsubmit="event.preventDefault(); executeTryOut('POSTapi-v1-appeals', this);">
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v1-appeals--id-', this);">
     <h3>
         Request&nbsp;&nbsp;&nbsp;
                     <button type="button"
                     style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-tryout-POSTapi-v1-appeals"
-                    onclick="tryItOut('POSTapi-v1-appeals');">Try it out ⚡
+                    id="btn-tryout-GETapi-v1-appeals--id-"
+                    onclick="tryItOut('GETapi-v1-appeals--id-');">Try it out ⚡
             </button>
             <button type="button"
                     style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-canceltryout-POSTapi-v1-appeals"
-                    onclick="cancelTryOut('POSTapi-v1-appeals');" hidden>Cancel 🛑
+                    id="btn-canceltryout-GETapi-v1-appeals--id-"
+                    onclick="cancelTryOut('GETapi-v1-appeals--id-');" hidden>Cancel 🛑
             </button>&nbsp;&nbsp;
             <button type="submit"
                     style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-executetryout-POSTapi-v1-appeals"
+                    id="btn-executetryout-GETapi-v1-appeals--id-"
                     data-initial-text="Send Request 💥"
                     data-loading-text="⏱ Sending..."
                     hidden>Send Request 💥
             </button>
             </h3>
             <p>
-            <small class="badge badge-black">POST</small>
-            <b><code>api/v1/appeals</code></b>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v1/appeals/{id}</code></b>
         </p>
                 <h4 class="fancy-heading-panel"><b>Headers</b></h4>
                                 <div style="padding-left: 28px; clear: unset;">
@@ -572,7 +594,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Content-Type"                data-endpoint="POSTapi-v1-appeals"
+                              name="Content-Type"                data-endpoint="GETapi-v1-appeals--id-"
                value="application/json"
                data-component="header">
     <br>
@@ -584,7 +606,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Accept"                data-endpoint="POSTapi-v1-appeals"
+                              name="Accept"                data-endpoint="GETapi-v1-appeals--id-"
                value="application/json"
                data-component="header">
     <br>
@@ -596,20 +618,195 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Accept-Language"                data-endpoint="POSTapi-v1-appeals"
+                              name="Accept-Language"                data-endpoint="GETapi-v1-appeals--id-"
                value="ar"
                data-component="header">
     <br>
 <p>Example: <code>ar</code></p>
             </div>
-                                <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
+                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>id</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="id"                data-endpoint="GETapi-v1-appeals--id-"
+               value="a216fb1d-403f-431b-bf29-b80079a51cbb"
+               data-component="url">
+    <br>
+<p>The ID of the appeal. Example: <code>a216fb1d-403f-431b-bf29-b80079a51cbb</code></p>
+            </div>
+                    </form>
+
+                    <h2 id="appeals-POSTapi-v1-auctions--auction_id--appeals">Submit an appeal</h2>
+
+<p>
+</p>
+
+<p>Files an appeal against the result of the given auction. Requires that the
+auction has closed, is still within the appeal window, and that the user
+took part with at least one valid bid; only one appeal per auction.</p>
+
+<span id="example-requests-POSTapi-v1-auctions--auction_id--appeals">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request POST \
+    "https://mazayada.findosystem.com/api/v1/auctions/a2050443-68af-41f5-8080-20d4b878c6ca/appeals" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar" \
+    --data "{
+    \"subject\": \"اعتراض على نتيجة المزاد\",
+    \"reason\": \"لم يتم احتساب مزايدتي الأخيرة.\"
+}"
+</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/auctions/a2050443-68af-41f5-8080-20d4b878c6ca/appeals"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+let body = {
+    "subject": "اعتراض على نتيجة المزاد",
+    "reason": "لم يتم احتساب مزايدتي الأخيرة."
+};
+
+fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-POSTapi-v1-auctions--auction_id--appeals">
+</span>
+<span id="execution-results-POSTapi-v1-auctions--auction_id--appeals" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-POSTapi-v1-auctions--auction_id--appeals"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-POSTapi-v1-auctions--auction_id--appeals"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-POSTapi-v1-auctions--auction_id--appeals" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-POSTapi-v1-auctions--auction_id--appeals">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-POSTapi-v1-auctions--auction_id--appeals" data-method="POST"
+      data-path="api/v1/auctions/{auction_id}/appeals"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('POSTapi-v1-auctions--auction_id--appeals', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-POSTapi-v1-auctions--auction_id--appeals"
+                    onclick="tryItOut('POSTapi-v1-auctions--auction_id--appeals');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-POSTapi-v1-auctions--auction_id--appeals"
+                    onclick="cancelTryOut('POSTapi-v1-auctions--auction_id--appeals');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-POSTapi-v1-auctions--auction_id--appeals"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-black">POST</small>
+            <b><code>api/v1/auctions/{auction_id}/appeals</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="POSTapi-v1-auctions--auction_id--appeals"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="POSTapi-v1-auctions--auction_id--appeals"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="POSTapi-v1-auctions--auction_id--appeals"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>auction_id</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="auction_id"                data-endpoint="POSTapi-v1-auctions--auction_id--appeals"
+               value="a2050443-68af-41f5-8080-20d4b878c6ca"
+               data-component="url">
+    <br>
+<p>The ID of the auction. Example: <code>a2050443-68af-41f5-8080-20d4b878c6ca</code></p>
+            </div>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>auction</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="auction"                data-endpoint="POSTapi-v1-auctions--auction_id--appeals"
+               value="a2164134-b1d3-404d-9399-dff76472ac26"
+               data-component="url">
+    <br>
+<p>The auction to appeal. Example: <code>a2164134-b1d3-404d-9399-dff76472ac26</code></p>
+            </div>
+                            <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
         <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>subject</code></b>&nbsp;&nbsp;
 <small>string</small>&nbsp;
  &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="subject"                data-endpoint="POSTapi-v1-appeals"
+                              name="subject"                data-endpoint="POSTapi-v1-auctions--auction_id--appeals"
                value="اعتراض على نتيجة المزاد"
                data-component="body">
     <br>
@@ -621,23 +818,11 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="reason"                data-endpoint="POSTapi-v1-appeals"
+                              name="reason"                data-endpoint="POSTapi-v1-auctions--auction_id--appeals"
                value="لم يتم احتساب مزايدتي الأخيرة."
                data-component="body">
     <br>
 <p>Example: <code>لم يتم احتساب مزايدتي الأخيرة.</code></p>
-        </div>
-                <div style=" padding-left: 28px;  clear: unset;">
-            <b style="line-height: 2;"><code>auction_id</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
-<i>optional</i> &nbsp;
- &nbsp;
-                <input type="text" style="display: none"
-                              name="auction_id"                data-endpoint="POSTapi-v1-appeals"
-               value="consequatur"
-               data-component="body">
-    <br>
-<p>An auction the user participated in (optional). Example: <code>consequatur</code></p>
         </div>
         </form>
 
@@ -808,25 +993,26 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
                 <h1 id="auction-registration">Auction registration</h1>
 
-    <p>The §4 step-3 flow: acknowledge the condition book, then start paid
-registration (deposit + entry fee + condition book) via the payment gateway.
-Requires a verified (KYC-complete) account.</p>
+    <p>The §4 flow: buy the condition book (a prerequisite that unlocks its
+download), then start paid registration (the participation deposit) via the
+payment gateway. Requires a verified (KYC-complete) account.</p>
 
-                                <h2 id="auction-registration-POSTapi-v1-auctions--auction_id--acknowledge-book">Acknowledge the condition book</h2>
+                                <h2 id="auction-registration-POSTapi-v1-auctions--auction_id--buy-book">Buy the condition book</h2>
 
 <p>
 </p>
 
-<p>Records that the citizen has read the condition book (§10.3) — a
-prerequisite for starting registration.</p>
+<p>Creates the pending book-purchase payment and returns the gateway redirect
+URL. Buying the book unlocks its download and is a prerequisite for
+registering. Open <code>redirect_url</code> in a web view, then re-fetch the auction.</p>
 
-<span id="example-requests-POSTapi-v1-auctions--auction_id--acknowledge-book">
+<span id="example-requests-POSTapi-v1-auctions--auction_id--buy-book">
 <blockquote>Example request:</blockquote>
 
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "https://mazayada.findosystem.com/api/v1/auctions/a2050443-68af-41f5-8080-20d4b878c6ca/acknowledge-book" \
+    "https://mazayada.findosystem.com/api/v1/auctions/a2050443-68af-41f5-8080-20d4b878c6ca/buy-book" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --header "Accept-Language: ar"</code></pre></div>
@@ -834,7 +1020,7 @@ prerequisite for starting registration.</p>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://mazayada.findosystem.com/api/v1/auctions/a2050443-68af-41f5-8080-20d4b878c6ca/acknowledge-book"
+    "https://mazayada.findosystem.com/api/v1/auctions/a2050443-68af-41f5-8080-20d4b878c6ca/buy-book"
 );
 
 const headers = {
@@ -851,45 +1037,45 @@ fetch(url, {
 
 </span>
 
-<span id="example-responses-POSTapi-v1-auctions--auction_id--acknowledge-book">
+<span id="example-responses-POSTapi-v1-auctions--auction_id--buy-book">
 </span>
-<span id="execution-results-POSTapi-v1-auctions--auction_id--acknowledge-book" hidden>
+<span id="execution-results-POSTapi-v1-auctions--auction_id--buy-book" hidden>
     <blockquote>Received response<span
-                id="execution-response-status-POSTapi-v1-auctions--auction_id--acknowledge-book"></span>:
+                id="execution-response-status-POSTapi-v1-auctions--auction_id--buy-book"></span>:
     </blockquote>
-    <pre class="json"><code id="execution-response-content-POSTapi-v1-auctions--auction_id--acknowledge-book"
+    <pre class="json"><code id="execution-response-content-POSTapi-v1-auctions--auction_id--buy-book"
       data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
 </span>
-<span id="execution-error-POSTapi-v1-auctions--auction_id--acknowledge-book" hidden>
+<span id="execution-error-POSTapi-v1-auctions--auction_id--buy-book" hidden>
     <blockquote>Request failed with error:</blockquote>
-    <pre><code id="execution-error-message-POSTapi-v1-auctions--auction_id--acknowledge-book">
+    <pre><code id="execution-error-message-POSTapi-v1-auctions--auction_id--buy-book">
 
 Tip: Check that you&#039;re properly connected to the network.
 If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
 You can check the Dev Tools console for debugging information.</code></pre>
 </span>
-<form id="form-POSTapi-v1-auctions--auction_id--acknowledge-book" data-method="POST"
-      data-path="api/v1/auctions/{auction_id}/acknowledge-book"
+<form id="form-POSTapi-v1-auctions--auction_id--buy-book" data-method="POST"
+      data-path="api/v1/auctions/{auction_id}/buy-book"
       data-authed="0"
       data-hasfiles="0"
       data-isarraybody="0"
       autocomplete="off"
-      onsubmit="event.preventDefault(); executeTryOut('POSTapi-v1-auctions--auction_id--acknowledge-book', this);">
+      onsubmit="event.preventDefault(); executeTryOut('POSTapi-v1-auctions--auction_id--buy-book', this);">
     <h3>
         Request&nbsp;&nbsp;&nbsp;
                     <button type="button"
                     style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-tryout-POSTapi-v1-auctions--auction_id--acknowledge-book"
-                    onclick="tryItOut('POSTapi-v1-auctions--auction_id--acknowledge-book');">Try it out ⚡
+                    id="btn-tryout-POSTapi-v1-auctions--auction_id--buy-book"
+                    onclick="tryItOut('POSTapi-v1-auctions--auction_id--buy-book');">Try it out ⚡
             </button>
             <button type="button"
                     style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-canceltryout-POSTapi-v1-auctions--auction_id--acknowledge-book"
-                    onclick="cancelTryOut('POSTapi-v1-auctions--auction_id--acknowledge-book');" hidden>Cancel 🛑
+                    id="btn-canceltryout-POSTapi-v1-auctions--auction_id--buy-book"
+                    onclick="cancelTryOut('POSTapi-v1-auctions--auction_id--buy-book');" hidden>Cancel 🛑
             </button>&nbsp;&nbsp;
             <button type="submit"
                     style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
-                    id="btn-executetryout-POSTapi-v1-auctions--auction_id--acknowledge-book"
+                    id="btn-executetryout-POSTapi-v1-auctions--auction_id--buy-book"
                     data-initial-text="Send Request 💥"
                     data-loading-text="⏱ Sending..."
                     hidden>Send Request 💥
@@ -897,7 +1083,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </h3>
             <p>
             <small class="badge badge-black">POST</small>
-            <b><code>api/v1/auctions/{auction_id}/acknowledge-book</code></b>
+            <b><code>api/v1/auctions/{auction_id}/buy-book</code></b>
         </p>
                 <h4 class="fancy-heading-panel"><b>Headers</b></h4>
                                 <div style="padding-left: 28px; clear: unset;">
@@ -906,7 +1092,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Content-Type"                data-endpoint="POSTapi-v1-auctions--auction_id--acknowledge-book"
+                              name="Content-Type"                data-endpoint="POSTapi-v1-auctions--auction_id--buy-book"
                value="application/json"
                data-component="header">
     <br>
@@ -918,7 +1104,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Accept"                data-endpoint="POSTapi-v1-auctions--auction_id--acknowledge-book"
+                              name="Accept"                data-endpoint="POSTapi-v1-auctions--auction_id--buy-book"
                value="application/json"
                data-component="header">
     <br>
@@ -930,7 +1116,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="Accept-Language"                data-endpoint="POSTapi-v1-auctions--auction_id--acknowledge-book"
+                              name="Accept-Language"                data-endpoint="POSTapi-v1-auctions--auction_id--buy-book"
                value="ar"
                data-component="header">
     <br>
@@ -943,7 +1129,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="auction_id"                data-endpoint="POSTapi-v1-auctions--auction_id--acknowledge-book"
+                              name="auction_id"                data-endpoint="POSTapi-v1-auctions--auction_id--buy-book"
                value="a2050443-68af-41f5-8080-20d4b878c6ca"
                data-component="url">
     <br>
@@ -956,9 +1142,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>
 </p>
 
-<p>Creates the pending payment(s) and returns the gateway redirect URL. Open
-<code>redirect_url</code> in a web view; once the gateway returns, poll
-<code>GET payments/{ref}/status</code> (or re-fetch the auction) to confirm.</p>
+<p>Creates the pending deposit payment and returns the gateway redirect URL.
+The condition book must already be purchased. Open <code>redirect_url</code> in a web
+view; once the gateway returns, poll <code>GET payments/{ref}/status</code> (or
+re-fetch the auction) to confirm.</p>
 
 <span id="example-requests-POSTapi-v1-auctions--auction_id--register">
 <blockquote>Example request:</blockquote>
@@ -1398,11 +1585,14 @@ access-control-allow-origin: *
             &quot;ar&quot;: &quot;new one\r\nnew one\r\nnew one\r\nnew one&quot;,
             &quot;fr&quot;: &quot;new one\r\nnew one\r\nnew one\r\nnew one&quot;
         },
+        &quot;specifications&quot;: [],
         &quot;status&quot;: &quot;CLOSED&quot;,
         &quot;auction_type&quot;: &quot;SALE&quot;,
         &quot;asset_class&quot;: &quot;REAL_ESTATE&quot;,
         &quot;condition&quot;: &quot;NEW&quot;,
         &quot;unit_count&quot;: 1,
+        &quot;condition_terms&quot;: null,
+        &quot;award_terms&quot;: null,
         &quot;category&quot;: {
             &quot;id&quot;: 2,
             &quot;name&quot;: &quot;عقارات&quot;
@@ -1443,14 +1633,12 @@ access-control-allow-origin: *
             &quot;amount&quot;: 200,
             &quot;formatted&quot;: &quot;200 دج&quot;
         },
-        &quot;entry_fee&quot;: {
-            &quot;amount&quot;: 200,
-            &quot;formatted&quot;: &quot;200 دج&quot;
-        },
+        &quot;deposit_percent&quot;: 10,
         &quot;book_price&quot;: {
             &quot;amount&quot;: 200,
             &quot;formatted&quot;: &quot;200 دج&quot;
         },
+        &quot;has_book_access&quot;: false,
         &quot;bid_count&quot;: 15,
         &quot;start_time&quot;: &quot;2026-06-14T11:10:00+01:00&quot;,
         &quot;end_time&quot;: &quot;2026-06-14T12:00:00+01:00&quot;,
@@ -1464,7 +1652,12 @@ access-control-allow-origin: *
             &quot;start&quot;: &quot;2026-06-14T11:03:00+01:00&quot;,
             &quot;end&quot;: &quot;2026-06-20T11:03:00+01:00&quot;,
             &quot;location&quot;: &quot;new site&quot;,
-            &quot;is_open&quot;: true
+            &quot;is_open&quot;: false
+        },
+        &quot;appeal_window&quot;: {
+            &quot;days&quot;: 8,
+            &quot;is_open&quot;: false,
+            &quot;deadline&quot;: &quot;2026-06-23T19:27:21+01:00&quot;
         },
         &quot;requires_commerce_register&quot;: false,
         &quot;requires_newspaper_announcement&quot;: true,
@@ -1477,7 +1670,7 @@ access-control-allow-origin: *
             &quot;id&quot;: &quot;f5cea43f-df52-4942-89bf-716077671467&quot;,
             &quot;type&quot;: &quot;CONDITION_BOOK&quot;,
             &quot;title&quot;: &quot;كراسة شروط &mdash; new one&quot;,
-            &quot;is_public&quot;: true,
+            &quot;is_public&quot;: false,
             &quot;download_url&quot;: &quot;http://mazayada.findosystem.com/api/v1/documents/f5cea43f-df52-4942-89bf-716077671467/download&quot;
         },
         &quot;award_document&quot;: null
@@ -2209,7 +2402,7 @@ the user in — call verify-otp with the returned user_id to obtain tokens.</p>
     \"last_name_ar\": \"mniihfqcoynlazghdtqtq\",
     \"phone\": \"consequatur\",
     \"email\": \"carolyne.luettgen@example.org\",
-    \"birth_date\": \"2006-03-10\",
+    \"birth_date\": \"2006-03-28\",
     \"password\": \"O[2UZ5ij-e\\/dl4m{o,\",
     \"device_name\": \"dqamniihfqcoynlazghdt\"
 }"
@@ -2233,7 +2426,7 @@ let body = {
     "last_name_ar": "mniihfqcoynlazghdtqtq",
     "phone": "consequatur",
     "email": "carolyne.luettgen@example.org",
-    "birth_date": "2006-03-10",
+    "birth_date": "2006-03-28",
     "password": "O[2UZ5ij-e\/dl4m{o,",
     "device_name": "dqamniihfqcoynlazghdt"
 };
@@ -2399,10 +2592,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="birth_date"                data-endpoint="POSTapi-v1-auth-register"
-               value="2006-03-10"
+               value="2006-03-28"
                data-component="body">
     <br>
-<p>يجب أن يكون value تاريخاً صحيحاً. يجب أن يكون value تاريخاً قبل <code>2008-06-17</code>. Example: <code>2006-03-10</code></p>
+<p>يجب أن يكون value تاريخاً صحيحاً. يجب أن يكون value تاريخاً قبل <code>2008-07-05</code>. Example: <code>2006-03-28</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>password</code></b>&nbsp;&nbsp;
@@ -4507,7 +4700,7 @@ authenticated user; private docs to the owner / auction winner / entity staff).<
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://mazayada.findosystem.com/api/v1/documents/26386cd1-0a82-45a1-af3e-b4d03db17ba8/download" \
+    --get "https://mazayada.findosystem.com/api/v1/documents/0194a412-8132-463b-abf0-f8945f3f09a4/download" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --header "Accept-Language: ar"</code></pre></div>
@@ -4515,7 +4708,7 @@ authenticated user; private docs to the owner / auction winner / entity staff).<
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://mazayada.findosystem.com/api/v1/documents/26386cd1-0a82-45a1-af3e-b4d03db17ba8/download"
+    "https://mazayada.findosystem.com/api/v1/documents/0194a412-8132-463b-abf0-f8945f3f09a4/download"
 );
 
 const headers = {
@@ -4641,10 +4834,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="document_id"                data-endpoint="GETapi-v1-documents--document_id--download"
-               value="26386cd1-0a82-45a1-af3e-b4d03db17ba8"
+               value="0194a412-8132-463b-abf0-f8945f3f09a4"
                data-component="url">
     <br>
-<p>The ID of the document. Example: <code>26386cd1-0a82-45a1-af3e-b4d03db17ba8</code></p>
+<p>The ID of the document. Example: <code>0194a412-8132-463b-abf0-f8945f3f09a4</code></p>
             </div>
                     </form>
 
@@ -4846,7 +5039,7 @@ fetch(url, {
             <pre><code class="language-http">cache-control: max-age=3600, public, s-maxage=3600
 content-type: application/json
 access-control-allow-origin: *
-set-cookie: XSRF-TOKEN=eyJpdiI6InQwejRBU3JlVHVtbFUrQVlTdDRITGc9PSIsInZhbHVlIjoiUEtteHQ4QkNTanpIU2xIQWZ2ZVpWUklVd0UvNzYxR0k5N0RPZWJheDU4K1NiNXM1Q2JYSGlTVzk3NWhBYzJkcnBLaGJYQy9QWnZTTzlEQnlacStYaEI1TTRSN0RrQm9PY3RBK3ZlYUFwNldzVVN3cWFaNzMvV3FZRkh6ak1wdTQiLCJtYWMiOiJjZTQ2Yzk1OTE3NDUxZDU5OTYwNThlMDgxNDAxOGUwNTY4YzJmYzMzNmQyYWI0ZmE0ZjRiZTNiYTllZGE0ODI3IiwidGFnIjoiIn0%3D; expires=Wed, 17 Jun 2026 16:02:31 GMT; Max-Age=7200; path=/; samesite=lax; mazayada-session=eyJpdiI6IktLdkw0a2RaeVhJYktleGJQb29VT2c9PSIsInZhbHVlIjoib0llUXdGN08vOVprVVZ5cnFUQjNsMVFtMFBSYi9jMnUvNDRvSHc4d0JOK2lzakxoWVRnaENwM3QwRGN2S2RQcjJUbEYrZzZhMHUzaEUrK0s5VkVLa2FoL0RKNDJCSW5HY3A4L3czcCszQk1UNE1JalQ0eE9DTVFDOHVzeW5qTVgiLCJtYWMiOiI2ODEzM2ZiNDIxNzk2NzhiMTQyNzNiNTM5NjI0YzljODEzODMyNjgzNmE1ZjJmYzg5NGY5NzI2MGViY2JmZmY3IiwidGFnIjoiIn0%3D; expires=Wed, 17 Jun 2026 16:02:31 GMT; Max-Age=7200; path=/; httponly; samesite=lax
+set-cookie: XSRF-TOKEN=eyJpdiI6Imd6dW1VMG9uT0w2Vm0rQzEza2xBVlE9PSIsInZhbHVlIjoidTA0MFVCU2dwdUNTZzFaVWY4dEFHK2FxTmdCMUc5SE1MNytQcFJuM1V6cjVpazA5bXIzbVMzQ0hWVDBoQnJ4Rml1ZENWV3dmQm50TzRDYnJVREpNbG5CTFVmODVVdGd3K2tJYjlYOWliYUFOVERZMzRna2o0c0gzbUs2d1BheE4iLCJtYWMiOiJlMGJmZTUxMGY5NWRiZTg1YmQyNzJkMjg3MmMwZjQxNjMwY2E3MDFhMDVmNzc3OGNmMzg1YmY1MzgzNTcyOTM0IiwidGFnIjoiIn0%3D; expires=Sun, 05 Jul 2026 12:57:53 GMT; Max-Age=7200; path=/; samesite=lax; mazayada-session=eyJpdiI6Ik5IYXJkYi9wRGxoaWJreng5Z1lKOEE9PSIsInZhbHVlIjoiSXRsY013UW9mN3NPU2lsYzh0RnBJMm9nL2FaMXN5TVNWRFlFRlRrL20waUdsc0pQcTloWHQxTFEwN3BaNWpYdUwrRXRXdjZ0S0s0emh0dElMenVRaHpJaDUrVHA4aTBkRVFSZXZQZ3BmUWV0TGh3RFpGcnJWNjlaZ0Z0ai91YkYiLCJtYWMiOiIyODNmMzA4Mjc5MmYyZWQ0Y2RiMjZmMTkzYmY4NmQ0ZmYwYTBmMjU0YWVkNzU1YjcxNWE4MGEzNTQ5MDQ3NTAyIiwidGFnIjoiIn0%3D; expires=Sun, 05 Jul 2026 12:57:53 GMT; Max-Age=7200; path=/; httponly; samesite=lax
  </code></pre></details>         <pre>
 
 <code class="language-json" style="max-height: 300px;">[
@@ -5335,7 +5528,7 @@ fetch(url, {
             <pre><code class="language-http">cache-control: max-age=3600, public, s-maxage=3600
 content-type: application/json
 access-control-allow-origin: *
-set-cookie: XSRF-TOKEN=eyJpdiI6Imt2cysrU1BaRHUxMWxDNFp5bzcva2c9PSIsInZhbHVlIjoieFlwaElMQ1luZ0M3NURvRmxFTjh1QU5aTUxhVW9wa05YbWUra0NmMFk5UzVod0lCVEpsK2d1R25ZQ1dOU2xPQlZoUy9RWjI2d3hOblRzaURHT3FRTDVtMVQvVm4wNFNoSndKSVQzSGY5d0FIQnlCTFFTZUN4NWRUeUJUbFhSdnoiLCJtYWMiOiJjNmYxZDk0MzQ4NDM2NGNhYTAwYTBiMWQyNTIwMWJmZGUxYTJhNGJmNjU4YThmOWQ4NzdhMzI2ZjhiZGMyODZhIiwidGFnIjoiIn0%3D; expires=Wed, 17 Jun 2026 16:02:31 GMT; Max-Age=7200; path=/; samesite=lax; mazayada-session=eyJpdiI6InFiaFRvSHk2YkJQV2ZzV244SFFnQ3c9PSIsInZhbHVlIjoiTXREYThOTjROL1p3cWE5WHZrNjNtSC83YjEyczN6K2llcVZNR2JnZ2Y0TXg0Ykp0T0VKMmh3WDJxdDArcVdmM1AzaDRzd1NVKzE4bjU5Yk1ud1RVbUJNaVdGdzlIME1ESXJxaGJYeHBYR3MvQUFJWSsxVEorUW91a25kV0lmOTQiLCJtYWMiOiJiMDJiYWViMDhiNDVjNDNkM2JkY2I1ZDNlMDFiMjkyNDZjZDM5YWE4OWY5OWFhNTcxMDZmNDM1Y2RkNjUzYTk1IiwidGFnIjoiIn0%3D; expires=Wed, 17 Jun 2026 16:02:31 GMT; Max-Age=7200; path=/; httponly; samesite=lax
+set-cookie: XSRF-TOKEN=eyJpdiI6IkdaMVRCVEYrT3dsOUVkMmhHTmQ5WWc9PSIsInZhbHVlIjoiS0RSUUZRemFXQndTN0xNYjRTTmJadGhjSHZ3WEhTZmZ5YnBMRUJBZTdhVU5FRUYrNkhlVzFvc1VtYTlyWU9jU0RQYTQrSEZDN0N5bmpVbTFyTTFJTW82SVFsRWVDdDBEUXkvd2d1WGx1WTFFcHNyOWNJV2p2QWRRN0FVQXlhV0wiLCJtYWMiOiIwMWZlZTM5YmMxY2E2OTk0OWFjYTIwNzk4MTNlMTlkNzY0YmI4MjQ2MDZjNGRiOWVhOTgwMTJmZjA2NmM5MGJkIiwidGFnIjoiIn0%3D; expires=Sun, 05 Jul 2026 12:57:53 GMT; Max-Age=7200; path=/; samesite=lax; mazayada-session=eyJpdiI6IklKMERHcmwxdkZ3QUxIRVV3SDQ3Q3c9PSIsInZhbHVlIjoiQmhnZVlqRnMvYi9nWXhRemxQK1RiMXhBb3luTXZLRmRqajZRVDlzSEIrTjd6V3JYeW1KMjMwMDVLcHdQc3UzdWFIZU9YM1d2R1VVWE5NbXIxOEFQNCtaME03OC9zb3BLN2xGdnNNM3U0Y3ptbE9ZTEtjS29CRDFWQ1ErSlVtMXYiLCJtYWMiOiIyNWEyODNjMzQzZDAwM2MxZGY2NDgyMGVmODRiYTM5MjRiY2Y1NDdiODQyOGE2NjMwM2M0MmUzYTQzMDJhZWQ2IiwidGFnIjoiIn0%3D; expires=Sun, 05 Jul 2026 12:57:53 GMT; Max-Age=7200; path=/; httponly; samesite=lax
  </code></pre></details>         <pre>
 
 <code class="language-json" style="max-height: 300px;">[
@@ -5552,6 +5745,322 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </div>
                     </form>
 
+                <h1 id="financial-reports">Financial Reports</h1>
+
+    <p>The citizen's personal financial report (تقاريري المالية).</p>
+
+                                <h2 id="financial-reports-GETapi-v1-reports-summary">Report summary</h2>
+
+<p>
+<small class="badge badge-darkred">requires authentication</small>
+</p>
+
+<p>Aggregated KPIs, dimensions, and monthly series for the authenticated user's payments.</p>
+
+<span id="example-requests-GETapi-v1-reports-summary">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "https://mazayada.findosystem.com/api/v1/reports/summary" \
+    --header "Authorization: Bearer {ACCESS_TOKEN}" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/reports/summary"
+);
+
+const headers = {
+    "Authorization": "Bearer {ACCESS_TOKEN}",
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-v1-reports-summary">
+            <blockquote>
+            <p>Example response (401):</p>
+        </blockquote>
+                <details class="annotation">
+            <summary style="cursor: pointer;">
+                <small onclick="textContent = parentElement.parentElement.open ? 'Show headers' : 'Hide headers'">Show headers</small>
+            </summary>
+            <pre><code class="language-http">cache-control: no-cache, private
+content-type: application/json
+access-control-allow-origin: *
+ </code></pre></details>         <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;يلزم تسجيل الدخول.&quot;
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-v1-reports-summary" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-v1-reports-summary"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-v1-reports-summary"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-v1-reports-summary" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-v1-reports-summary">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-v1-reports-summary" data-method="GET"
+      data-path="api/v1/reports/summary"
+      data-authed="1"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v1-reports-summary', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-v1-reports-summary"
+                    onclick="tryItOut('GETapi-v1-reports-summary');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-v1-reports-summary"
+                    onclick="cancelTryOut('GETapi-v1-reports-summary');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-v1-reports-summary"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v1/reports/summary</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Authorization" class="auth-value"               data-endpoint="GETapi-v1-reports-summary"
+               value="Bearer {ACCESS_TOKEN}"
+               data-component="header">
+    <br>
+<p>Example: <code>Bearer {ACCESS_TOKEN}</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-v1-reports-summary"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-v1-reports-summary"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="GETapi-v1-reports-summary"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                        </form>
+
+                    <h2 id="financial-reports-GETapi-v1-reports-transactions">Financial transactions</h2>
+
+<p>
+<small class="badge badge-darkred">requires authentication</small>
+</p>
+
+<p>Paginated list of the user's individual payments, filterable by the same parameters.</p>
+
+<span id="example-requests-GETapi-v1-reports-transactions">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "https://mazayada.findosystem.com/api/v1/reports/transactions" \
+    --header "Authorization: Bearer {ACCESS_TOKEN}" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/reports/transactions"
+);
+
+const headers = {
+    "Authorization": "Bearer {ACCESS_TOKEN}",
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-v1-reports-transactions">
+            <blockquote>
+            <p>Example response (401):</p>
+        </blockquote>
+                <details class="annotation">
+            <summary style="cursor: pointer;">
+                <small onclick="textContent = parentElement.parentElement.open ? 'Show headers' : 'Hide headers'">Show headers</small>
+            </summary>
+            <pre><code class="language-http">cache-control: no-cache, private
+content-type: application/json
+access-control-allow-origin: *
+ </code></pre></details>         <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;يلزم تسجيل الدخول.&quot;
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-v1-reports-transactions" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-v1-reports-transactions"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-v1-reports-transactions"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-v1-reports-transactions" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-v1-reports-transactions">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-v1-reports-transactions" data-method="GET"
+      data-path="api/v1/reports/transactions"
+      data-authed="1"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v1-reports-transactions', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-v1-reports-transactions"
+                    onclick="tryItOut('GETapi-v1-reports-transactions');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-v1-reports-transactions"
+                    onclick="cancelTryOut('GETapi-v1-reports-transactions');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-v1-reports-transactions"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v1/reports/transactions</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Authorization" class="auth-value"               data-endpoint="GETapi-v1-reports-transactions"
+               value="Bearer {ACCESS_TOKEN}"
+               data-component="header">
+    <br>
+<p>Example: <code>Bearer {ACCESS_TOKEN}</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-v1-reports-transactions"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-v1-reports-transactions"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="GETapi-v1-reports-transactions"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                        </form>
+
                 <h1 id="kyc">KYC</h1>
 
     <p>Identity verification: upload documents to the private disk, submit the profile
@@ -5717,7 +6226,7 @@ id-front, id-back, selfie-with-id, photo-biometric.</p>
     --header "Content-Type: multipart/form-data" \
     --header "Accept: application/json" \
     --header "Accept-Language: ar" \
-    --form "file=@C:\Users\hp\AppData\Local\Temp\phpDAB3.tmp" </code></pre></div>
+    --form "file=@C:\Users\hp\AppData\Local\Temp\php9015.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -5851,7 +6360,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>يجب أن يكون value صورة. يجب ألا يزيد حجم value عن 1024 كيلوبايت. Example: <code>C:\Users\hp\AppData\Local\Temp\phpDAB3.tmp</code></p>
+<p>يجب أن يكون value صورة. يجب ألا يزيد حجم value عن 1024 كيلوبايت. Example: <code>C:\Users\hp\AppData\Local\Temp\php9015.tmp</code></p>
         </div>
         </form>
 
@@ -5885,7 +6394,7 @@ account to UNDER_REVIEW.</p>
     \"postal_code\": \"15627\",
     \"profession\": \"udtdsufvyvddqamniihfq\",
     \"expected_income\": 8,
-    \"id_type\": \"ID_CARD\",
+    \"id_type\": \"PASSPORT\",
     \"id_number\": \"oynlazghdtqtqxbajwbpi\"
 }"
 </code></pre></div>
@@ -5914,7 +6423,7 @@ let body = {
     "postal_code": "15627",
     "profession": "udtdsufvyvddqamniihfq",
     "expected_income": 8,
-    "id_type": "ID_CARD",
+    "id_type": "PASSPORT",
     "id_number": "oynlazghdtqtqxbajwbpi"
 };
 
@@ -6163,10 +6672,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="id_type"                data-endpoint="POSTapi-v1-kyc-submit"
-               value="ID_CARD"
+               value="PASSPORT"
                data-component="body">
     <br>
-<p>Example: <code>ID_CARD</code></p>
+<p>Example: <code>PASSPORT</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>ID_CARD</code></li> <li><code>PASSPORT</code></li> <li><code>LICENSE</code></li></ul>
         </div>
@@ -6222,7 +6731,7 @@ disk (a user can never reach another user's files).</p>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://mazayada.findosystem.com/api/v1/kyc/document/26386cd1-0a82-45a1-af3e-b4d03db17ba8" \
+    --get "https://mazayada.findosystem.com/api/v1/kyc/document/0194a412-8132-463b-abf0-f8945f3f09a4" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --header "Accept-Language: ar"</code></pre></div>
@@ -6230,7 +6739,7 @@ disk (a user can never reach another user's files).</p>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "https://mazayada.findosystem.com/api/v1/kyc/document/26386cd1-0a82-45a1-af3e-b4d03db17ba8"
+    "https://mazayada.findosystem.com/api/v1/kyc/document/0194a412-8132-463b-abf0-f8945f3f09a4"
 );
 
 const headers = {
@@ -6356,10 +6865,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="type"                data-endpoint="GETapi-v1-kyc-document--type-"
-               value="26386cd1-0a82-45a1-af3e-b4d03db17ba8"
+               value="0194a412-8132-463b-abf0-f8945f3f09a4"
                data-component="url">
     <br>
-<p>Example: <code>26386cd1-0a82-45a1-af3e-b4d03db17ba8</code></p>
+<p>Example: <code>0194a412-8132-463b-abf0-f8945f3f09a4</code></p>
             </div>
                     </form>
 
@@ -7559,7 +8068,8 @@ You can check the Dev Tools console for debugging information.</code></pre>
     \"address\": \"fuudtdsufvyvddqamniih\",
     \"postal_code\": \"15627\",
     \"profession\": \"udtdsufvyvddqamniihfq\",
-    \"secret_question\": \"pet_name\",
+    \"locale\": \"en\",
+    \"secret_question\": \"first_school\",
     \"secret_answer\": \"coynlazghdtqtqxbajwbp\"
 }"
 </code></pre></div>
@@ -7582,7 +8092,8 @@ let body = {
     "address": "fuudtdsufvyvddqamniih",
     "postal_code": "15627",
     "profession": "udtdsufvyvddqamniihfq",
-    "secret_question": "pet_name",
+    "locale": "en",
+    "secret_question": "first_school",
     "secret_answer": "coynlazghdtqtqxbajwbp"
 };
 
@@ -7753,16 +8264,30 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>يجب ألا يزيد عدد أحرف value عن 100 حرفاً. Example: <code>udtdsufvyvddqamniihfq</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>locale</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="locale"                data-endpoint="PUTapi-v1-profile"
+               value="en"
+               data-component="body">
+    <br>
+<p>Example: <code>en</code></p>
+Must be one of:
+<ul style="list-style-type: square;"><li><code>ar</code></li> <li><code>fr</code></li> <li><code>en</code></li></ul>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>secret_question</code></b>&nbsp;&nbsp;
 <small>string</small>&nbsp;
 <i>optional</i> &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
                               name="secret_question"                data-endpoint="PUTapi-v1-profile"
-               value="pet_name"
+               value="first_school"
                data-component="body">
     <br>
-<p>Example: <code>pet_name</code></p>
+<p>Example: <code>first_school</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>mother_maiden</code></li> <li><code>first_school</code></li> <li><code>birth_city</code></li> <li><code>pet_name</code></li> <li><code>fav_teacher</code></li></ul>
         </div>

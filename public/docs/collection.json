@@ -10,14 +10,14 @@
     ],
     "info": {
         "name": "Mazayada API Documentation",
-        "_postman_id": "8dc06cc4-d18f-4663-b555-4e0d591cfb25",
+        "_postman_id": "dd496ae5-526b-48e6-8643-4685dbbe994b",
         "description": "Mazayada mobile API (v1). Token-authenticated JSON API for the Flutter client covering auctions and the citizen dashboard. All responses use a unified envelope ({data, message, meta} on success; {message, errors} on error). Money is returned in dinars; send Accept-Language (ar|fr|en) to localize responses.",
         "schema": "https:\/\/schema.getpostman.com\/json\/collection\/v2.1.0\/collection.json"
     },
     "item": [
         {
             "name": "Appeals",
-            "description": "\nCitizen appeals\/complaints, optionally linked to an auction the user took part\nin.",
+            "description": "\nCitizen appeals (\u0627\u0644\u0637\u0639\u0648\u0646) against an auction result. An appeal is filed from a\nspecific auction the user took part in, then routed through the platform admin\nand the organising entity. The client only ever sees the 3 public states\n(PENDING \/ APPROVED \/ REJECTED).",
             "item": [
                 {
                     "name": "List my appeals",
@@ -72,13 +72,87 @@
                     ]
                 },
                 {
+                    "name": "Get an appeal",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/appeals\/:id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/appeals\/:id",
+                            "variable": [
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": "a216fb1d-403f-431b-bf29-b80079a51cbb",
+                                    "description": "The ID of the appeal."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Full detail for a single appeal owned by the authenticated user.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
                     "name": "Submit an appeal",
                     "request": {
                         "url": {
                             "host": "{{baseUrl}}",
-                            "path": "api\/v1\/appeals",
+                            "path": "api\/v1\/auctions\/:auction_id\/appeals",
                             "query": [],
-                            "raw": "{{baseUrl}}\/api\/v1\/appeals"
+                            "raw": "{{baseUrl}}\/api\/v1\/auctions\/:auction_id\/appeals",
+                            "variable": [
+                                {
+                                    "id": "auction_id",
+                                    "key": "auction_id",
+                                    "value": "a2050443-68af-41f5-8080-20d4b878c6ca",
+                                    "description": "The ID of the auction."
+                                },
+                                {
+                                    "id": "auction",
+                                    "key": "auction",
+                                    "value": "a2164134-b1d3-404d-9399-dff76472ac26",
+                                    "description": "The auction to appeal."
+                                }
+                            ]
                         },
                         "method": "POST",
                         "header": [
@@ -97,9 +171,9 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"subject\":\"\u0627\u0639\u062a\u0631\u0627\u0636 \u0639\u0644\u0649 \u0646\u062a\u064a\u062c\u0629 \u0627\u0644\u0645\u0632\u0627\u062f\",\"reason\":\"\u0644\u0645 \u064a\u062a\u0645 \u0627\u062d\u062a\u0633\u0627\u0628 \u0645\u0632\u0627\u064a\u062f\u062a\u064a \u0627\u0644\u0623\u062e\u064a\u0631\u0629.\",\"auction_id\":\"consequatur\"}"
+                            "raw": "{\"subject\":\"\u0627\u0639\u062a\u0631\u0627\u0636 \u0639\u0644\u0649 \u0646\u062a\u064a\u062c\u0629 \u0627\u0644\u0645\u0632\u0627\u062f\",\"reason\":\"\u0644\u0645 \u064a\u062a\u0645 \u0627\u062d\u062a\u0633\u0627\u0628 \u0645\u0632\u0627\u064a\u062f\u062a\u064a \u0627\u0644\u0623\u062e\u064a\u0631\u0629.\"}"
                         },
-                        "description": "",
+                        "description": "Files an appeal against the result of the given auction. Requires that the\nauction has closed, is still within the appeal window, and that the user\ntook part with at least one valid bid; only one appeal per auction.",
                         "auth": {
                             "type": "noauth"
                         }
@@ -159,16 +233,16 @@
         },
         {
             "name": "Auction registration",
-            "description": "\nThe \u00a74 step-3 flow: acknowledge the condition book, then start paid\nregistration (deposit + entry fee + condition book) via the payment gateway.\nRequires a verified (KYC-complete) account.",
+            "description": "\nThe \u00a74 flow: buy the condition book (a prerequisite that unlocks its\ndownload), then start paid registration (the participation deposit) via the\npayment gateway. Requires a verified (KYC-complete) account.",
             "item": [
                 {
-                    "name": "Acknowledge the condition book",
+                    "name": "Buy the condition book",
                     "request": {
                         "url": {
                             "host": "{{baseUrl}}",
-                            "path": "api\/v1\/auctions\/:auction_id\/acknowledge-book",
+                            "path": "api\/v1\/auctions\/:auction_id\/buy-book",
                             "query": [],
-                            "raw": "{{baseUrl}}\/api\/v1\/auctions\/:auction_id\/acknowledge-book",
+                            "raw": "{{baseUrl}}\/api\/v1\/auctions\/:auction_id\/buy-book",
                             "variable": [
                                 {
                                     "id": "auction_id",
@@ -194,7 +268,7 @@
                             }
                         ],
                         "body": null,
-                        "description": "Records that the citizen has read the condition book (\u00a710.3) \u2014 a\nprerequisite for starting registration.",
+                        "description": "Creates the pending book-purchase payment and returns the gateway redirect\nURL. Buying the book unlocks its download and is a prerequisite for\nregistering. Open `redirect_url` in a web view, then re-fetch the auction.",
                         "auth": {
                             "type": "noauth"
                         }
@@ -234,7 +308,7 @@
                             }
                         ],
                         "body": null,
-                        "description": "Creates the pending payment(s) and returns the gateway redirect URL. Open\n`redirect_url` in a web view; once the gateway returns, poll\n`GET payments\/{ref}\/status` (or re-fetch the auction) to confirm.",
+                        "description": "Creates the pending deposit payment and returns the gateway redirect URL.\nThe condition book must already be purchased. Open `redirect_url` in a web\nview; once the gateway returns, poll `GET payments\/{ref}\/status` (or\nre-fetch the auction) to confirm.",
                         "auth": {
                             "type": "noauth"
                         }
@@ -391,7 +465,7 @@
                                 }
                             ],
                             "code": 200,
-                            "body": "{\"data\":{\"id\":\"a2050443-68af-41f5-8080-20d4b878c6ca\",\"title\":\"new one\",\"titles\":{\"ar\":\"new one\",\"fr\":\"new one\",\"en\":null},\"description\":\"new one\\r\\nnew one\\r\\nnew one\\r\\nnew one\",\"descriptions\":{\"ar\":\"new one\\r\\nnew one\\r\\nnew one\\r\\nnew one\",\"fr\":\"new one\\r\\nnew one\\r\\nnew one\\r\\nnew one\"},\"status\":\"CLOSED\",\"auction_type\":\"SALE\",\"asset_class\":\"REAL_ESTATE\",\"condition\":\"NEW\",\"unit_count\":1,\"category\":{\"id\":2,\"name\":\"\\u0639\\u0642\\u0627\\u0631\\u0627\\u062a\"},\"wilaya\":{\"id\":2,\"code\":\"02\",\"name\":\"\\u0627\\u0644\\u0634\\u0644\\u0641\"},\"commune\":{\"id\":23,\"name\":\"\\u0628\\u0648\\u0642\\u0627\\u062f\\u064a\\u0631\"},\"entity\":{\"id\":\"a1dc9d20-adb9-4238-9c3d-a600ccd3075e\",\"name\":\"\\u0627\\u0644\\u0645\\u062c\\u0644\\u0633 \\u0627\\u0644\\u0634\\u0639\\u0628\\u064a \\u0627\\u0644\\u0628\\u0644\\u062f\\u064a \\u0644\\u062e\\u0646\\u0634\\u0644\\u0629\"},\"asset_location\":\"new site\",\"latitude\":null,\"longitude\":null,\"mayor_name\":\"new name\",\"photos\":[\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/JHBtdQWhA4LOIjXbioJHCzgG8ovifXRrNtxAjLlz.jpg\",\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/vLQTdRnwLwgvzRM53r87vWOePYcMCOHnTfVqeBJD.jpg\",\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/JcshBU0KGcgYrwxQhkikA3vDcM4fhI2V8ZQGMxSB.jpg\"],\"cover_photo_url\":\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/JHBtdQWhA4LOIjXbioJHCzgG8ovifXRrNtxAjLlz.jpg\",\"video_url\":\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/video\\\/knxMOt8C3yG3JwAnyiIPuKkDbHOWVAVTPa0mrGpD.mp4\",\"opening_price\":{\"amount\":1000000,\"formatted\":\"1 000 000 \\u062f\\u062c\"},\"current_price\":{\"amount\":6100000,\"formatted\":\"6 100 000 \\u062f\\u062c\"},\"deposit_amount\":{\"amount\":200,\"formatted\":\"200 \\u062f\\u062c\"},\"entry_fee\":{\"amount\":200,\"formatted\":\"200 \\u062f\\u062c\"},\"book_price\":{\"amount\":200,\"formatted\":\"200 \\u062f\\u062c\"},\"bid_count\":15,\"start_time\":\"2026-06-14T11:10:00+01:00\",\"end_time\":\"2026-06-14T12:00:00+01:00\",\"seconds_remaining\":0,\"is_live\":false,\"is_biddable\":false,\"has_ended\":false,\"extension_count\":0,\"max_extensions\":10,\"inspection\":{\"start\":\"2026-06-14T11:03:00+01:00\",\"end\":\"2026-06-20T11:03:00+01:00\",\"location\":\"new site\",\"is_open\":true},\"requires_commerce_register\":false,\"requires_newspaper_announcement\":true,\"winner_alias\":\"Bold_Falcon_197\",\"final_price\":{\"amount\":6100000,\"formatted\":\"6 100 000 \\u062f\\u062c\"},\"condition_book\":{\"id\":\"f5cea43f-df52-4942-89bf-716077671467\",\"type\":\"CONDITION_BOOK\",\"title\":\"\\u0643\\u0631\\u0627\\u0633\\u0629 \\u0634\\u0631\\u0648\\u0637 \\u2014 new one\",\"is_public\":true,\"download_url\":\"http:\\\/\\\/mazayada.findosystem.com\\\/api\\\/v1\\\/documents\\\/f5cea43f-df52-4942-89bf-716077671467\\\/download\"},\"award_document\":null},\"message\":null,\"meta\":{\"viewer\":null}}",
+                            "body": "{\"data\":{\"id\":\"a2050443-68af-41f5-8080-20d4b878c6ca\",\"title\":\"new one\",\"titles\":{\"ar\":\"new one\",\"fr\":\"new one\",\"en\":null},\"description\":\"new one\\r\\nnew one\\r\\nnew one\\r\\nnew one\",\"descriptions\":{\"ar\":\"new one\\r\\nnew one\\r\\nnew one\\r\\nnew one\",\"fr\":\"new one\\r\\nnew one\\r\\nnew one\\r\\nnew one\"},\"specifications\":[],\"status\":\"CLOSED\",\"auction_type\":\"SALE\",\"asset_class\":\"REAL_ESTATE\",\"condition\":\"NEW\",\"unit_count\":1,\"condition_terms\":null,\"award_terms\":null,\"category\":{\"id\":2,\"name\":\"\\u0639\\u0642\\u0627\\u0631\\u0627\\u062a\"},\"wilaya\":{\"id\":2,\"code\":\"02\",\"name\":\"\\u0627\\u0644\\u0634\\u0644\\u0641\"},\"commune\":{\"id\":23,\"name\":\"\\u0628\\u0648\\u0642\\u0627\\u062f\\u064a\\u0631\"},\"entity\":{\"id\":\"a1dc9d20-adb9-4238-9c3d-a600ccd3075e\",\"name\":\"\\u0627\\u0644\\u0645\\u062c\\u0644\\u0633 \\u0627\\u0644\\u0634\\u0639\\u0628\\u064a \\u0627\\u0644\\u0628\\u0644\\u062f\\u064a \\u0644\\u062e\\u0646\\u0634\\u0644\\u0629\"},\"asset_location\":\"new site\",\"latitude\":null,\"longitude\":null,\"mayor_name\":\"new name\",\"photos\":[\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/JHBtdQWhA4LOIjXbioJHCzgG8ovifXRrNtxAjLlz.jpg\",\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/vLQTdRnwLwgvzRM53r87vWOePYcMCOHnTfVqeBJD.jpg\",\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/JcshBU0KGcgYrwxQhkikA3vDcM4fhI2V8ZQGMxSB.jpg\"],\"cover_photo_url\":\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/JHBtdQWhA4LOIjXbioJHCzgG8ovifXRrNtxAjLlz.jpg\",\"video_url\":\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/video\\\/knxMOt8C3yG3JwAnyiIPuKkDbHOWVAVTPa0mrGpD.mp4\",\"opening_price\":{\"amount\":1000000,\"formatted\":\"1 000 000 \\u062f\\u062c\"},\"current_price\":{\"amount\":6100000,\"formatted\":\"6 100 000 \\u062f\\u062c\"},\"deposit_amount\":{\"amount\":200,\"formatted\":\"200 \\u062f\\u062c\"},\"deposit_percent\":10,\"book_price\":{\"amount\":200,\"formatted\":\"200 \\u062f\\u062c\"},\"has_book_access\":false,\"bid_count\":15,\"start_time\":\"2026-06-14T11:10:00+01:00\",\"end_time\":\"2026-06-14T12:00:00+01:00\",\"seconds_remaining\":0,\"is_live\":false,\"is_biddable\":false,\"has_ended\":false,\"extension_count\":0,\"max_extensions\":10,\"inspection\":{\"start\":\"2026-06-14T11:03:00+01:00\",\"end\":\"2026-06-20T11:03:00+01:00\",\"location\":\"new site\",\"is_open\":false},\"appeal_window\":{\"days\":8,\"is_open\":false,\"deadline\":\"2026-06-23T19:27:21+01:00\"},\"requires_commerce_register\":false,\"requires_newspaper_announcement\":true,\"winner_alias\":\"Bold_Falcon_197\",\"final_price\":{\"amount\":6100000,\"formatted\":\"6 100 000 \\u062f\\u062c\"},\"condition_book\":{\"id\":\"f5cea43f-df52-4942-89bf-716077671467\",\"type\":\"CONDITION_BOOK\",\"title\":\"\\u0643\\u0631\\u0627\\u0633\\u0629 \\u0634\\u0631\\u0648\\u0637 \\u2014 new one\",\"is_public\":false,\"download_url\":\"http:\\\/\\\/mazayada.findosystem.com\\\/api\\\/v1\\\/documents\\\/f5cea43f-df52-4942-89bf-716077671467\\\/download\"},\"award_document\":null},\"message\":null,\"meta\":{\"viewer\":null}}",
                             "name": ""
                         }
                     ]
@@ -615,7 +689,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"nin\":\"consequatur\",\"first_name_ar\":\"mqeopfuudtdsufvyvddqa\",\"last_name_ar\":\"mniihfqcoynlazghdtqtq\",\"phone\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"birth_date\":\"2006-03-10\",\"password\":\"O[2UZ5ij-e\\\/dl4m{o,\",\"device_name\":\"dqamniihfqcoynlazghdt\"}"
+                            "raw": "{\"nin\":\"consequatur\",\"first_name_ar\":\"mqeopfuudtdsufvyvddqa\",\"last_name_ar\":\"mniihfqcoynlazghdtqtq\",\"phone\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"birth_date\":\"2006-03-28\",\"password\":\"O[2UZ5ij-e\\\/dl4m{o,\",\"device_name\":\"dqamniihfqcoynlazghdt\"}"
                         },
                         "description": "Create a CITIZEN account and email a 6-digit verification code. Does NOT log\nthe user in \u2014 call verify-otp with the returned user_id to obtain tokens.",
                         "auth": {
@@ -1169,7 +1243,7 @@
                                 {
                                     "id": "document_id",
                                     "key": "document_id",
-                                    "value": "26386cd1-0a82-45a1-af3e-b4d03db17ba8",
+                                    "value": "0194a412-8132-463b-abf0-f8945f3f09a4",
                                     "description": "The ID of the document."
                                 }
                             ]
@@ -1322,7 +1396,7 @@
                                 },
                                 {
                                     "key": "set-cookie",
-                                    "value": "XSRF-TOKEN=eyJpdiI6InQwejRBU3JlVHVtbFUrQVlTdDRITGc9PSIsInZhbHVlIjoiUEtteHQ4QkNTanpIU2xIQWZ2ZVpWUklVd0UvNzYxR0k5N0RPZWJheDU4K1NiNXM1Q2JYSGlTVzk3NWhBYzJkcnBLaGJYQy9QWnZTTzlEQnlacStYaEI1TTRSN0RrQm9PY3RBK3ZlYUFwNldzVVN3cWFaNzMvV3FZRkh6ak1wdTQiLCJtYWMiOiJjZTQ2Yzk1OTE3NDUxZDU5OTYwNThlMDgxNDAxOGUwNTY4YzJmYzMzNmQyYWI0ZmE0ZjRiZTNiYTllZGE0ODI3IiwidGFnIjoiIn0%3D; expires=Wed, 17 Jun 2026 16:02:31 GMT; Max-Age=7200; path=\/; samesite=lax; mazayada-session=eyJpdiI6IktLdkw0a2RaeVhJYktleGJQb29VT2c9PSIsInZhbHVlIjoib0llUXdGN08vOVprVVZ5cnFUQjNsMVFtMFBSYi9jMnUvNDRvSHc4d0JOK2lzakxoWVRnaENwM3QwRGN2S2RQcjJUbEYrZzZhMHUzaEUrK0s5VkVLa2FoL0RKNDJCSW5HY3A4L3czcCszQk1UNE1JalQ0eE9DTVFDOHVzeW5qTVgiLCJtYWMiOiI2ODEzM2ZiNDIxNzk2NzhiMTQyNzNiNTM5NjI0YzljODEzODMyNjgzNmE1ZjJmYzg5NGY5NzI2MGViY2JmZmY3IiwidGFnIjoiIn0%3D; expires=Wed, 17 Jun 2026 16:02:31 GMT; Max-Age=7200; path=\/; httponly; samesite=lax"
+                                    "value": "XSRF-TOKEN=eyJpdiI6Imd6dW1VMG9uT0w2Vm0rQzEza2xBVlE9PSIsInZhbHVlIjoidTA0MFVCU2dwdUNTZzFaVWY4dEFHK2FxTmdCMUc5SE1MNytQcFJuM1V6cjVpazA5bXIzbVMzQ0hWVDBoQnJ4Rml1ZENWV3dmQm50TzRDYnJVREpNbG5CTFVmODVVdGd3K2tJYjlYOWliYUFOVERZMzRna2o0c0gzbUs2d1BheE4iLCJtYWMiOiJlMGJmZTUxMGY5NWRiZTg1YmQyNzJkMjg3MmMwZjQxNjMwY2E3MDFhMDVmNzc3OGNmMzg1YmY1MzgzNTcyOTM0IiwidGFnIjoiIn0%3D; expires=Sun, 05 Jul 2026 12:57:53 GMT; Max-Age=7200; path=\/; samesite=lax; mazayada-session=eyJpdiI6Ik5IYXJkYi9wRGxoaWJreng5Z1lKOEE9PSIsInZhbHVlIjoiSXRsY013UW9mN3NPU2lsYzh0RnBJMm9nL2FaMXN5TVNWRFlFRlRrL20waUdsc0pQcTloWHQxTFEwN3BaNWpYdUwrRXRXdjZ0S0s0emh0dElMenVRaHpJaDUrVHA4aTBkRVFSZXZQZ3BmUWV0TGh3RFpGcnJWNjlaZ0Z0ai91YkYiLCJtYWMiOiIyODNmMzA4Mjc5MmYyZWQ0Y2RiMjZmMTkzYmY4NmQ0ZmYwYTBmMjU0YWVkNzU1YjcxNWE4MGEzNTQ5MDQ3NTAyIiwidGFnIjoiIn0%3D; expires=Sun, 05 Jul 2026 12:57:53 GMT; Max-Age=7200; path=\/; httponly; samesite=lax"
                                 }
                             ],
                             "code": 200,
@@ -1386,11 +1460,115 @@
                                 },
                                 {
                                     "key": "set-cookie",
-                                    "value": "XSRF-TOKEN=eyJpdiI6Imt2cysrU1BaRHUxMWxDNFp5bzcva2c9PSIsInZhbHVlIjoieFlwaElMQ1luZ0M3NURvRmxFTjh1QU5aTUxhVW9wa05YbWUra0NmMFk5UzVod0lCVEpsK2d1R25ZQ1dOU2xPQlZoUy9RWjI2d3hOblRzaURHT3FRTDVtMVQvVm4wNFNoSndKSVQzSGY5d0FIQnlCTFFTZUN4NWRUeUJUbFhSdnoiLCJtYWMiOiJjNmYxZDk0MzQ4NDM2NGNhYTAwYTBiMWQyNTIwMWJmZGUxYTJhNGJmNjU4YThmOWQ4NzdhMzI2ZjhiZGMyODZhIiwidGFnIjoiIn0%3D; expires=Wed, 17 Jun 2026 16:02:31 GMT; Max-Age=7200; path=\/; samesite=lax; mazayada-session=eyJpdiI6InFiaFRvSHk2YkJQV2ZzV244SFFnQ3c9PSIsInZhbHVlIjoiTXREYThOTjROL1p3cWE5WHZrNjNtSC83YjEyczN6K2llcVZNR2JnZ2Y0TXg0Ykp0T0VKMmh3WDJxdDArcVdmM1AzaDRzd1NVKzE4bjU5Yk1ud1RVbUJNaVdGdzlIME1ESXJxaGJYeHBYR3MvQUFJWSsxVEorUW91a25kV0lmOTQiLCJtYWMiOiJiMDJiYWViMDhiNDVjNDNkM2JkY2I1ZDNlMDFiMjkyNDZjZDM5YWE4OWY5OWFhNTcxMDZmNDM1Y2RkNjUzYTk1IiwidGFnIjoiIn0%3D; expires=Wed, 17 Jun 2026 16:02:31 GMT; Max-Age=7200; path=\/; httponly; samesite=lax"
+                                    "value": "XSRF-TOKEN=eyJpdiI6IkdaMVRCVEYrT3dsOUVkMmhHTmQ5WWc9PSIsInZhbHVlIjoiS0RSUUZRemFXQndTN0xNYjRTTmJadGhjSHZ3WEhTZmZ5YnBMRUJBZTdhVU5FRUYrNkhlVzFvc1VtYTlyWU9jU0RQYTQrSEZDN0N5bmpVbTFyTTFJTW82SVFsRWVDdDBEUXkvd2d1WGx1WTFFcHNyOWNJV2p2QWRRN0FVQXlhV0wiLCJtYWMiOiIwMWZlZTM5YmMxY2E2OTk0OWFjYTIwNzk4MTNlMTlkNzY0YmI4MjQ2MDZjNGRiOWVhOTgwMTJmZjA2NmM5MGJkIiwidGFnIjoiIn0%3D; expires=Sun, 05 Jul 2026 12:57:53 GMT; Max-Age=7200; path=\/; samesite=lax; mazayada-session=eyJpdiI6IklKMERHcmwxdkZ3QUxIRVV3SDQ3Q3c9PSIsInZhbHVlIjoiQmhnZVlqRnMvYi9nWXhRemxQK1RiMXhBb3luTXZLRmRqajZRVDlzSEIrTjd6V3JYeW1KMjMwMDVLcHdQc3UzdWFIZU9YM1d2R1VVWE5NbXIxOEFQNCtaME03OC9zb3BLN2xGdnNNM3U0Y3ptbE9ZTEtjS29CRDFWQ1ErSlVtMXYiLCJtYWMiOiIyNWEyODNjMzQzZDAwM2MxZGY2NDgyMGVmODRiYTM5MjRiY2Y1NDdiODQyOGE2NjMwM2M0MmUzYTQzMDJhZWQ2IiwidGFnIjoiIn0%3D; expires=Sun, 05 Jul 2026 12:57:53 GMT; Max-Age=7200; path=\/; httponly; samesite=lax"
                                 }
                             ],
                             "code": 200,
                             "body": "[{\"id\":1,\"code\":\"01001\",\"name_ar\":\"\\u0623\\u062f\\u0631\\u0627\\u0631\",\"name_fr\":\"Adrar\",\"postal_code\":null},{\"id\":2,\"code\":\"01002\",\"name_ar\":\"\\u0627\\u0642\\u0628\\u0644\\u064a\",\"name_fr\":\"Akabli\",\"postal_code\":null},{\"id\":3,\"code\":\"01003\",\"name_ar\":\"\\u0623\\u0648\\u0644\\u0641\",\"name_fr\":\"Aoulef\",\"postal_code\":null},{\"id\":4,\"code\":\"01004\",\"name_ar\":\"\\u0628\\u0648\\u062f\\u0629\",\"name_fr\":\"Bouda\",\"postal_code\":null},{\"id\":5,\"code\":\"01005\",\"name_ar\":\"\\u0641\\u0646\\u0648\\u063a\\u064a\\u0644\",\"name_fr\":\"Fenoughil\",\"postal_code\":null},{\"id\":6,\"code\":\"01006\",\"name_ar\":\"\\u0625\\u0646 \\u0632\\u063a\\u0645\\u064a\\u0631\",\"name_fr\":\"In Zghmir\",\"postal_code\":null},{\"id\":7,\"code\":\"01007\",\"name_ar\":\"\\u0623\\u0648\\u0644\\u0627\\u062f \\u0623\\u062d\\u0645\\u062f \\u062a\\u064a\\u0645\\u064a\",\"name_fr\":\"Ouled Ahmed Timmi\",\"postal_code\":null},{\"id\":8,\"code\":\"01008\",\"name_ar\":\"\\u0631\\u0642\\u0627\\u0646\",\"name_fr\":\"Reggane\",\"postal_code\":null},{\"id\":9,\"code\":\"01009\",\"name_ar\":\"\\u0633\\u0627\\u0644\\u064a\",\"name_fr\":\"Sali\",\"postal_code\":null},{\"id\":10,\"code\":\"01010\",\"name_ar\":\"\\u0627\\u0644\\u0633\\u0628\\u0639\",\"name_fr\":\"Sebaa\",\"postal_code\":null},{\"id\":11,\"code\":\"01011\",\"name_ar\":\"\\u062a\\u0627\\u0645\\u0646\\u0637\\u064a\\u0637\",\"name_fr\":\"Tamantit\",\"postal_code\":null},{\"id\":12,\"code\":\"01012\",\"name_ar\":\"\\u062a\\u0627\\u0645\\u0633\\u062a\",\"name_fr\":\"Tamest\",\"postal_code\":null},{\"id\":13,\"code\":\"01013\",\"name_ar\":\"\\u062a\\u064a\\u0645\\u0642\\u062a\\u0646\",\"name_fr\":\"Timekten\",\"postal_code\":null},{\"id\":14,\"code\":\"01014\",\"name_ar\":\"\\u062a\\u064a\\u062a\",\"name_fr\":\"Tit\",\"postal_code\":null},{\"id\":15,\"code\":\"01015\",\"name_ar\":\"\\u062a\\u0633\\u0627\\u0628\\u064a\\u062a\",\"name_fr\":\"Tsabit\",\"postal_code\":null},{\"id\":16,\"code\":\"01016\",\"name_ar\":\"\\u0632\\u0627\\u0648\\u064a\\u0629 \\u0643\\u0646\\u062a\\u0629\",\"name_fr\":\"Zaouiet Kounta\",\"postal_code\":null}]",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Financial Reports",
+            "description": "\nThe citizen's personal financial report (\u062a\u0642\u0627\u0631\u064a\u0631\u064a \u0627\u0644\u0645\u0627\u0644\u064a\u0629).",
+            "item": [
+                {
+                    "name": "Report summary",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/reports\/summary",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/reports\/summary"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Aggregated KPIs, dimensions, and monthly series for the authenticated user's payments."
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Financial transactions",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/reports\/transactions",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/reports\/transactions"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Paginated list of the user's individual payments, filterable by the same parameters."
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
                             "name": ""
                         }
                     ]
@@ -1528,7 +1706,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"first_name_fr\":\"vmqeopfuudtdsufvyvddq\",\"last_name_fr\":\"amniihfqcoynlazghdtqt\",\"father_name\":\"qxbajwbpilpmufinllwlo\",\"mother_name\":\"auydlsmsjuryvojcybzvr\",\"mother_surname\":\"byickznkygloigmkwxphl\",\"address\":\"vazjrcnfbaqywuxhgjjmz\",\"wilaya_id\":17,\"commune_id\":17,\"postal_code\":\"15627\",\"profession\":\"udtdsufvyvddqamniihfq\",\"expected_income\":8,\"id_type\":\"ID_CARD\",\"id_number\":\"oynlazghdtqtqxbajwbpi\"}"
+                            "raw": "{\"first_name_fr\":\"vmqeopfuudtdsufvyvddq\",\"last_name_fr\":\"amniihfqcoynlazghdtqt\",\"father_name\":\"qxbajwbpilpmufinllwlo\",\"mother_name\":\"auydlsmsjuryvojcybzvr\",\"mother_surname\":\"byickznkygloigmkwxphl\",\"address\":\"vazjrcnfbaqywuxhgjjmz\",\"wilaya_id\":17,\"commune_id\":17,\"postal_code\":\"15627\",\"profession\":\"udtdsufvyvddqamniihfq\",\"expected_income\":8,\"id_type\":\"PASSPORT\",\"id_number\":\"oynlazghdtqtqxbajwbpi\"}"
                         },
                         "description": "Validates the profile, requires all three identity documents, and moves the\naccount to UNDER_REVIEW.",
                         "auth": {
@@ -1549,7 +1727,7 @@
                                 {
                                     "id": "type",
                                     "key": "type",
-                                    "value": "26386cd1-0a82-45a1-af3e-b4d03db17ba8",
+                                    "value": "0194a412-8132-463b-abf0-f8945f3f09a4",
                                     "description": ""
                                 }
                             ]
@@ -2034,7 +2212,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"phone\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"address\":\"fuudtdsufvyvddqamniih\",\"postal_code\":\"15627\",\"profession\":\"udtdsufvyvddqamniihfq\",\"secret_question\":\"pet_name\",\"secret_answer\":\"coynlazghdtqtqxbajwbp\"}"
+                            "raw": "{\"phone\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"address\":\"fuudtdsufvyvddqamniih\",\"postal_code\":\"15627\",\"profession\":\"udtdsufvyvddqamniihfq\",\"locale\":\"en\",\"secret_question\":\"first_school\",\"secret_answer\":\"coynlazghdtqtqxbajwbp\"}"
                         },
                         "description": "Updates contact details, address and the security question. Identity fields\n(NIN, names) are not editable here.",
                         "auth": {

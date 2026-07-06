@@ -234,7 +234,7 @@ class AuthController extends ApiController
      */
     public function me(Request $request): JsonResponse
     {
-        return $this->ok(['user' => new UserResource($request->user())]);
+        return $this->ok(['user' => new UserResource($request->user()->load('entity'))]);
     }
 
     /**

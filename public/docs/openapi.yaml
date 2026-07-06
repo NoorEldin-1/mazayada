@@ -9,13 +9,13 @@ servers:
 tags:
   -
     name: Appeals
-    description: "\nCitizen appeals/complaints, optionally linked to an auction the user took part\nin."
+    description: "\nCitizen appeals (الطعون) against an auction result. An appeal is filed from a\nspecific auction the user took part in, then routed through the platform admin\nand the organising entity. The client only ever sees the 3 public states\n(PENDING / APPROVED / REJECTED)."
   -
     name: 'Auction Q&A'
     description: "\nRegistered bidders asking written questions during the inspection window\n(§4 step 4). Answers are published by staff and surfaced via the public Q&A\nread endpoint."
   -
     name: 'Auction registration'
-    description: "\nThe §4 step-3 flow: acknowledge the condition book, then start paid\nregistration (deposit + entry fee + condition book) via the payment gateway.\nRequires a verified (KYC-complete) account."
+    description: "\nThe §4 flow: buy the condition book (a prerequisite that unlocks its\ndownload), then start paid registration (the participation deposit) via the\npayment gateway. Requires a verified (KYC-complete) account."
   -
     name: Auctions
     description: "\nPublic, read-only auction browsing. Money is returned in dinars; bidders are\nshown only by their deterministic alias."
@@ -34,6 +34,9 @@ tags:
   -
     name: Endpoints
     description: ''
+  -
+    name: 'Financial Reports'
+    description: "\nThe citizen's personal financial report (تقاريري المالية)."
   -
     name: KYC
     description: "\nIdentity verification: upload documents to the private disk, submit the profile\nfor review, and stream back the user's own documents. Mirrors the web KYC flow."
@@ -88,10 +91,49 @@ paths:
       tags:
         - Appeals
       security: []
+  '/api/v1/appeals/{id}':
+    get:
+      summary: 'Get an appeal'
+      operationId: getAnAppeal
+      description: 'Full detail for a single appeal owned by the authenticated user.'
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - Appeals
+      security: []
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the appeal.'
+        example: a216fb1d-403f-431b-bf29-b80079a51cbb
+        required: true
+        schema:
+          type: string
+  '/api/v1/auctions/{auction_id}/appeals':
     post:
       summary: 'Submit an appeal'
       operationId: submitAnAppeal
-      description: ''
+      description: "Files an appeal against the result of the given auction. Requires that the\nauction has closed, is still within the appeal window, and that the user\ntook part with at least one valid bid; only one appeal per auction."
       parameters:
         -
           in: header
@@ -118,15 +160,27 @@ paths:
                   type: string
                   description: ''
                   example: 'لم يتم احتساب مزايدتي الأخيرة.'
-                auction_id:
-                  type: string
-                  description: 'An auction the user participated in (optional).'
-                  example: consequatur
-                  nullable: true
               required:
                 - subject
                 - reason
       security: []
+    parameters:
+      -
+        in: path
+        name: auction_id
+        description: 'The ID of the auction.'
+        example: a2050443-68af-41f5-8080-20d4b878c6ca
+        required: true
+        schema:
+          type: string
+      -
+        in: path
+        name: auction
+        description: 'The auction to appeal.'
+        example: a2164134-b1d3-404d-9399-dff76472ac26
+        required: true
+        schema:
+          type: string
   '/api/v1/auctions/{auction_id}/questions':
     post:
       summary: 'Ask a question'
@@ -227,11 +281,11 @@ paths:
         required: true
         schema:
           type: string
-  '/api/v1/auctions/{auction_id}/acknowledge-book':
+  '/api/v1/auctions/{auction_id}/buy-book':
     post:
-      summary: 'Acknowledge the condition book'
-      operationId: acknowledgeTheConditionBook
-      description: "Records that the citizen has read the condition book (§10.3) — a\nprerequisite for starting registration."
+      summary: 'Buy the condition book'
+      operationId: buyTheConditionBook
+      description: "Creates the pending book-purchase payment and returns the gateway redirect\nURL. Buying the book unlocks its download and is a prerequisite for\nregistering. Open `redirect_url` in a web view, then re-fetch the auction."
       parameters:
         -
           in: header
@@ -257,7 +311,7 @@ paths:
     post:
       summary: 'Start registration'
       operationId: startRegistration
-      description: "Creates the pending payment(s) and returns the gateway redirect URL. Open\n`redirect_url` in a web view; once the gateway returns, poll\n`GET payments/{ref}/status` (or re-fetch the auction) to confirm."
+      description: "Creates the pending deposit payment and returns the gateway redirect URL.\nThe condition book must already be purchased. Open `redirect_url` in a web\nview; once the gateway returns, poll `GET payments/{ref}/status` (or\nre-fetch the auction) to confirm."
       parameters:
         -
           in: header
@@ -433,11 +487,14 @@ paths:
                     descriptions:
                       ar: "new one\r\nnew one\r\nnew one\r\nnew one"
                       fr: "new one\r\nnew one\r\nnew one\r\nnew one"
+                    specifications: []
                     status: CLOSED
                     auction_type: SALE
                     asset_class: REAL_ESTATE
                     condition: NEW
                     unit_count: 1
+                    condition_terms: null
+                    award_terms: null
                     category:
                       id: 2
                       name: عقارات
@@ -470,12 +527,11 @@ paths:
                     deposit_amount:
                       amount: 200
                       formatted: '200 دج'
-                    entry_fee:
-                      amount: 200
-                      formatted: '200 دج'
+                    deposit_percent: 10
                     book_price:
                       amount: 200
                       formatted: '200 دج'
+                    has_book_access: false
                     bid_count: 15
                     start_time: '2026-06-14T11:10:00+01:00'
                     end_time: '2026-06-14T12:00:00+01:00'
@@ -489,7 +545,11 @@ paths:
                       start: '2026-06-14T11:03:00+01:00'
                       end: '2026-06-20T11:03:00+01:00'
                       location: 'new site'
-                      is_open: true
+                      is_open: false
+                    appeal_window:
+                      days: 8
+                      is_open: false
+                      deadline: '2026-06-23T19:27:21+01:00'
                     requires_commerce_register: false
                     requires_newspaper_announcement: true
                     winner_alias: Bold_Falcon_197
@@ -500,7 +560,7 @@ paths:
                       id: f5cea43f-df52-4942-89bf-716077671467
                       type: CONDITION_BOOK
                       title: 'كراسة شروط — new one'
-                      is_public: true
+                      is_public: false
                       download_url: 'http://mazayada.findosystem.com/api/v1/documents/f5cea43f-df52-4942-89bf-716077671467/download'
                     award_document: null
                   message: null
@@ -541,6 +601,9 @@ paths:
                           fr:
                             type: string
                             example: "new one\r\nnew one\r\nnew one\r\nnew one"
+                      specifications:
+                        type: array
+                        example: []
                       status:
                         type: string
                         example: CLOSED
@@ -556,6 +619,14 @@ paths:
                       unit_count:
                         type: integer
                         example: 1
+                      condition_terms:
+                        type: string
+                        example: null
+                        nullable: true
+                      award_terms:
+                        type: string
+                        example: null
+                        nullable: true
                       category:
                         type: object
                         properties:
@@ -650,15 +721,9 @@ paths:
                           formatted:
                             type: string
                             example: '200 دج'
-                      entry_fee:
-                        type: object
-                        properties:
-                          amount:
-                            type: integer
-                            example: 200
-                          formatted:
-                            type: string
-                            example: '200 دج'
+                      deposit_percent:
+                        type: integer
+                        example: 10
                       book_price:
                         type: object
                         properties:
@@ -668,6 +733,9 @@ paths:
                           formatted:
                             type: string
                             example: '200 دج'
+                      has_book_access:
+                        type: boolean
+                        example: false
                       bid_count:
                         type: integer
                         example: 15
@@ -709,7 +777,19 @@ paths:
                             example: 'new site'
                           is_open:
                             type: boolean
-                            example: true
+                            example: false
+                      appeal_window:
+                        type: object
+                        properties:
+                          days:
+                            type: integer
+                            example: 8
+                          is_open:
+                            type: boolean
+                            example: false
+                          deadline:
+                            type: string
+                            example: '2026-06-23T19:27:21+01:00'
                       requires_commerce_register:
                         type: boolean
                         example: false
@@ -742,7 +822,7 @@ paths:
                             example: 'كراسة شروط — new one'
                           is_public:
                             type: boolean
-                            example: true
+                            example: false
                           download_url:
                             type: string
                             example: 'http://mazayada.findosystem.com/api/v1/documents/f5cea43f-df52-4942-89bf-716077671467/download'
@@ -1100,8 +1180,8 @@ paths:
                   example: carolyne.luettgen@example.org
                 birth_date:
                   type: string
-                  description: 'يجب أن يكون value تاريخاً صحيحاً. يجب أن يكون value تاريخاً قبل <code>2008-06-17</code>.'
-                  example: '2006-03-10'
+                  description: 'يجب أن يكون value تاريخاً صحيحاً. يجب أن يكون value تاريخاً قبل <code>2008-07-05</code>.'
+                  example: '2006-03-28'
                 password:
                   type: string
                   description: ''
@@ -1594,7 +1674,7 @@ paths:
         in: path
         name: document_id
         description: 'The ID of the document.'
-        example: 26386cd1-0a82-45a1-af3e-b4d03db17ba8
+        example: 0194a412-8132-463b-abf0-f8945f3f09a4
         required: true
         schema:
           type: string
@@ -2104,6 +2184,62 @@ paths:
         required: true
         schema:
           type: integer
+  /api/v1/reports/summary:
+    get:
+      summary: 'Report summary'
+      operationId: reportSummary
+      description: "Aggregated KPIs, dimensions, and monthly series for the authenticated user's payments."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - 'Financial Reports'
+  /api/v1/reports/transactions:
+    get:
+      summary: 'Financial transactions'
+      operationId: financialTransactions
+      description: "Paginated list of the user's individual payments, filterable by the same parameters."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - 'Financial Reports'
   /api/v1/kyc:
     get:
       summary: 'KYC status'
@@ -2249,7 +2385,7 @@ paths:
                 id_type:
                   type: string
                   description: ''
-                  example: ID_CARD
+                  example: PASSPORT
                   enum:
                     - ID_CARD
                     - PASSPORT
@@ -2315,7 +2451,7 @@ paths:
         in: path
         name: type
         description: ''
-        example: 26386cd1-0a82-45a1-af3e-b4d03db17ba8
+        example: 0194a412-8132-463b-abf0-f8945f3f09a4
         required: true
         schema:
           type: string
@@ -2628,10 +2764,18 @@ paths:
                   description: 'يجب ألا يزيد عدد أحرف value عن 100 حرفاً.'
                   example: udtdsufvyvddqamniihfq
                   nullable: true
+                locale:
+                  type: string
+                  description: ''
+                  example: en
+                  enum:
+                    - ar
+                    - fr
+                    - en
                 secret_question:
                   type: string
                   description: ''
-                  example: pet_name
+                  example: first_school
                   enum:
                     - mother_maiden
                     - first_school

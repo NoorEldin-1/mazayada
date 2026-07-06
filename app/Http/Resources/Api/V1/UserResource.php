@@ -36,6 +36,12 @@ class UserResource extends JsonResource
             'locale' => $this->locale,
             'role' => $this->role?->value,
             'account_status' => $this->account_status?->value,
+            'account_type' => $this->account_type?->value,
+            'is_institution' => $this->isInstitution(),
+            'entity' => $this->whenLoaded('entity', fn () => $this->entity ? [
+                'id' => $this->entity->id,
+                'name' => $this->entity->name,
+            ] : null),
             'kyc_status' => $this->kyc_status?->value,
             'email_verified' => (bool) $this->email_verified,
             'phone_verified' => (bool) $this->phone_verified,

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\V1\StoreAppealRequest;
 use App\Http\Resources\Api\V1\AppealResource;
+use App\Models\Appeal;
 use App\Models\Auction;
 use App\Services\AppealService;
 use DomainException;
@@ -32,6 +33,20 @@ class AppealController extends ApiController
             ->paginate(15);
 
         return $this->paginated($appeals, AppealResource::class);
+    }
+
+    /**
+     * Get an appeal
+     *
+     * Full detail for a single appeal owned by the authenticated user.
+     */
+    public function show(Request $request, Appeal $appeal): JsonResponse
+    {
+        abort_unless($appeal->user_id === $request->user()->id, 403);
+
+        $appeal->load('auction');
+
+        return $this->ok(new AppealResource($appeal));
     }
 
     /**

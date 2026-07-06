@@ -63,10 +63,25 @@ class AuctionController extends ApiController
         if ($request->filled('type')) {
             $query->where('auction_type', $request->input('type'));
         }
+        if ($request->filled('asset_class')) {
+            $query->where('asset_class', $request->input('asset_class'));
+        }
+        if ($request->filled('commune')) {
+            $query->where('commune_id', $request->input('commune'));
+        }
 
         $perPage = min(max((int) $request->input('per_page', 12), 1), 50);
 
-        $auctions = $query->latest('start_time')->paginate($perPage)->withQueryString();
+        $sort = $request->input('sort');
+        if ($sort === 'opening_price') {
+            $query->orderBy('opening_price', 'desc');
+        } elseif ($sort === 'bid_count') {
+            $query->withCount(['bids as valid_bids_count' => fn ($q) => $q->where('is_valid', true)])->orderBy('valid_bids_count', 'desc');
+        } else {
+            $query->latest('start_time');
+        }
+
+        $auctions = $query->paginate($perPage)->withQueryString();
 
         return $this->paginated($auctions, AuctionListResource::class);
     }
@@ -188,6 +203,7 @@ class AuctionController extends ApiController
         }
 
         $participant = $auction->participants()->where('user_id', $user->id)->first();
+        $appeal = $auction->appealBy($user);
 
         return [
             'can_bid' => $user->canBid(),
@@ -197,6 +213,13 @@ class AuctionController extends ApiController
             'book_purchased' => (bool) ($participant?->book_purchased ?? false),
             'deposit_paid' => (bool) ($participant?->deposit_paid ?? false),
             'is_winner' => $auction->winner_user_id === $user->id,
+            'can_appeal' => $auction->canBeAppealedBy($user),
+            'existing_appeal' => $appeal ? [
+                'id' => $appeal->id,
+                'status' => $appeal->status?->publicStatus()->value,
+                'status_label' => $appeal->status?->publicLabel(),
+            ] : null,
+            'has_final_payment' => app(\App\Services\PaymentService::class)->confirmedFinalPayment($auction, $user),
         ];
     }
 }
