@@ -44,9 +44,11 @@ class DashboardController extends ApiController
                 'pending_payments' => $user->payments()->where('status', \App\Enums\PaymentStatus::PENDING)->count(),
                 'appeals_count' => $user->appeals()->count(),
                 'has_pending_kyc' => $user->kyc_status === \App\Enums\KycStatus::UNDER_REVIEW,
+                'has_pending_commercial_register' => $user->commercialRegister?->status === \App\Enums\CommercialRegisterStatus::PENDING,
                 'upcoming_auctions' => $user->participations()->whereHas('auction', fn ($q) => $q->published())->count(),
             ],
             'kyc_status' => $user->kyc_status?->value,
+            'commercial_register_status' => $user->commercialRegister?->status?->value,
             'won_auctions' => AuctionListResource::collection($wonAuctions)->resolve($request),
             'recent_notifications' => NotificationResource::collection($recentNotifications)->resolve($request),
         ]);

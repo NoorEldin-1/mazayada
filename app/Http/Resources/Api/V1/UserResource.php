@@ -43,6 +43,10 @@ class UserResource extends JsonResource
                 'name' => $this->entity->name,
             ] : null),
             'kyc_status' => $this->kyc_status?->value,
+            // Commercial Register (السجل التجاري) summary — null status = never
+            // submitted. has_commerce_register is the participation-gating flag.
+            'commercial_register_status' => $this->commercialRegister?->status?->value,
+            'has_commerce_register' => $this->hasCommerceRegister(),
             'email_verified' => (bool) $this->email_verified,
             'phone_verified' => (bool) $this->phone_verified,
             'secret_question' => $this->secret_question,

@@ -26,6 +26,9 @@ tags:
     name: Bidding
     description: "\nPlacing bids. Requires a verified (KYC-complete) account and a paid\nregistration on the auction. Rate-limited per user per auction."
   -
+    name: 'Commercial Register'
+    description: "\nThe user's Commercial Register (السجل التجاري) submission. Mirrors the web flow:\nsubmit the register data plus two scans, an admin reviews it, and only a valid\n(APPROVED and un-expired) register unlocks participation in auctions flagged\n`requires_commerce_register`. Independent of KYC — a user may hold either, both\nor neither."
+  -
     name: Dashboard
     description: "\nThe citizen's home summary and their participation history."
   -
@@ -1180,8 +1183,8 @@ paths:
                   example: carolyne.luettgen@example.org
                 birth_date:
                   type: string
-                  description: 'يجب أن يكون value تاريخاً صحيحاً. يجب أن يكون value تاريخاً قبل <code>2008-07-05</code>.'
-                  example: '2006-03-28'
+                  description: 'يجب أن يكون value تاريخاً صحيحاً. يجب أن يكون value تاريخاً قبل <code>2008-07-09</code>.'
+                  example: '2006-04-01'
                 password:
                   type: string
                   description: ''
@@ -1569,6 +1572,130 @@ paths:
         name: auction_id
         description: 'The ID of the auction.'
         example: a2050443-68af-41f5-8080-20d4b878c6ca
+        required: true
+        schema:
+          type: string
+  /api/v1/commercial-register:
+    get:
+      summary: 'Register status'
+      operationId: registerStatus
+      description: "The user's Commercial Register state, the data on file, which scans are\npresent, and whether a (re)submit is currently allowed. `status` is null\nwhen nothing has been submitted yet."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - 'Commercial Register'
+      security: []
+    post:
+      summary: 'Submit the register'
+      operationId: submitTheRegister
+      description: "Creates or updates the user's Commercial Register (multipart) and moves it to\nPENDING for review. On a resubmission the previously uploaded scans are kept\nunless replaced, so a rejected user who only fixes a text field need not\nre-upload. A PENDING-under-review or APPROVED record is locked (403)."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - 'Commercial Register'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                company_name:
+                  type: string
+                  description: 'The company / trading entity name.'
+                  example: 'Sarl Mazayada'
+                register_number:
+                  type: string
+                  description: 'The commercial register number.'
+                  example: '16/00-1234567 B 19'
+                tax_number:
+                  type: string
+                  description: 'The tax identification number.'
+                  example: '000116001234567'
+                activity_type:
+                  type: string
+                  description: 'The registered commercial activity.'
+                  example: 'تجارة السيارات'
+                expiry_date:
+                  type: string
+                  description: 'The register expiry date (must be in the future).'
+                  example: '2030-12-31'
+                register_document:
+                  type: string
+                  format: binary
+                  description: 'The commercial register scan (PDF/JPG/PNG). Required on first submission.'
+                tax_card_document:
+                  type: string
+                  format: binary
+                  description: 'The tax card scan (PDF/JPG/PNG). Required on first submission.'
+              required:
+                - company_name
+                - register_number
+                - tax_number
+                - activity_type
+                - expiry_date
+      security: []
+  '/api/v1/commercial-register/document/{type}':
+    get:
+      summary: 'Download a scan'
+      operationId: downloadAScan
+      description: "Streams one of the authenticated user's own Commercial Register scans from\nthe private disk. Allowed types: register, tax-card. A user can never reach\nanother user's files."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - 'Commercial Register'
+      security: []
+    parameters:
+      -
+        in: path
+        name: type
+        description: ''
+        example: 0194a412-8132-463b-abf0-f8945f3f09a4
         required: true
         schema:
           type: string
@@ -2385,7 +2512,7 @@ paths:
                 id_type:
                   type: string
                   description: ''
-                  example: PASSPORT
+                  example: LICENSE
                   enum:
                     - ID_CARD
                     - PASSPORT
@@ -2767,7 +2894,7 @@ paths:
                 locale:
                   type: string
                   description: ''
-                  example: en
+                  example: ar
                   enum:
                     - ar
                     - fr
@@ -2775,7 +2902,7 @@ paths:
                 secret_question:
                   type: string
                   description: ''
-                  example: first_school
+                  example: pet_name
                   enum:
                     - mother_maiden
                     - first_school

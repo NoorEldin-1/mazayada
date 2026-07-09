@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AppealController;
 use App\Http\Controllers\Api\V1\AuctionController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BidController;
+use App\Http\Controllers\Api\V1\CommercialRegisterController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DocumentController;
 use App\Http\Controllers\Api\V1\HealthController;
@@ -115,6 +116,15 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
             Route::post('/upload/{type}', [KycController::class, 'upload'])->name('upload');
             Route::post('/submit', [KycController::class, 'submit'])->name('submit');
             Route::get('/document/{type}', [KycController::class, 'document'])->name('document');
+        });
+
+        // Commercial Register (السجل التجاري) — submit data + scans, admin reviews.
+        // NOT kyc-gated: it is an independent prerequisite that gates only auctions
+        // flagged requires_commerce_register (enforced in PaymentService).
+        Route::prefix('commercial-register')->name('commercial-register.')->group(function (): void {
+            Route::get('/', [CommercialRegisterController::class, 'show'])->name('show');
+            Route::post('/', [CommercialRegisterController::class, 'store'])->name('store');
+            Route::get('/document/{type}', [CommercialRegisterController::class, 'document'])->name('document');
         });
 
         // Appeals — list mine, and file one against a closed auction I took part in.

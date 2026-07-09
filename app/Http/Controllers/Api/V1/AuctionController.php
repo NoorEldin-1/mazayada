@@ -208,6 +208,11 @@ class AuctionController extends ApiController
         return [
             'can_bid' => $user->canBid(),
             'is_participant' => $participant?->isFullyRegistered() ?? false,
+            // §2.3 — a Commercial Register-gated auction blocks paying ANY fee until
+            // the user holds a valid register. Surfaced so the client can guide the
+            // user to the CR screen BEFORE a checkout attempt returns 422.
+            'has_commerce_register' => $user->hasCommerceRegister(),
+            'commerce_register_blocked' => $auction->requires_commerce_register && ! $user->hasCommerceRegister(),
             // Book access (free or purchased) is the prerequisite for registering.
             'has_book_access' => $auction->hasBookAccess($user),
             'book_purchased' => (bool) ($participant?->book_purchased ?? false),

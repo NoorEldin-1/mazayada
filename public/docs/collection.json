@@ -10,7 +10,7 @@
     ],
     "info": {
         "name": "Mazayada API Documentation",
-        "_postman_id": "dd496ae5-526b-48e6-8643-4685dbbe994b",
+        "_postman_id": "0a92982c-26ef-425f-9dbc-cc5d15f0738b",
         "description": "Mazayada mobile API (v1). Token-authenticated JSON API for the Flutter client covering auctions and the citizen dashboard. All responses use a unified envelope ({data, message, meta} on success; {message, errors} on error). Money is returned in dinars; send Accept-Language (ar|fr|en) to localize responses.",
         "schema": "https:\/\/schema.getpostman.com\/json\/collection\/v2.1.0\/collection.json"
     },
@@ -689,7 +689,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"nin\":\"consequatur\",\"first_name_ar\":\"mqeopfuudtdsufvyvddqa\",\"last_name_ar\":\"mniihfqcoynlazghdtqtq\",\"phone\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"birth_date\":\"2006-03-28\",\"password\":\"O[2UZ5ij-e\\\/dl4m{o,\",\"device_name\":\"dqamniihfqcoynlazghdt\"}"
+                            "raw": "{\"nin\":\"consequatur\",\"first_name_ar\":\"mqeopfuudtdsufvyvddqa\",\"last_name_ar\":\"mniihfqcoynlazghdtqtq\",\"phone\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"birth_date\":\"2006-04-01\",\"password\":\"O[2UZ5ij-e\\\/dl4m{o,\",\"device_name\":\"dqamniihfqcoynlazghdt\"}"
                         },
                         "description": "Create a CITIZEN account and email a 6-digit verification code. Does NOT log\nthe user in \u2014 call verify-otp with the returned user_id to obtain tokens.",
                         "auth": {
@@ -1111,6 +1111,200 @@
             ]
         },
         {
+            "name": "Commercial Register",
+            "description": "\nThe user's Commercial Register (\u0627\u0644\u0633\u062c\u0644 \u0627\u0644\u062a\u062c\u0627\u0631\u064a) submission. Mirrors the web flow:\nsubmit the register data plus two scans, an admin reviews it, and only a valid\n(APPROVED and un-expired) register unlocks participation in auctions flagged\n`requires_commerce_register`. Independent of KYC \u2014 a user may hold either, both\nor neither.",
+            "item": [
+                {
+                    "name": "Register status",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/commercial-register",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/commercial-register"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "The user's Commercial Register state, the data on file, which scans are\npresent, and whether a (re)submit is currently allowed. `status` is null\nwhen nothing has been submitted yet.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Submit the register",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/commercial-register",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/commercial-register"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "multipart\/form-data"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "company_name",
+                                    "value": "Sarl Mazayada",
+                                    "type": "text",
+                                    "description": "The company \/ trading entity name."
+                                },
+                                {
+                                    "key": "register_number",
+                                    "value": "16\/00-1234567 B 19",
+                                    "type": "text",
+                                    "description": "The commercial register number."
+                                },
+                                {
+                                    "key": "tax_number",
+                                    "value": "000116001234567",
+                                    "type": "text",
+                                    "description": "The tax identification number."
+                                },
+                                {
+                                    "key": "activity_type",
+                                    "value": "\u062a\u062c\u0627\u0631\u0629 \u0627\u0644\u0633\u064a\u0627\u0631\u0627\u062a",
+                                    "type": "text",
+                                    "description": "The registered commercial activity."
+                                },
+                                {
+                                    "key": "expiry_date",
+                                    "value": "2030-12-31",
+                                    "type": "text",
+                                    "description": "The register expiry date (must be in the future)."
+                                },
+                                {
+                                    "key": "register_document",
+                                    "src": [],
+                                    "type": "file"
+                                },
+                                {
+                                    "key": "tax_card_document",
+                                    "src": [],
+                                    "type": "file"
+                                }
+                            ]
+                        },
+                        "description": "Creates or updates the user's Commercial Register (multipart) and moves it to\nPENDING for review. On a resubmission the previously uploaded scans are kept\nunless replaced, so a rejected user who only fixes a text field need not\nre-upload. A PENDING-under-review or APPROVED record is locked (403).",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Download a scan",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/commercial-register\/document\/:type",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/commercial-register\/document\/:type",
+                            "variable": [
+                                {
+                                    "id": "type",
+                                    "key": "type",
+                                    "value": "0194a412-8132-463b-abf0-f8945f3f09a4",
+                                    "description": ""
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Streams one of the authenticated user's own Commercial Register scans from\nthe private disk. Allowed types: register, tax-card. A user can never reach\nanother user's files.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
             "name": "Dashboard",
             "description": "\nThe citizen's home summary and their participation history.",
             "item": [
@@ -1396,7 +1590,7 @@
                                 },
                                 {
                                     "key": "set-cookie",
-                                    "value": "XSRF-TOKEN=eyJpdiI6Imd6dW1VMG9uT0w2Vm0rQzEza2xBVlE9PSIsInZhbHVlIjoidTA0MFVCU2dwdUNTZzFaVWY4dEFHK2FxTmdCMUc5SE1MNytQcFJuM1V6cjVpazA5bXIzbVMzQ0hWVDBoQnJ4Rml1ZENWV3dmQm50TzRDYnJVREpNbG5CTFVmODVVdGd3K2tJYjlYOWliYUFOVERZMzRna2o0c0gzbUs2d1BheE4iLCJtYWMiOiJlMGJmZTUxMGY5NWRiZTg1YmQyNzJkMjg3MmMwZjQxNjMwY2E3MDFhMDVmNzc3OGNmMzg1YmY1MzgzNTcyOTM0IiwidGFnIjoiIn0%3D; expires=Sun, 05 Jul 2026 12:57:53 GMT; Max-Age=7200; path=\/; samesite=lax; mazayada-session=eyJpdiI6Ik5IYXJkYi9wRGxoaWJreng5Z1lKOEE9PSIsInZhbHVlIjoiSXRsY013UW9mN3NPU2lsYzh0RnBJMm9nL2FaMXN5TVNWRFlFRlRrL20waUdsc0pQcTloWHQxTFEwN3BaNWpYdUwrRXRXdjZ0S0s0emh0dElMenVRaHpJaDUrVHA4aTBkRVFSZXZQZ3BmUWV0TGh3RFpGcnJWNjlaZ0Z0ai91YkYiLCJtYWMiOiIyODNmMzA4Mjc5MmYyZWQ0Y2RiMjZmMTkzYmY4NmQ0ZmYwYTBmMjU0YWVkNzU1YjcxNWE4MGEzNTQ5MDQ3NTAyIiwidGFnIjoiIn0%3D; expires=Sun, 05 Jul 2026 12:57:53 GMT; Max-Age=7200; path=\/; httponly; samesite=lax"
+                                    "value": "XSRF-TOKEN=eyJpdiI6IjZucmNtM1hvb1NQR01VTUE2dmIyc1E9PSIsInZhbHVlIjoidS81amdsQmVTck1NRktPcGpzK3lKTFhiVCtYTnhPWng5NnlVWnJxeEhpUndjSi8rSEFEUUxkaHZyaWlzN1RIWG5LU1ZiRlZGVEw4azVveDBoNytXaFRFZWYwdFNEdFI1Vk52a0ZkY0F2SFJwbWx5WWNFaWkrZHdpNGFpcU1KZGwiLCJtYWMiOiI1YzAwMjBjMTA3YmI1YTlmMjBiZjAwOTcwNzYxY2IyN2MwMTA2NGQ1ZTAyYTE3ZTUxZDEzYjgxOWUxMDcxOWU1IiwidGFnIjoiIn0%3D; expires=Thu, 09 Jul 2026 07:17:08 GMT; Max-Age=7200; path=\/; samesite=lax; mazayada-session=eyJpdiI6InJuQXNkTDUrZ0gvVXltZmRZSUIrV1E9PSIsInZhbHVlIjoibmo3VC9FN2dtenltZXlNUTlYU2EyblVvS3VaYlUxWldaMlp4d3hDR1ZmTXJVdVNZeGFaZGdYRUh5dzFIMTUzNFlKaXJoNXFEaGQrL2V5T2FieGxONThHTDJNb1F2MDVXbWttYlRmYnk5eWFjV3Y0bU9UaGdObFhOdlhQVGNUTlkiLCJtYWMiOiI3MzVlYmFkYzA0NDkyZjg3YzY5MWRmZDdiZjEzNjkwNDM1Mjg2NDZlY2FhM2EwYTdhYzM5MjA2NWZmMjk1MTYxIiwidGFnIjoiIn0%3D; expires=Thu, 09 Jul 2026 07:17:08 GMT; Max-Age=7200; path=\/; httponly; samesite=lax"
                                 }
                             ],
                             "code": 200,
@@ -1460,7 +1654,7 @@
                                 },
                                 {
                                     "key": "set-cookie",
-                                    "value": "XSRF-TOKEN=eyJpdiI6IkdaMVRCVEYrT3dsOUVkMmhHTmQ5WWc9PSIsInZhbHVlIjoiS0RSUUZRemFXQndTN0xNYjRTTmJadGhjSHZ3WEhTZmZ5YnBMRUJBZTdhVU5FRUYrNkhlVzFvc1VtYTlyWU9jU0RQYTQrSEZDN0N5bmpVbTFyTTFJTW82SVFsRWVDdDBEUXkvd2d1WGx1WTFFcHNyOWNJV2p2QWRRN0FVQXlhV0wiLCJtYWMiOiIwMWZlZTM5YmMxY2E2OTk0OWFjYTIwNzk4MTNlMTlkNzY0YmI4MjQ2MDZjNGRiOWVhOTgwMTJmZjA2NmM5MGJkIiwidGFnIjoiIn0%3D; expires=Sun, 05 Jul 2026 12:57:53 GMT; Max-Age=7200; path=\/; samesite=lax; mazayada-session=eyJpdiI6IklKMERHcmwxdkZ3QUxIRVV3SDQ3Q3c9PSIsInZhbHVlIjoiQmhnZVlqRnMvYi9nWXhRemxQK1RiMXhBb3luTXZLRmRqajZRVDlzSEIrTjd6V3JYeW1KMjMwMDVLcHdQc3UzdWFIZU9YM1d2R1VVWE5NbXIxOEFQNCtaME03OC9zb3BLN2xGdnNNM3U0Y3ptbE9ZTEtjS29CRDFWQ1ErSlVtMXYiLCJtYWMiOiIyNWEyODNjMzQzZDAwM2MxZGY2NDgyMGVmODRiYTM5MjRiY2Y1NDdiODQyOGE2NjMwM2M0MmUzYTQzMDJhZWQ2IiwidGFnIjoiIn0%3D; expires=Sun, 05 Jul 2026 12:57:53 GMT; Max-Age=7200; path=\/; httponly; samesite=lax"
+                                    "value": "XSRF-TOKEN=eyJpdiI6ImdtUVdpUzROYzkzRGtzRmZXVG5qNkE9PSIsInZhbHVlIjoiNCtucmlOaFBqQ09yNWdiQThUcGR6bnlGRFprejRtMXp1V1g5bnJ5V09PU2Rla25pTkRvdTdiQVJVVmQ4T2tGOW5xc2RBZy91SllQTWUvcXhwWW9rM0dsOE8zRUJiWU9QVTQvaWI4MENuaFhKZnR3UC9mZ3pmYzRlbnNqcnlxUi8iLCJtYWMiOiI1Y2QxMDY3MjNmZWYwODQzMjFlOWM0MzM2YWU3MGEzN2U0MWQ1YTNkOWQzYTI2MGY0YmI0YWJiOWY5ZjI5MGM4IiwidGFnIjoiIn0%3D; expires=Thu, 09 Jul 2026 07:17:08 GMT; Max-Age=7200; path=\/; samesite=lax; mazayada-session=eyJpdiI6ImdhT0p4OXpmNGovZmdaZ1lmRUtrNFE9PSIsInZhbHVlIjoicnIweENPSjhFazZiVVFTaU9MM1ZZUGlDc09PbnRJLzlBMWtHMzQwOTNGWjhMaEdmMnhlcHJSOEF3QVJ4aUxrNjNYYTZlb21EZHRtY1AwQ2hJNEpDNTAwNGlJRkdGTUtsWHZnR0xmaGx3RjZiN21aUUtwMkNwekhkdGJYUEppa0giLCJtYWMiOiJmYTVhMmNiM2ZjMTFiOTFhZjU5Mzg3OTQ3ZDBiMDk3OGFkMzIwNDQ5ZmY5YWRiODI3OGU1OWM4MDcyNzY2OWM4IiwidGFnIjoiIn0%3D; expires=Thu, 09 Jul 2026 07:17:08 GMT; Max-Age=7200; path=\/; httponly; samesite=lax"
                                 }
                             ],
                             "code": 200,
@@ -1706,7 +1900,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"first_name_fr\":\"vmqeopfuudtdsufvyvddq\",\"last_name_fr\":\"amniihfqcoynlazghdtqt\",\"father_name\":\"qxbajwbpilpmufinllwlo\",\"mother_name\":\"auydlsmsjuryvojcybzvr\",\"mother_surname\":\"byickznkygloigmkwxphl\",\"address\":\"vazjrcnfbaqywuxhgjjmz\",\"wilaya_id\":17,\"commune_id\":17,\"postal_code\":\"15627\",\"profession\":\"udtdsufvyvddqamniihfq\",\"expected_income\":8,\"id_type\":\"PASSPORT\",\"id_number\":\"oynlazghdtqtqxbajwbpi\"}"
+                            "raw": "{\"first_name_fr\":\"vmqeopfuudtdsufvyvddq\",\"last_name_fr\":\"amniihfqcoynlazghdtqt\",\"father_name\":\"qxbajwbpilpmufinllwlo\",\"mother_name\":\"auydlsmsjuryvojcybzvr\",\"mother_surname\":\"byickznkygloigmkwxphl\",\"address\":\"vazjrcnfbaqywuxhgjjmz\",\"wilaya_id\":17,\"commune_id\":17,\"postal_code\":\"15627\",\"profession\":\"udtdsufvyvddqamniihfq\",\"expected_income\":8,\"id_type\":\"LICENSE\",\"id_number\":\"oynlazghdtqtqxbajwbpi\"}"
                         },
                         "description": "Validates the profile, requires all three identity documents, and moves the\naccount to UNDER_REVIEW.",
                         "auth": {
@@ -2212,7 +2406,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"phone\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"address\":\"fuudtdsufvyvddqamniih\",\"postal_code\":\"15627\",\"profession\":\"udtdsufvyvddqamniihfq\",\"locale\":\"en\",\"secret_question\":\"first_school\",\"secret_answer\":\"coynlazghdtqtqxbajwbp\"}"
+                            "raw": "{\"phone\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"address\":\"fuudtdsufvyvddqamniih\",\"postal_code\":\"15627\",\"profession\":\"udtdsufvyvddqamniihfq\",\"locale\":\"ar\",\"secret_question\":\"pet_name\",\"secret_answer\":\"coynlazghdtqtqxbajwbp\"}"
                         },
                         "description": "Updates contact details, address and the security question. Identity fields\n(NIN, names) are not editable here.",
                         "auth": {

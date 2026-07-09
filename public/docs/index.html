@@ -177,6 +177,22 @@
                             </li>
                                                                         </ul>
                             </ul>
+                    <ul id="tocify-header-commercial-register" class="tocify-header">
+                <li class="tocify-item level-1" data-unique="commercial-register">
+                    <a href="#commercial-register">Commercial Register</a>
+                </li>
+                                    <ul id="tocify-subheader-commercial-register" class="tocify-subheader">
+                                                    <li class="tocify-item level-2" data-unique="commercial-register-GETapi-v1-commercial-register">
+                                <a href="#commercial-register-GETapi-v1-commercial-register">Register status</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="commercial-register-POSTapi-v1-commercial-register">
+                                <a href="#commercial-register-POSTapi-v1-commercial-register">Submit the register</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="commercial-register-GETapi-v1-commercial-register-document--type-">
+                                <a href="#commercial-register-GETapi-v1-commercial-register-document--type-">Download a scan</a>
+                            </li>
+                                                                        </ul>
+                            </ul>
                     <ul id="tocify-header-dashboard" class="tocify-header">
                 <li class="tocify-item level-1" data-unique="dashboard">
                     <a href="#dashboard">Dashboard</a>
@@ -315,7 +331,7 @@
     </ul>
 
     <ul class="toc-footer" id="last-updated">
-        <li>Last updated: July 5, 2026</li>
+        <li>Last updated: July 9, 2026</li>
     </ul>
 </div>
 
@@ -2402,7 +2418,7 @@ the user in — call verify-otp with the returned user_id to obtain tokens.</p>
     \"last_name_ar\": \"mniihfqcoynlazghdtqtq\",
     \"phone\": \"consequatur\",
     \"email\": \"carolyne.luettgen@example.org\",
-    \"birth_date\": \"2006-03-28\",
+    \"birth_date\": \"2006-04-01\",
     \"password\": \"O[2UZ5ij-e\\/dl4m{o,\",
     \"device_name\": \"dqamniihfqcoynlazghdt\"
 }"
@@ -2426,7 +2442,7 @@ let body = {
     "last_name_ar": "mniihfqcoynlazghdtqtq",
     "phone": "consequatur",
     "email": "carolyne.luettgen@example.org",
-    "birth_date": "2006-03-28",
+    "birth_date": "2006-04-01",
     "password": "O[2UZ5ij-e\/dl4m{o,",
     "device_name": "dqamniihfqcoynlazghdt"
 };
@@ -2592,10 +2608,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="birth_date"                data-endpoint="POSTapi-v1-auth-register"
-               value="2006-03-28"
+               value="2006-04-01"
                data-component="body">
     <br>
-<p>يجب أن يكون value تاريخاً صحيحاً. يجب أن يكون value تاريخاً قبل <code>2008-07-05</code>. Example: <code>2006-03-28</code></p>
+<p>يجب أن يكون value تاريخاً صحيحاً. يجب أن يكون value تاريخاً قبل <code>2008-07-09</code>. Example: <code>2006-04-01</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>password</code></b>&nbsp;&nbsp;
@@ -4376,6 +4392,542 @@ You can check the Dev Tools console for debugging information.</code></pre>
         </div>
         </form>
 
+                <h1 id="commercial-register">Commercial Register</h1>
+
+    <p>The user's Commercial Register (السجل التجاري) submission. Mirrors the web flow:
+submit the register data plus two scans, an admin reviews it, and only a valid
+(APPROVED and un-expired) register unlocks participation in auctions flagged
+<code>requires_commerce_register</code>. Independent of KYC — a user may hold either, both
+or neither.</p>
+
+                                <h2 id="commercial-register-GETapi-v1-commercial-register">Register status</h2>
+
+<p>
+</p>
+
+<p>The user's Commercial Register state, the data on file, which scans are
+present, and whether a (re)submit is currently allowed. <code>status</code> is null
+when nothing has been submitted yet.</p>
+
+<span id="example-requests-GETapi-v1-commercial-register">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "https://mazayada.findosystem.com/api/v1/commercial-register" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/commercial-register"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-v1-commercial-register">
+            <blockquote>
+            <p>Example response (401):</p>
+        </blockquote>
+                <details class="annotation">
+            <summary style="cursor: pointer;">
+                <small onclick="textContent = parentElement.parentElement.open ? 'Show headers' : 'Hide headers'">Show headers</small>
+            </summary>
+            <pre><code class="language-http">cache-control: no-cache, private
+content-type: application/json
+access-control-allow-origin: *
+ </code></pre></details>         <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;يلزم تسجيل الدخول.&quot;
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-v1-commercial-register" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-v1-commercial-register"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-v1-commercial-register"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-v1-commercial-register" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-v1-commercial-register">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-v1-commercial-register" data-method="GET"
+      data-path="api/v1/commercial-register"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v1-commercial-register', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-v1-commercial-register"
+                    onclick="tryItOut('GETapi-v1-commercial-register');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-v1-commercial-register"
+                    onclick="cancelTryOut('GETapi-v1-commercial-register');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-v1-commercial-register"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v1/commercial-register</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-v1-commercial-register"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-v1-commercial-register"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="GETapi-v1-commercial-register"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                        </form>
+
+                    <h2 id="commercial-register-POSTapi-v1-commercial-register">Submit the register</h2>
+
+<p>
+</p>
+
+<p>Creates or updates the user's Commercial Register (multipart) and moves it to
+PENDING for review. On a resubmission the previously uploaded scans are kept
+unless replaced, so a rejected user who only fixes a text field need not
+re-upload. A PENDING-under-review or APPROVED record is locked (403).</p>
+
+<span id="example-requests-POSTapi-v1-commercial-register">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request POST \
+    "https://mazayada.findosystem.com/api/v1/commercial-register" \
+    --header "Content-Type: multipart/form-data" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar" \
+    --form "company_name=Sarl Mazayada"\
+    --form "register_number=16/00-1234567 B 19"\
+    --form "tax_number=000116001234567"\
+    --form "activity_type=تجارة السيارات"\
+    --form "expiry_date=2030-12-31"\
+    --form "register_document=@C:\Users\hp\AppData\Local\Temp\php5C85.tmp" \
+    --form "tax_card_document=@C:\Users\hp\AppData\Local\Temp\php5C86.tmp" </code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/commercial-register"
+);
+
+const headers = {
+    "Content-Type": "multipart/form-data",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+const body = new FormData();
+body.append('company_name', 'Sarl Mazayada');
+body.append('register_number', '16/00-1234567 B 19');
+body.append('tax_number', '000116001234567');
+body.append('activity_type', 'تجارة السيارات');
+body.append('expiry_date', '2030-12-31');
+body.append('register_document', document.querySelector('input[name="register_document"]').files[0]);
+body.append('tax_card_document', document.querySelector('input[name="tax_card_document"]').files[0]);
+
+fetch(url, {
+    method: "POST",
+    headers,
+    body,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-POSTapi-v1-commercial-register">
+</span>
+<span id="execution-results-POSTapi-v1-commercial-register" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-POSTapi-v1-commercial-register"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-POSTapi-v1-commercial-register"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-POSTapi-v1-commercial-register" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-POSTapi-v1-commercial-register">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-POSTapi-v1-commercial-register" data-method="POST"
+      data-path="api/v1/commercial-register"
+      data-authed="0"
+      data-hasfiles="1"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('POSTapi-v1-commercial-register', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-POSTapi-v1-commercial-register"
+                    onclick="tryItOut('POSTapi-v1-commercial-register');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-POSTapi-v1-commercial-register"
+                    onclick="cancelTryOut('POSTapi-v1-commercial-register');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-POSTapi-v1-commercial-register"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-black">POST</small>
+            <b><code>api/v1/commercial-register</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="POSTapi-v1-commercial-register"
+               value="multipart/form-data"
+               data-component="header">
+    <br>
+<p>Example: <code>multipart/form-data</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="POSTapi-v1-commercial-register"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="POSTapi-v1-commercial-register"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                                <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
+        <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>company_name</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="company_name"                data-endpoint="POSTapi-v1-commercial-register"
+               value="Sarl Mazayada"
+               data-component="body">
+    <br>
+<p>The company / trading entity name. Example: <code>Sarl Mazayada</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>register_number</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="register_number"                data-endpoint="POSTapi-v1-commercial-register"
+               value="16/00-1234567 B 19"
+               data-component="body">
+    <br>
+<p>The commercial register number. Example: <code>16/00-1234567 B 19</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>tax_number</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="tax_number"                data-endpoint="POSTapi-v1-commercial-register"
+               value="000116001234567"
+               data-component="body">
+    <br>
+<p>The tax identification number. Example: <code>000116001234567</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>activity_type</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="activity_type"                data-endpoint="POSTapi-v1-commercial-register"
+               value="تجارة السيارات"
+               data-component="body">
+    <br>
+<p>The registered commercial activity. Example: <code>تجارة السيارات</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>expiry_date</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="expiry_date"                data-endpoint="POSTapi-v1-commercial-register"
+               value="2030-12-31"
+               data-component="body">
+    <br>
+<p>The register expiry date (must be in the future). Example: <code>2030-12-31</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>register_document</code></b>&nbsp;&nbsp;
+<small>file</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="file" style="display: none"
+                              name="register_document"                data-endpoint="POSTapi-v1-commercial-register"
+               value=""
+               data-component="body">
+    <br>
+<p>The commercial register scan (PDF/JPG/PNG). Required on first submission. Example: <code>C:\Users\hp\AppData\Local\Temp\php5C85.tmp</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>tax_card_document</code></b>&nbsp;&nbsp;
+<small>file</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="file" style="display: none"
+                              name="tax_card_document"                data-endpoint="POSTapi-v1-commercial-register"
+               value=""
+               data-component="body">
+    <br>
+<p>The tax card scan (PDF/JPG/PNG). Required on first submission. Example: <code>C:\Users\hp\AppData\Local\Temp\php5C86.tmp</code></p>
+        </div>
+        </form>
+
+                    <h2 id="commercial-register-GETapi-v1-commercial-register-document--type-">Download a scan</h2>
+
+<p>
+</p>
+
+<p>Streams one of the authenticated user's own Commercial Register scans from
+the private disk. Allowed types: register, tax-card. A user can never reach
+another user's files.</p>
+
+<span id="example-requests-GETapi-v1-commercial-register-document--type-">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "https://mazayada.findosystem.com/api/v1/commercial-register/document/0194a412-8132-463b-abf0-f8945f3f09a4" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/commercial-register/document/0194a412-8132-463b-abf0-f8945f3f09a4"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-v1-commercial-register-document--type-">
+            <blockquote>
+            <p>Example response (401):</p>
+        </blockquote>
+                <details class="annotation">
+            <summary style="cursor: pointer;">
+                <small onclick="textContent = parentElement.parentElement.open ? 'Show headers' : 'Hide headers'">Show headers</small>
+            </summary>
+            <pre><code class="language-http">cache-control: no-cache, private
+content-type: application/json
+access-control-allow-origin: *
+ </code></pre></details>         <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;يلزم تسجيل الدخول.&quot;
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-v1-commercial-register-document--type-" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-v1-commercial-register-document--type-"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-v1-commercial-register-document--type-"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-v1-commercial-register-document--type-" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-v1-commercial-register-document--type-">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-v1-commercial-register-document--type-" data-method="GET"
+      data-path="api/v1/commercial-register/document/{type}"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v1-commercial-register-document--type-', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-v1-commercial-register-document--type-"
+                    onclick="tryItOut('GETapi-v1-commercial-register-document--type-');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-v1-commercial-register-document--type-"
+                    onclick="cancelTryOut('GETapi-v1-commercial-register-document--type-');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-v1-commercial-register-document--type-"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v1/commercial-register/document/{type}</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-v1-commercial-register-document--type-"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-v1-commercial-register-document--type-"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="GETapi-v1-commercial-register-document--type-"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>type</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="type"                data-endpoint="GETapi-v1-commercial-register-document--type-"
+               value="0194a412-8132-463b-abf0-f8945f3f09a4"
+               data-component="url">
+    <br>
+<p>Example: <code>0194a412-8132-463b-abf0-f8945f3f09a4</code></p>
+            </div>
+                    </form>
+
                 <h1 id="dashboard">Dashboard</h1>
 
     <p>The citizen's home summary and their participation history.</p>
@@ -5039,7 +5591,7 @@ fetch(url, {
             <pre><code class="language-http">cache-control: max-age=3600, public, s-maxage=3600
 content-type: application/json
 access-control-allow-origin: *
-set-cookie: XSRF-TOKEN=eyJpdiI6Imd6dW1VMG9uT0w2Vm0rQzEza2xBVlE9PSIsInZhbHVlIjoidTA0MFVCU2dwdUNTZzFaVWY4dEFHK2FxTmdCMUc5SE1MNytQcFJuM1V6cjVpazA5bXIzbVMzQ0hWVDBoQnJ4Rml1ZENWV3dmQm50TzRDYnJVREpNbG5CTFVmODVVdGd3K2tJYjlYOWliYUFOVERZMzRna2o0c0gzbUs2d1BheE4iLCJtYWMiOiJlMGJmZTUxMGY5NWRiZTg1YmQyNzJkMjg3MmMwZjQxNjMwY2E3MDFhMDVmNzc3OGNmMzg1YmY1MzgzNTcyOTM0IiwidGFnIjoiIn0%3D; expires=Sun, 05 Jul 2026 12:57:53 GMT; Max-Age=7200; path=/; samesite=lax; mazayada-session=eyJpdiI6Ik5IYXJkYi9wRGxoaWJreng5Z1lKOEE9PSIsInZhbHVlIjoiSXRsY013UW9mN3NPU2lsYzh0RnBJMm9nL2FaMXN5TVNWRFlFRlRrL20waUdsc0pQcTloWHQxTFEwN3BaNWpYdUwrRXRXdjZ0S0s0emh0dElMenVRaHpJaDUrVHA4aTBkRVFSZXZQZ3BmUWV0TGh3RFpGcnJWNjlaZ0Z0ai91YkYiLCJtYWMiOiIyODNmMzA4Mjc5MmYyZWQ0Y2RiMjZmMTkzYmY4NmQ0ZmYwYTBmMjU0YWVkNzU1YjcxNWE4MGEzNTQ5MDQ3NTAyIiwidGFnIjoiIn0%3D; expires=Sun, 05 Jul 2026 12:57:53 GMT; Max-Age=7200; path=/; httponly; samesite=lax
+set-cookie: XSRF-TOKEN=eyJpdiI6IjZucmNtM1hvb1NQR01VTUE2dmIyc1E9PSIsInZhbHVlIjoidS81amdsQmVTck1NRktPcGpzK3lKTFhiVCtYTnhPWng5NnlVWnJxeEhpUndjSi8rSEFEUUxkaHZyaWlzN1RIWG5LU1ZiRlZGVEw4azVveDBoNytXaFRFZWYwdFNEdFI1Vk52a0ZkY0F2SFJwbWx5WWNFaWkrZHdpNGFpcU1KZGwiLCJtYWMiOiI1YzAwMjBjMTA3YmI1YTlmMjBiZjAwOTcwNzYxY2IyN2MwMTA2NGQ1ZTAyYTE3ZTUxZDEzYjgxOWUxMDcxOWU1IiwidGFnIjoiIn0%3D; expires=Thu, 09 Jul 2026 07:17:08 GMT; Max-Age=7200; path=/; samesite=lax; mazayada-session=eyJpdiI6InJuQXNkTDUrZ0gvVXltZmRZSUIrV1E9PSIsInZhbHVlIjoibmo3VC9FN2dtenltZXlNUTlYU2EyblVvS3VaYlUxWldaMlp4d3hDR1ZmTXJVdVNZeGFaZGdYRUh5dzFIMTUzNFlKaXJoNXFEaGQrL2V5T2FieGxONThHTDJNb1F2MDVXbWttYlRmYnk5eWFjV3Y0bU9UaGdObFhOdlhQVGNUTlkiLCJtYWMiOiI3MzVlYmFkYzA0NDkyZjg3YzY5MWRmZDdiZjEzNjkwNDM1Mjg2NDZlY2FhM2EwYTdhYzM5MjA2NWZmMjk1MTYxIiwidGFnIjoiIn0%3D; expires=Thu, 09 Jul 2026 07:17:08 GMT; Max-Age=7200; path=/; httponly; samesite=lax
  </code></pre></details>         <pre>
 
 <code class="language-json" style="max-height: 300px;">[
@@ -5528,7 +6080,7 @@ fetch(url, {
             <pre><code class="language-http">cache-control: max-age=3600, public, s-maxage=3600
 content-type: application/json
 access-control-allow-origin: *
-set-cookie: XSRF-TOKEN=eyJpdiI6IkdaMVRCVEYrT3dsOUVkMmhHTmQ5WWc9PSIsInZhbHVlIjoiS0RSUUZRemFXQndTN0xNYjRTTmJadGhjSHZ3WEhTZmZ5YnBMRUJBZTdhVU5FRUYrNkhlVzFvc1VtYTlyWU9jU0RQYTQrSEZDN0N5bmpVbTFyTTFJTW82SVFsRWVDdDBEUXkvd2d1WGx1WTFFcHNyOWNJV2p2QWRRN0FVQXlhV0wiLCJtYWMiOiIwMWZlZTM5YmMxY2E2OTk0OWFjYTIwNzk4MTNlMTlkNzY0YmI4MjQ2MDZjNGRiOWVhOTgwMTJmZjA2NmM5MGJkIiwidGFnIjoiIn0%3D; expires=Sun, 05 Jul 2026 12:57:53 GMT; Max-Age=7200; path=/; samesite=lax; mazayada-session=eyJpdiI6IklKMERHcmwxdkZ3QUxIRVV3SDQ3Q3c9PSIsInZhbHVlIjoiQmhnZVlqRnMvYi9nWXhRemxQK1RiMXhBb3luTXZLRmRqajZRVDlzSEIrTjd6V3JYeW1KMjMwMDVLcHdQc3UzdWFIZU9YM1d2R1VVWE5NbXIxOEFQNCtaME03OC9zb3BLN2xGdnNNM3U0Y3ptbE9ZTEtjS29CRDFWQ1ErSlVtMXYiLCJtYWMiOiIyNWEyODNjMzQzZDAwM2MxZGY2NDgyMGVmODRiYTM5MjRiY2Y1NDdiODQyOGE2NjMwM2M0MmUzYTQzMDJhZWQ2IiwidGFnIjoiIn0%3D; expires=Sun, 05 Jul 2026 12:57:53 GMT; Max-Age=7200; path=/; httponly; samesite=lax
+set-cookie: XSRF-TOKEN=eyJpdiI6ImdtUVdpUzROYzkzRGtzRmZXVG5qNkE9PSIsInZhbHVlIjoiNCtucmlOaFBqQ09yNWdiQThUcGR6bnlGRFprejRtMXp1V1g5bnJ5V09PU2Rla25pTkRvdTdiQVJVVmQ4T2tGOW5xc2RBZy91SllQTWUvcXhwWW9rM0dsOE8zRUJiWU9QVTQvaWI4MENuaFhKZnR3UC9mZ3pmYzRlbnNqcnlxUi8iLCJtYWMiOiI1Y2QxMDY3MjNmZWYwODQzMjFlOWM0MzM2YWU3MGEzN2U0MWQ1YTNkOWQzYTI2MGY0YmI0YWJiOWY5ZjI5MGM4IiwidGFnIjoiIn0%3D; expires=Thu, 09 Jul 2026 07:17:08 GMT; Max-Age=7200; path=/; samesite=lax; mazayada-session=eyJpdiI6ImdhT0p4OXpmNGovZmdaZ1lmRUtrNFE9PSIsInZhbHVlIjoicnIweENPSjhFazZiVVFTaU9MM1ZZUGlDc09PbnRJLzlBMWtHMzQwOTNGWjhMaEdmMnhlcHJSOEF3QVJ4aUxrNjNYYTZlb21EZHRtY1AwQ2hJNEpDNTAwNGlJRkdGTUtsWHZnR0xmaGx3RjZiN21aUUtwMkNwekhkdGJYUEppa0giLCJtYWMiOiJmYTVhMmNiM2ZjMTFiOTFhZjU5Mzg3OTQ3ZDBiMDk3OGFkMzIwNDQ5ZmY5YWRiODI3OGU1OWM4MDcyNzY2OWM4IiwidGFnIjoiIn0%3D; expires=Thu, 09 Jul 2026 07:17:08 GMT; Max-Age=7200; path=/; httponly; samesite=lax
  </code></pre></details>         <pre>
 
 <code class="language-json" style="max-height: 300px;">[
@@ -6226,7 +6778,7 @@ id-front, id-back, selfie-with-id, photo-biometric.</p>
     --header "Content-Type: multipart/form-data" \
     --header "Accept: application/json" \
     --header "Accept-Language: ar" \
-    --form "file=@C:\Users\hp\AppData\Local\Temp\php9015.tmp" </code></pre></div>
+    --form "file=@C:\Users\hp\AppData\Local\Temp\php5C24.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -6360,7 +6912,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>يجب أن يكون value صورة. يجب ألا يزيد حجم value عن 1024 كيلوبايت. Example: <code>C:\Users\hp\AppData\Local\Temp\php9015.tmp</code></p>
+<p>يجب أن يكون value صورة. يجب ألا يزيد حجم value عن 1024 كيلوبايت. Example: <code>C:\Users\hp\AppData\Local\Temp\php5C24.tmp</code></p>
         </div>
         </form>
 
@@ -6394,7 +6946,7 @@ account to UNDER_REVIEW.</p>
     \"postal_code\": \"15627\",
     \"profession\": \"udtdsufvyvddqamniihfq\",
     \"expected_income\": 8,
-    \"id_type\": \"PASSPORT\",
+    \"id_type\": \"LICENSE\",
     \"id_number\": \"oynlazghdtqtqxbajwbpi\"
 }"
 </code></pre></div>
@@ -6423,7 +6975,7 @@ let body = {
     "postal_code": "15627",
     "profession": "udtdsufvyvddqamniihfq",
     "expected_income": 8,
-    "id_type": "PASSPORT",
+    "id_type": "LICENSE",
     "id_number": "oynlazghdtqtqxbajwbpi"
 };
 
@@ -6672,10 +7224,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="id_type"                data-endpoint="POSTapi-v1-kyc-submit"
-               value="PASSPORT"
+               value="LICENSE"
                data-component="body">
     <br>
-<p>Example: <code>PASSPORT</code></p>
+<p>Example: <code>LICENSE</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>ID_CARD</code></li> <li><code>PASSPORT</code></li> <li><code>LICENSE</code></li></ul>
         </div>
@@ -8068,8 +8620,8 @@ You can check the Dev Tools console for debugging information.</code></pre>
     \"address\": \"fuudtdsufvyvddqamniih\",
     \"postal_code\": \"15627\",
     \"profession\": \"udtdsufvyvddqamniihfq\",
-    \"locale\": \"en\",
-    \"secret_question\": \"first_school\",
+    \"locale\": \"ar\",
+    \"secret_question\": \"pet_name\",
     \"secret_answer\": \"coynlazghdtqtqxbajwbp\"
 }"
 </code></pre></div>
@@ -8092,8 +8644,8 @@ let body = {
     "address": "fuudtdsufvyvddqamniih",
     "postal_code": "15627",
     "profession": "udtdsufvyvddqamniihfq",
-    "locale": "en",
-    "secret_question": "first_school",
+    "locale": "ar",
+    "secret_question": "pet_name",
     "secret_answer": "coynlazghdtqtqxbajwbp"
 };
 
@@ -8270,10 +8822,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="locale"                data-endpoint="PUTapi-v1-profile"
-               value="en"
+               value="ar"
                data-component="body">
     <br>
-<p>Example: <code>en</code></p>
+<p>Example: <code>ar</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>ar</code></li> <li><code>fr</code></li> <li><code>en</code></li></ul>
         </div>
@@ -8284,10 +8836,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="secret_question"                data-endpoint="PUTapi-v1-profile"
-               value="first_school"
+               value="pet_name"
                data-component="body">
     <br>
-<p>Example: <code>first_school</code></p>
+<p>Example: <code>pet_name</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>mother_maiden</code></li> <li><code>first_school</code></li> <li><code>birth_city</code></li> <li><code>pet_name</code></li> <li><code>fav_teacher</code></li></ul>
         </div>
