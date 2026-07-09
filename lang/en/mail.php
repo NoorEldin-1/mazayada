@@ -47,6 +47,23 @@ return [
         'footer' => 'This is an automated message from Mazayada, please do not reply.',
     ],
 
+    // ===== Commercial Register decision emails =====
+    'cr_approved' => [
+        'subject' => 'Your commercial register is approved — Mazayada',
+        'greeting' => 'Hello :name,',
+        'intro' => 'We are pleased to inform you that your commercial register has been approved. You can now participate in auctions that require a commercial register.',
+        'cta' => 'View commercial register',
+        'footer' => 'This is an automated message from Mazayada, please do not reply.',
+    ],
+    'cr_rejected' => [
+        'subject' => 'Your commercial register has been rejected — Mazayada',
+        'greeting' => 'Hello :name,',
+        'intro' => 'We regret to inform you that your commercial register has been rejected. You can correct the details and resubmit your request.',
+        'reason_label' => 'Reason for rejection',
+        'cta' => 'Correct the request',
+        'footer' => 'This is an automated message from Mazayada, please do not reply.',
+    ],
+
     // ===== Auction lifecycle event emails (spec §10.1) =====
     'events_common' => [
         'greeting' => 'Hello :name,',

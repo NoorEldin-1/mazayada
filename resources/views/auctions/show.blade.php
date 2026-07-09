@@ -212,7 +212,7 @@
                                     <div class="spec-row"><span class="l">{{ __('auctions.show.spec_asset_class') }}</span><span class="v">{{ $auction->asset_class?->label() ?? '--' }}</span></div>
                                     <div class="spec-row"><span class="l">{{ __('auctions.show.spec_condition') }}</span><span class="v">{{ $auction->condition ? $auction->condition->label() : '--' }}</span></div>
                                     <div class="spec-row"><span class="l">{{ __('auctions.show.spec_units') }}</span><span class="v num">{{ $auction->unit_count ?? 1 }}</span></div>
-                                    <div class="spec-row"><span class="l">{{ __('auctions.show.spec_requires_cr') }}</span><span class="v">{{ $auction->requires_commerce_register ? __('common.yes') : __('common.no') }}</span></div>
+                                    <div class="spec-row"><span class="l">{{ __('auctions.show.spec_requires_cr') }}</span><span class="v">@if($auction->requires_commerce_register)<span style="color:var(--accent);font-weight:700">{{ __('common.yes') }}</span>@else{{ __('common.no') }}@endif</span></div>
                                 </div>
                             </div>
 
@@ -512,6 +512,23 @@
                     </div>
                 @endif
 
+                {{-- Commercial Register requirement — prominent, coloured, shown to
+                     everyone so a user knows BEFORE trying to participate. When
+                     signed in it also reflects the user's own eligibility. --}}
+                @if($auction->requires_commerce_register)
+                    @if(auth()->check() && auth()->user()->hasCommerceRegister())
+                        <div style="margin-top:14px;padding:12px 14px;background:rgba(45,106,79,.22);border:1px solid rgba(45,106,79,.5);border-radius:12px;display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:#D6F0E2;line-height:1.65">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            <div><strong>{{ __('auctions.show.cr_required_title') }}</strong><div style="margin-top:2px">{{ __('auctions.show.cr_eligible') }}</div></div>
+                        </div>
+                    @else
+                        <div style="margin-top:14px;padding:12px 14px;background:rgba(212,168,67,.18);border:1px solid rgba(212,168,67,.45);border-radius:12px;display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:#F6E7C1;line-height:1.65">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            <div><strong>{{ __('auctions.show.cr_required_title') }}</strong><div style="margin-top:2px">{{ __('auctions.show.cr_required_text') }}</div></div>
+                        </div>
+                    @endif
+                @endif
+
                 @if($auction->isBiddable())
                     @guest
                         {{-- Not Logged In --}}
@@ -546,6 +563,14 @@
                             <div style="margin-top:14px;padding:14px 16px;background:rgba(212,168,67,.15);border:1px solid rgba(212,168,67,.3);border-radius:12px;text-align:center;font-size:13px;color:rgba(255,255,255,.85)">
                                 {{ __('auctions.show.cta_inactive') }}
                             </div>
+                        @elseif($auction->requires_commerce_register && ! $u->hasCommerceRegister())
+                            {{-- §2.3 — a valid Commercial Register is mandatory here; block
+                                 book purchase / registration and guide to the CR page. --}}
+                            <div style="margin-top:14px;font-size:12px;color:rgba(255,255,255,.8);line-height:1.7">{{ __('auctions.show.cr_required_text') }}</div>
+                            <a href="{{ route('citizen.commercial-register') }}" class="bid-cta" style="margin-top:10px;text-decoration:none">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+                                {{ __('auctions.show.cta_commercial_register') }}
+                            </a>
                         @elseif(! $hasBookAccess)
                             {{-- §4 step 2 — the condition book must be BOUGHT before registering --}}
                             <div style="margin-top:14px;font-size:12px;color:rgba(255,255,255,.8);line-height:1.7">{{ __('auctions.show.book_required_to_register') }}</div>

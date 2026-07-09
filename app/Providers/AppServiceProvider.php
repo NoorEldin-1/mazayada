@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Enums\CommercialRegisterStatus;
 use App\Enums\KycStatus;
+use App\Models\CommercialRegister;
 use App\Models\User;
 use App\Services\Payments\PaymentDriver;
 use App\Services\Payments\PaymentGatewayInterface;
@@ -48,11 +50,16 @@ class AppServiceProvider extends ServiceProvider
         // for reviewers; a single indexed COUNT (no cache) so the badge drops the
         // moment a request is approved/rejected.
         View::composer('layouts.admin', function ($view) {
-            $count = auth()->user()?->can('kyc.review')
-                ? User::where('kyc_status', KycStatus::UNDER_REVIEW)->count()
-                : 0;
+            $user = auth()->user();
 
-            $view->with('kycPendingCount', $count);
+            $view->with('kycPendingCount', $user?->can('kyc.review')
+                ? User::where('kyc_status', KycStatus::UNDER_REVIEW)->count()
+                : 0);
+
+            // Same treatment for the Commercial Register queue badge.
+            $view->with('commercialRegisterPendingCount', $user?->can('commercial-register.review')
+                ? CommercialRegister::where('status', CommercialRegisterStatus::PENDING)->count()
+                : 0);
         });
     }
 }

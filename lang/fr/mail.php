@@ -47,6 +47,23 @@ return [
         'footer' => 'Ceci est un message automatique de Mazayada, merci de ne pas y répondre.',
     ],
 
+    // ===== Commercial Register decision emails =====
+    'cr_approved' => [
+        'subject' => 'Votre registre de commerce est approuvé — Mazayada',
+        'greeting' => 'Bonjour :name,',
+        'intro' => 'Nous avons le plaisir de vous informer que votre registre de commerce a été approuvé. Vous pouvez désormais participer aux enchères qui exigent un registre de commerce.',
+        'cta' => 'Voir le registre de commerce',
+        'footer' => 'Ceci est un message automatique de Mazayada, merci de ne pas y répondre.',
+    ],
+    'cr_rejected' => [
+        'subject' => 'Votre registre de commerce a été rejeté — Mazayada',
+        'greeting' => 'Bonjour :name,',
+        'intro' => 'Nous sommes au regret de vous informer que votre registre de commerce a été rejeté. Vous pouvez corriger les données et soumettre à nouveau votre demande.',
+        'reason_label' => 'Motif du rejet',
+        'cta' => 'Corriger la demande',
+        'footer' => 'Ceci est un message automatique de Mazayada, merci de ne pas y répondre.',
+    ],
+
     // ===== Auction lifecycle event emails (spec §10.1) =====
     'events_common' => [
         'greeting' => 'Bonjour :name,',

@@ -7,6 +7,7 @@ return [
     'nav_auctions' => 'Enchères',
     'nav_users' => 'Utilisateurs',
     'nav_kyc' => 'Vérification (KYC)',
+    'nav_commercial_registers' => 'Registres de commerce',
     'nav_appeals' => 'Recours',
     'nav_inspections' => 'Questions d’inspection',
     'nav_deliveries' => 'Livraisons',
@@ -265,6 +266,26 @@ return [
         'f_birth_date' => 'Date de naissance',
     ],
 
+    // ===== Commercial Register review =====
+    'commercial_registers' => [
+        'manage_title' => 'Registres de commerce',
+        'review_title' => 'Examen du registre de commerce',
+        'th_company' => 'Raison sociale',
+        'th_register_number' => 'N° de registre',
+        'th_email_short' => 'E-mail',
+        'th_submitted_date' => 'Date d’envoi',
+        'review' => 'Examiner',
+        'back_to_queue' => 'Retour à la liste des registres',
+        'no_document' => 'Fichier non téléversé',
+        'decision_title' => 'Décision',
+        'approve' => 'Approuver',
+        'reject' => 'Rejeter',
+        'confirm_approve' => 'Confirmer l’approbation de ce registre de commerce ?',
+        'reject_reason_label' => 'Motif du rejet',
+        'reject_reason_placeholder' => 'Motif du rejet...',
+        'no_pending' => 'Aucun registre de commerce en attente',
+    ],
+
     // ===== Audit log =====
     'audit' => [
         'th_time' => 'Horodatage',
@@ -287,6 +308,8 @@ return [
         'auction_start_only_published' => 'L’enchère doit être publiée pour être démarrée.',
         'kyc_approved' => 'Vérification acceptée avec succès.',
         'kyc_rejected' => 'Vérification rejetée.',
+        'cr_approved' => 'Registre de commerce approuvé.',
+        'cr_rejected' => 'Registre de commerce rejeté.',
         'user_blacklisted' => 'L’utilisateur a été mis sur liste noire.',
         'user_unblacklisted' => 'L’utilisateur a été retiré de la liste noire.',
         'auction_extended' => 'Enchère prolongée.',

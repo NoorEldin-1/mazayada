@@ -7,6 +7,7 @@ return [
     'nav_auctions' => 'المزايدات',
     'nav_users' => 'المستخدمون',
     'nav_kyc' => 'التحقق (KYC)',
+    'nav_commercial_registers' => 'السجلات التجارية',
     'nav_appeals' => 'الطعون',
     'nav_inspections' => 'أسئلة المعاينة',
     'nav_deliveries' => 'التسليم',
@@ -265,6 +266,26 @@ return [
         'f_birth_date' => 'تاريخ الميلاد',
     ],
 
+    // ===== Commercial Register review =====
+    'commercial_registers' => [
+        'manage_title' => 'السجلات التجارية',
+        'review_title' => 'مراجعة السجل التجاري',
+        'th_company' => 'اسم الشركة',
+        'th_register_number' => 'رقم السجل',
+        'th_email_short' => 'البريد',
+        'th_submitted_date' => 'تاريخ الإرسال',
+        'review' => 'مراجعة',
+        'back_to_queue' => 'العودة إلى قائمة السجلات',
+        'no_document' => 'لم يتم رفع الملف',
+        'decision_title' => 'القرار',
+        'approve' => 'اعتماد',
+        'reject' => 'رفض',
+        'confirm_approve' => 'هل أنت متأكد من اعتماد هذا السجل التجاري؟',
+        'reject_reason_label' => 'سبب الرفض',
+        'reject_reason_placeholder' => 'سبب الرفض...',
+        'no_pending' => 'لا توجد سجلات تجارية معلّقة',
+    ],
+
     // ===== Audit log =====
     'audit' => [
         'th_time' => 'التوقيت',
@@ -287,6 +308,8 @@ return [
         'auction_start_only_published' => 'يجب أن يكون المزاد منشوراً للبدء.',
         'kyc_approved' => 'تم قبول التوثيق بنجاح.',
         'kyc_rejected' => 'تم رفض التوثيق.',
+        'cr_approved' => 'تم اعتماد السجل التجاري.',
+        'cr_rejected' => 'تم رفض السجل التجاري.',
         'user_blacklisted' => 'تم إدراج المستخدم في القائمة السوداء.',
         'user_unblacklisted' => 'تم رفع الحظر عن المستخدم.',
         'auction_extended' => 'تم تمديد المزاد.',

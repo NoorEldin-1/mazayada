@@ -9,6 +9,12 @@ return [
         'SUSPENDED' => 'معلّق',
     ],
 
+    'commercial_register_status' => [
+        'PENDING' => 'قيد المراجعة',
+        'APPROVED' => 'معتمد',
+        'REJECTED' => 'مرفوض',
+    ],
+
     'auction_status' => [
         'DRAFT' => 'مسودة',
         'PUBLISHED' => 'منشورة',

@@ -9,12 +9,14 @@ use App\Http\Controllers\ChargilyWebhookController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\Citizen\CitizenController;
 use App\Http\Controllers\Citizen\KycController;
+use App\Http\Controllers\Citizen\CommercialRegisterController;
 use App\Http\Controllers\Citizen\AppealController;
 use App\Http\Controllers\Citizen\ReportController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminAuctionController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminKycController;
+use App\Http\Controllers\Admin\AdminCommercialRegisterController;
 use App\Http\Controllers\Admin\AdminAppealController;
 use App\Http\Controllers\Admin\AdminEntityController;
 use App\Http\Controllers\Admin\AdminCategoryController;
@@ -73,6 +75,10 @@ Route::middleware('auth')->prefix('dashboard')->name('citizen.')->group(function
     Route::post('/kyc/upload/{type}', [KycController::class, 'upload'])->name('kyc.upload');
     Route::post('/kyc/submit', [KycController::class, 'submit'])->name('kyc.submit');
     Route::get('/kyc/document/{type}', [KycController::class, 'document'])->name('kyc.document');
+    // Commercial Register (السجل التجاري) — user submits data + scans, admin reviews.
+    Route::get('/commercial-register', [CommercialRegisterController::class, 'index'])->name('commercial-register');
+    Route::post('/commercial-register', [CommercialRegisterController::class, 'store'])->name('commercial-register.store');
+    Route::get('/commercial-register/document/{type}', [CommercialRegisterController::class, 'document'])->name('commercial-register.document');
     // Appeals are now filed from the auction page; this stays as the tracking list.
     Route::get('/appeals', [AppealController::class, 'index'])->name('appeals');
     Route::get('/my-auctions', [CitizenController::class, 'myAuctions'])->name('my-auctions');
@@ -192,6 +198,13 @@ Route::middleware(['auth', 'admin.2fa', 'role:'.implode(',', \App\Enums\UserRole
     Route::get('/kyc/{user}/document/{type}', [AdminKycController::class, 'document'])->name('kyc.document');
     Route::post('/kyc/{user}/approve', [AdminKycController::class, 'approve'])->name('kyc.approve');
     Route::post('/kyc/{user}/reject', [AdminKycController::class, 'reject'])->name('kyc.reject');
+
+    // Commercial Register (السجل التجاري) review queue.
+    Route::get('/commercial-registers', [AdminCommercialRegisterController::class, 'pending'])->name('commercial-registers.index');
+    Route::get('/commercial-registers/{commercialRegister}', [AdminCommercialRegisterController::class, 'show'])->name('commercial-registers.show');
+    Route::get('/commercial-registers/{commercialRegister}/document/{type}', [AdminCommercialRegisterController::class, 'document'])->name('commercial-registers.document');
+    Route::post('/commercial-registers/{commercialRegister}/approve', [AdminCommercialRegisterController::class, 'approve'])->name('commercial-registers.approve');
+    Route::post('/commercial-registers/{commercialRegister}/reject', [AdminCommercialRegisterController::class, 'reject'])->name('commercial-registers.reject');
     Route::get('/appeals', [AdminAppealController::class, 'index'])->name('appeals.index');
     // Appeals workflow: admin forward / reject-at-intake / confirm; entity decide.
     Route::post('/appeals/{appeal}/forward', [AdminAppealController::class, 'forward'])->name('appeals.forward');

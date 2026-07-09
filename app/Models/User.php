@@ -128,6 +128,12 @@ class User extends Authenticatable implements HasLocalePreference
         return $this->hasOne(UserBiometric::class);
     }
 
+    /** The user's single Commercial Register (السجل التجاري) submission, if any. */
+    public function commercialRegister(): HasOne
+    {
+        return $this->hasOne(CommercialRegister::class);
+    }
+
     public function bids(): HasMany
     {
         return $this->hasMany(Bid::class);
@@ -258,12 +264,15 @@ class User extends Authenticatable implements HasLocalePreference
     }
 
     /**
-     * Holds a valid Commerce Register (Registre du Commerce) — required to bid
-     * on professional/commercial customs goods (spec §2.3).
+     * Holds a valid Commercial Register (السجل التجاري) — required to bid on
+     * auctions flagged requires_commerce_register (spec §2.3). "Valid" means an
+     * admin-APPROVED submission that has not passed its expiry date. The legacy
+     * users.commerce_register_no column is no longer consulted (kept only so old
+     * data is not lost); the CommercialRegister module is the source of truth.
      */
     public function hasCommerceRegister(): bool
     {
-        return filled($this->commerce_register_no);
+        return $this->commercialRegister?->isValid() ?? false;
     }
 
     public function isLocked(): bool

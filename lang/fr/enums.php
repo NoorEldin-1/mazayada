@@ -9,6 +9,12 @@ return [
         'SUSPENDED' => 'Suspendu',
     ],
 
+    'commercial_register_status' => [
+        'PENDING' => 'En cours d’examen',
+        'APPROVED' => 'Approuvé',
+        'REJECTED' => 'Rejeté',
+    ],
+
     'auction_status' => [
         'DRAFT' => 'Brouillon',
         'PUBLISHED' => 'Publiée',

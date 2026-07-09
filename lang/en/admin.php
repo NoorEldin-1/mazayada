@@ -7,6 +7,7 @@ return [
     'nav_auctions' => 'Auctions',
     'nav_users' => 'Users',
     'nav_kyc' => 'Verification (KYC)',
+    'nav_commercial_registers' => 'Commercial Registers',
     'nav_appeals' => 'Appeals',
     'nav_inspections' => 'Inspection questions',
     'nav_deliveries' => 'Deliveries',
@@ -265,6 +266,26 @@ return [
         'f_birth_date' => 'Date of birth',
     ],
 
+    // ===== Commercial Register review =====
+    'commercial_registers' => [
+        'manage_title' => 'Commercial Registers',
+        'review_title' => 'Review commercial register',
+        'th_company' => 'Company name',
+        'th_register_number' => 'Register No.',
+        'th_email_short' => 'Email',
+        'th_submitted_date' => 'Submitted date',
+        'review' => 'Review',
+        'back_to_queue' => 'Back to the register list',
+        'no_document' => 'File not uploaded',
+        'decision_title' => 'Decision',
+        'approve' => 'Approve',
+        'reject' => 'Reject',
+        'confirm_approve' => 'Approve this commercial register?',
+        'reject_reason_label' => 'Reason for rejection',
+        'reject_reason_placeholder' => 'Reason for rejection...',
+        'no_pending' => 'No pending commercial registers',
+    ],
+
     // ===== Audit log =====
     'audit' => [
         'th_time' => 'Timestamp',
@@ -287,6 +308,8 @@ return [
         'auction_start_only_published' => 'The auction must be published to be started.',
         'kyc_approved' => 'Verification approved successfully.',
         'kyc_rejected' => 'Verification rejected.',
+        'cr_approved' => 'Commercial register approved.',
+        'cr_rejected' => 'Commercial register rejected.',
         'user_blacklisted' => 'The user has been blacklisted.',
         'user_unblacklisted' => 'The user has been removed from the blacklist.',
         'auction_extended' => 'Auction extended.',

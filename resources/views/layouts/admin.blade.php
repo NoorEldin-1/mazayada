@@ -63,6 +63,16 @@
         </x-ui.nav-link>
         @endcan
 
+        @can('commercial-register.review')
+        <x-ui.nav-link tone="onPrimary" :href="route('admin.commercial-registers.index')" :active="request()->routeIs('admin.commercial-registers.*')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><line x1="9" y1="9" x2="9" y2="9.01"/><line x1="9" y1="13" x2="9" y2="13.01"/></svg>
+            <span>{{ __('admin.nav_commercial_registers') }}</span>
+            @if(($commercialRegisterPendingCount ?? 0) > 0)
+                <span class="ms-auto min-w-[20px] h-5 px-1.5 grid place-items-center rounded-full bg-danger text-white text-[11px] font-bold leading-none">{{ $commercialRegisterPendingCount }}</span>
+            @endif
+        </x-ui.nav-link>
+        @endcan
+
         @can('appeals.viewAny')
         <x-ui.nav-link tone="onPrimary" :href="route('admin.appeals.index')" :active="request()->routeIs('admin.appeals.*')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>

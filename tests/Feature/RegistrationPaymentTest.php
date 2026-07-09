@@ -128,8 +128,10 @@ class RegistrationPaymentTest extends TestCase
 
     public function test_commerce_register_is_required_for_customs_goods(): void
     {
+        // A user with no APPROVED CommercialRegister (see CommercialRegisterTest
+        // for the full module) cannot register on a register-gated auction.
         $auction = $this->makeAuction(['requires_commerce_register' => true, 'book_price' => 0]);
-        $user = $this->makeCitizen(['commerce_register_no' => null]);
+        $user = $this->makeCitizen();
 
         $this->expectException(RuntimeException::class);
         app(PaymentService::class)->initiateRegistration($auction, $user);

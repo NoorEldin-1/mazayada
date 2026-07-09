@@ -7,6 +7,7 @@ return [
     'nav_my_auctions' => 'My Auctions',
     'nav_reports' => 'My Financial Reports',
     'nav_identity' => 'Identity Verification',
+    'nav_commercial_register' => 'Commercial Register',
     'nav_appeals' => 'My Appeals',
     'nav_notifications' => 'Notifications',
     'nav_profile' => 'Profile',

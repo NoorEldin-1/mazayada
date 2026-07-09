@@ -7,6 +7,7 @@ return [
     'nav_my_auctions' => 'Mes enchères',
     'nav_reports' => 'Mes rapports financiers',
     'nav_identity' => 'Vérification d’identité',
+    'nav_commercial_register' => 'Registre de commerce',
     'nav_appeals' => 'Mes recours',
     'nav_notifications' => 'Notifications',
     'nav_profile' => 'Profil',

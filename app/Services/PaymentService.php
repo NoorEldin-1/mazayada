@@ -103,6 +103,12 @@ class PaymentService
             throw new RuntimeException(__('payments.book_free'));
         }
 
+        // §2.3 — a Commercial Register-gated auction blocks paying ANY fee (the
+        // book is a prerequisite fee), not just the registration deposit.
+        if ($auction->requires_commerce_register && ! $user->hasCommerceRegister()) {
+            throw new RuntimeException(__('payments.commerce_register_required'));
+        }
+
         if ($auction->hasBookAccess($user)) {
             throw new RuntimeException(__('payments.already_bought_book'));
         }

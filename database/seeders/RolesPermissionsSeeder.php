@@ -59,6 +59,11 @@ class RolesPermissionsSeeder extends Seeder
         'kyc.approve',
         'kyc.reject',
 
+        // Commercial Register (السجل التجاري) review — same shape as KYC.
+        'commercial-register.review',
+        'commercial-register.approve',
+        'commercial-register.reject',
+
         // Users / Blacklist
         'users.viewAny',
         'users.blacklist',
@@ -98,6 +103,7 @@ class RolesPermissionsSeeder extends Seeder
             'documents.upload', 'documents.sign', 'documents.download', 'documents.generate',
             'payments.viewAny', 'payments.confirm', 'payments.refund',
             'kyc.review',
+            'commercial-register.review', 'commercial-register.approve', 'commercial-register.reject',
             'entities.members.manage',
             'inspections.answer', 'deliveries.manage',
             'appeals.viewAny', 'appeals.respond',

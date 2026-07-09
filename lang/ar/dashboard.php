@@ -7,6 +7,7 @@ return [
     'nav_my_auctions' => 'مزايداتي',
     'nav_reports' => 'تقاريري المالية',
     'nav_identity' => 'التحقق من الهوية',
+    'nav_commercial_register' => 'السجل التجاري',
     'nav_appeals' => 'طعوناتي',
     'nav_notifications' => 'الإشعارات',
     'nav_profile' => 'الملف الشخصي',
