@@ -48,18 +48,26 @@ class AuthController extends Controller
 
         $throttleKey = Str::lower($request->input('nin_or_email')).'|'.$request->ip();
         $maxAttempts = (int) config('mazayada.security.login_max_attempts', 5);
-        $decayMinutes = (int) config('mazayada.security.login_decay_minutes', 15);
 
-        if (RateLimiter::tooManyAttempts($throttleKey, $maxAttempts)) {
+        $field = filter_var($request->nin_or_email, FILTER_VALIDATE_EMAIL) ? 'email' : 'nin';
+        $user = User::where($field, $request->nin_or_email)->first();
+
+        // Two separate guards, both skipped for staff (admin / entity / staff):
+        //  - Known citizen  → progressive per-account lock (short, escalating).
+        //  - Unknown input  → a short 1-minute IP rate-limiter, purely to blunt
+        //    brute-force / account-enumeration against addresses that don't exist.
+        // Keeping the IP guard off known accounts is what lets the friendly,
+        // escalating "account_locked" message actually surface (instead of a long
+        // fixed IP-throttle window firing first).
+        $ipGuard = ! $user;
+
+        if ($ipGuard && RateLimiter::tooManyAttempts($throttleKey, $maxAttempts)) {
             $seconds = RateLimiter::availableIn($throttleKey);
 
             return back()->withErrors([
                 'nin_or_email' => __('auth.too_many_attempts', ['sec' => $seconds]),
             ]);
         }
-
-        $field = filter_var($request->nin_or_email, FILTER_VALIDATE_EMAIL) ? 'email' : 'nin';
-        $user = User::where($field, $request->nin_or_email)->first();
 
         if ($user && $user->isLocked()) {
             return back()->withErrors([
@@ -68,19 +76,14 @@ class AuthController extends Controller
         }
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
-            RateLimiter::hit($throttleKey, $decayMinutes * 60);
-
-            if ($user) {
-                $attempts = ($user->failed_login_attempts ?? 0) + 1;
-                $update = ['failed_login_attempts' => $attempts];
-
-                if ($attempts >= $maxAttempts) {
-                    $update['locked_until'] = now()->addMinutes($decayMinutes);
-                    $update['failed_login_attempts'] = 0;
-                }
-
-                $user->update($update);
+            if ($ipGuard) {
+                // Short window — a mistyped, non-existent address shouldn't lock
+                // a real person out for long.
+                RateLimiter::hit($throttleKey, 60);
             }
+
+            // Escalating per-account lock — no-op for staff accounts.
+            $user?->registerFailedLogin();
 
             AuditLog::log('LOGIN_FAILED', 'User', $user?->id ?? 'unknown', null, null, [
                 'input' => $request->nin_or_email,
@@ -119,7 +122,7 @@ class AuthController extends Controller
         }
 
         RateLimiter::clear($throttleKey);
-        $user->update(['failed_login_attempts' => 0, 'locked_until' => null]);
+        $user->clearLoginThrottle();
 
         Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();

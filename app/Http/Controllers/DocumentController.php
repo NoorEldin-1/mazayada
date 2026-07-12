@@ -38,12 +38,19 @@ class DocumentController extends Controller
         $docId = (string) $request->query('doc');
         $sig = (string) $request->query('sig');
 
-        $document = $docId ? Document::with('auction')->find($docId) : null;
+        $document = $docId ? Document::with('auction.entity')->find($docId) : null;
         $valid = $document !== null && $sig !== '' && $documents->verifySignature($document, $sig);
+
+        // On a valid doc, surface a MASKED summary (amount + signature fingerprint)
+        // so the holder can compare it against the printed paper — never PII.
+        $meta = $valid ? (array) ($document->meta ?? []) : [];
+        $amount = $meta['final_price'] ?? $meta['amount'] ?? null;
 
         return view('documents.verify', [
             'valid' => $valid,
             'document' => $valid ? $document : null,
+            'amount' => $amount !== null ? (int) $amount : null,
+            'fingerprint' => $valid ? $documents->fingerprint((string) $document->signature) : null,
         ]);
     }
 }

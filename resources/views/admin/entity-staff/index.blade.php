@@ -38,15 +38,15 @@
                     @endif
                 </td>
                 <td>
-                    <x-ui.btn variant="ghost" size="sm" :href="route('admin.entity-staff.show', $member)">{{ __('common.view') }}</x-ui.btn>
-                    <x-ui.btn variant="ghost" size="sm" :href="route('admin.entity-staff.edit', $member)">{{ __('admin.entity_staff.reset_password') }}</x-ui.btn>
-                    <form method="POST" action="{{ route('admin.entity-staff.toggle', $member) }}" style="display:inline"
-                          data-confirm="{{ $member->is_active ? __('admin.entity_staff.confirm_deactivate') : __('admin.entity_staff.confirm_reactivate') }}">
-                        @csrf
-                        <x-ui.btn :variant="$member->is_active ? 'danger-ghost' : 'ghost'" size="sm">
+                    <x-ui.action-menu>
+                        <x-ui.action-menu.item :href="route('admin.entity-staff.show', $member)">{{ __('common.view') }}</x-ui.action-menu.item>
+                        <x-ui.action-menu.item :href="route('admin.entity-staff.edit', $member)">{{ __('admin.entity_staff.reset_password') }}</x-ui.action-menu.item>
+                        <x-ui.action-menu.item :action="route('admin.entity-staff.toggle', $member)"
+                            :variant="$member->is_active ? 'danger' : 'default'"
+                            :confirm="$member->is_active ? __('admin.entity_staff.confirm_deactivate') : __('admin.entity_staff.confirm_reactivate')">
                             {{ $member->is_active ? __('admin.entity_staff.deactivate') : __('admin.entity_staff.reactivate') }}
-                        </x-ui.btn>
-                    </form>
+                        </x-ui.action-menu.item>
+                    </x-ui.action-menu>
                 </td>
             </tr>
         @empty

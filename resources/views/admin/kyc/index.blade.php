@@ -29,9 +29,9 @@
                 <td style="direction:ltr;text-align:right">{{ $user->email }}</td>
                 <td>{{ $user->kyc_submitted_at?->format('Y-m-d H:i') }}</td>
                 <td>
-                    <x-ui.btn variant="primary" size="sm" :href="route('admin.kyc.show', $user)">
-                        {{ __('admin.kyc.review') }}
-                    </x-ui.btn>
+                    <x-ui.action-menu>
+                        <x-ui.action-menu.item :href="route('admin.kyc.show', $user)">{{ __('admin.kyc.review') }}</x-ui.action-menu.item>
+                    </x-ui.action-menu>
                 </td>
             </tr>
         @empty

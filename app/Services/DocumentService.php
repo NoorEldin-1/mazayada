@@ -111,7 +111,7 @@ class DocumentService
         array $meta = [],
     ): Document {
         $docId = (string) Str::uuid();
-        $signature = $this->sign($docId, $type);
+        $signature = $this->sign($docId, $type, $meta, $auction?->id);
         $verifyUrl = $this->verifyUrl($docId, $signature);
         $qrImage = $this->qrDataUri($verifyUrl);
 
@@ -121,6 +121,10 @@ class DocumentService
             'title' => $title,
             'qrImage' => $qrImage,
             'verifyUrl' => $verifyUrl,
+            // Short, human-comparable fingerprint of the full signature — printed
+            // under the electronic-signature stamp so a verifier can eyeball-match
+            // it against the /verify page.
+            'signatureFingerprint' => $this->fingerprint($signature),
             'issuedAt' => now(),
             // Shared header (documents._layout): the platform logo and the name
             // of the organizing entity, shown above the document number.
@@ -186,12 +190,25 @@ class DocumentService
         return $mpdf->Output('', \Mpdf\Output\Destination::STRING_RETURN);
     }
 
-    /** HMAC binding the document id to its type with the platform signing key. */
-    public function sign(string $docId, DocumentType $type): string
+    /**
+     * HMAC binding the document to its CONTENT — not just its id/type. The
+     * canonical payload includes the id, type, auction and the persisted `meta`
+     * (winner NIN, final price, amounts, …), so editing any signed fact in the
+     * rendered PDF invalidates the QR. `meta` is persisted on the Document row,
+     * so verifySignature can reproduce the exact same payload later.
+     */
+    public function sign(string $docId, DocumentType $type, array $meta = [], ?string $auctionId = null): string
     {
+        $payload = $this->canonicalPayload([
+            'id' => $docId,
+            'type' => $type->value,
+            'auction_id' => $auctionId,
+            'meta' => $meta,
+        ]);
+
         return hash_hmac(
             'sha256',
-            $docId.'|'.$type->value,
+            $payload,
             (string) config('mazayada.documents.signing_key', config('app.key')),
         );
     }
@@ -199,21 +216,73 @@ class DocumentService
     /** Verify a (doc, sig) pair from the QR / verify route. */
     public function verifySignature(Document $document, string $providedSig): bool
     {
-        $expected = $this->sign($document->id, $document->type);
+        $expected = $this->sign(
+            $document->id,
+            $document->type,
+            (array) ($document->meta ?? []),
+            $document->auction_id,
+        );
 
         return hash_equals($expected, (string) $document->signature)
             && hash_equals($expected, $providedSig);
     }
 
+    /** First 16 hex chars of the signature — a short, comparable fingerprint. */
+    public function fingerprint(string $signature): string
+    {
+        return strtoupper(substr($signature, 0, 16));
+    }
+
+    /**
+     * Stable JSON of the signed fields: keys are recursively sorted so the byte
+     * sequence is deterministic regardless of array insertion order.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function canonicalPayload(array $data): string
+    {
+        $sort = function (&$value) use (&$sort): void {
+            if (is_array($value)) {
+                ksort($value);
+                foreach ($value as &$child) {
+                    $sort($child);
+                }
+            }
+        };
+        $sort($data);
+
+        return (string) json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+
     private function verifyUrl(string $docId, string $signature): string
     {
-        $base = config('mazayada.documents.qr_verification_base_url');
+        // Production requires ZERO config: the URL is built from route() (i.e.
+        // APP_URL), which on a real deployment is already the public domain — so
+        // the QR just works without touching the server's .env.
+        //
+        // QR_VERIFICATION_BASE_URL is honoured ONLY as a local-dev override, and
+        // ONLY when APP_URL points at localhost (the one case route() would emit
+        // an unreachable "localhost" a phone can't open). This makes it safe to
+        // hardcode a LAN IP in the local .env: it can never leak into production,
+        // because there APP_URL is not localhost and the override is ignored.
+        $route = route('documents.verify', ['doc' => $docId, 'sig' => $signature]);
+        $override = config('mazayada.documents.qr_verification_base_url');
 
-        if (! $base) {
-            return route('documents.verify', ['doc' => $docId, 'sig' => $signature]);
+        $appUrlIsLocal = (bool) preg_match('#^https?://(localhost|127\.0\.0\.1)#i', (string) config('app.url'));
+
+        if ($appUrlIsLocal && $override) {
+            $url = rtrim($override, '/').'?doc='.$docId.'&sig='.$signature;
+        } else {
+            $url = $route;
         }
 
-        return rtrim($base, '/').'?doc='.$docId.'&sig='.$signature;
+        // If we still ended up with a localhost URL (dev without a LAN override),
+        // warn: a phone scanning this QR can't reach it. Never fires in production.
+        if (preg_match('#https?://(localhost|127\.0\.0\.1)#i', $url)) {
+            Log::warning('Document QR points to an unreachable localhost URL — set QR_VERIFICATION_BASE_URL to a LAN IP / tunnel the scanning device can reach (local dev only).', ['url' => $url]);
+        }
+
+        return $url;
     }
 
     /**
@@ -249,9 +318,16 @@ class DocumentService
         try {
             $svg = (string) QrCode::format('svg')->size(120)->margin(0)->generate($text);
 
+            if ($svg === '') {
+                throw new \RuntimeException('empty QR output');
+            }
+
             return 'data:image/svg+xml;base64,'.base64_encode($svg);
         } catch (\Throwable $e) {
-            Log::warning('QR generation failed', ['error' => $e->getMessage()]);
+            // A document with no QR is a broken document — surface it as an error,
+            // not a silent warning. The Blade falls back to printing the verify
+            // URL as text so the document is still verifiable by hand.
+            Log::error('QR generation failed — document will render without a scannable code', ['error' => $e->getMessage()]);
 
             return '';
         }

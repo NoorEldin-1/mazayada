@@ -9,6 +9,7 @@ return [
         'qr_caption' => 'Scan to verify',
         'verify_footer' => 'This document was electronically generated and signed. Verify its authenticity at:',
         'electronic_signature' => 'Electronic signature — per Law 15-04',
+        'signature_ref' => 'Signature reference',
     ],
 
     'condition_book' => [
@@ -80,5 +81,9 @@ return [
         'doc_type' => 'Document type',
         'issued_at' => 'Issued at',
         'auction' => 'Auction',
+        'entity' => 'Organizing entity',
+        'amount' => 'Amount',
+        'signature_ref' => 'Signature reference',
+        'tamper_hint' => 'Compare the amount and signature reference above with what is printed on your document; any difference means it was altered.',
     ],
 ];

@@ -80,6 +80,59 @@ class AuthenticationTest extends TestCase
         $this->assertTrue($user->isLocked());
     }
 
+    public function test_staff_account_is_never_locked_after_many_failed_attempts(): void
+    {
+        $admin = $this->createUser([
+            'email' => 'admin@example.test',
+            'password' => 'StrongP@ss123',
+            'role' => UserRole::SUPER_ADMIN,
+        ]);
+
+        for ($i = 0; $i < 12; $i++) {
+            $this->post('/login', [
+                'nin_or_email' => 'admin@example.test',
+                'password' => 'Wrong'.$i,
+            ]);
+        }
+
+        $admin->refresh();
+        $this->assertNull($admin->locked_until);
+        $this->assertSame(0, (int) $admin->failed_login_attempts);
+        $this->assertFalse($admin->isThrottleable());
+
+        // Correct credentials still let the operator straight in — never throttled.
+        $this->post('/login', [
+            'nin_or_email' => 'admin@example.test',
+            'password' => 'StrongP@ss123',
+        ])->assertRedirect();
+        $this->assertAuthenticatedAs($admin->fresh());
+    }
+
+    public function test_citizen_lockout_uses_progressive_backoff(): void
+    {
+        config()->set('mazayada.security.login_lockout_backoff', [1, 3, 5]);
+        $user = $this->createUser(['email' => 'backoff@example.test', 'password' => 'StrongP@ss123']);
+
+        $lockOnce = function () {
+            for ($i = 0; $i < 5; $i++) {
+                $this->post('/login', ['nin_or_email' => 'backoff@example.test', 'password' => 'Wrong'.$i]);
+            }
+        };
+
+        $lockOnce();
+        $first = $user->fresh()->locked_until;
+        // First lockout ≈ 1 minute.
+        $this->assertLessThanOrEqual(90, now()->diffInSeconds($first, false));
+
+        // Advance past the per-minute route limiter + clear the lock, then offend
+        // again — the escalation level bumps so the next step is longer.
+        $this->travel(2)->minutes();
+        $user->update(['locked_until' => null, 'failed_login_attempts' => 0]);
+        $lockOnce();
+        $second = $user->fresh()->locked_until;
+        $this->assertGreaterThan(120, now()->diffInSeconds($second, false));
+    }
+
     public function test_blacklisted_user_cannot_login(): void
     {
         $user = $this->createUser([

@@ -135,7 +135,26 @@ return [
     ],
 
     'security' => [
+        // Failed-login lockout applies ONLY to regular citizen accounts — never to
+        // staff (admin / entity / entity-staff). See User::isThrottleable().
         'login_max_attempts' => (int) env('LOGIN_MAX_ATTEMPTS', 5),
+
+        // Progressive lockout schedule (minutes). Each successive lockout within a
+        // short window takes the next (longer) duration, then resets after a calm
+        // period. Starts small so a citizen who fatfingers their password is only
+        // held for a minute, but repeat offenders escalate. The last value is the
+        // cap. Tunable via env as a comma-separated list.
+        'login_lockout_backoff' => array_map(
+            'intval',
+            explode(',', (string) env('LOGIN_LOCKOUT_BACKOFF', '1,3,5,10,15')),
+        ),
+
+        // How long (minutes) an escalation level survives with no new lockout
+        // before it resets back to the first (shortest) backoff step.
+        'login_lockout_reset_minutes' => (int) env('LOGIN_LOCKOUT_RESET_MINUTES', 60),
+
+        // Legacy fixed decay — kept as a fallback only (used to expire the
+        // IP-based rate-limiter window). No longer drives the account lock.
         'login_decay_minutes' => (int) env('LOGIN_DECAY_MINUTES', 15),
     ],
 

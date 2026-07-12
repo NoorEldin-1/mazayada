@@ -53,7 +53,11 @@ Route::prefix('legal')->name('legal.')->group(function () {
 // Auth (guest only) — throttled to prevent brute force
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
+    // Brute-force protection lives inside AuthController::login (graceful on-form
+    // message + progressive per-account lock, and it never throttles staff). A
+    // route-level throttle:login would return a raw 429 page and can't tell
+    // citizens from staff apart — so it's intentionally omitted here.
+    Route::post('/login', [AuthController::class, 'login']);
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
     Route::get('/verify-otp', [AuthController::class, 'showVerifyOtp'])->name('verify-otp');

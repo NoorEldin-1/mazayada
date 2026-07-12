@@ -18,8 +18,19 @@
                 <tr><td style="color:var(--muted);padding:6px">{{ __('documents.verify.issued_at') }}</td><td style="padding:6px">{{ optional($document->created_at)->format('Y-m-d H:i') }}</td></tr>
                 @if($document->auction)
                 <tr><td style="color:var(--muted);padding:6px">{{ __('documents.verify.auction') }}</td><td style="padding:6px">{{ $document->auction->localizedTitle() }}</td></tr>
+                @if($document->auction->entity)
+                <tr><td style="color:var(--muted);padding:6px">{{ __('documents.verify.entity') }}</td><td style="padding:6px">{{ $document->auction->entity->name }}</td></tr>
+                @endif
+                @endif
+                @if(!is_null($amount))
+                <tr><td style="color:var(--muted);padding:6px">{{ __('documents.verify.amount') }}</td><td style="padding:6px">{!! dzd_html($amount) !!}</td></tr>
+                @endif
+                @if($fingerprint)
+                <tr><td style="color:var(--muted);padding:6px">{{ __('documents.verify.signature_ref') }}</td><td style="padding:6px;direction:ltr;text-align:start;letter-spacing:.5px">{{ $fingerprint }}</td></tr>
                 @endif
             </table>
+
+            <p style="color:var(--muted);font-size:12px;margin:18px 0 0">{{ __('documents.verify.tamper_hint') }}</p>
         @else
             <div style="width:64px;height:64px;border-radius:50%;background:rgba(190,40,40,.1);color:#b91c1c;display:grid;place-items:center;margin:0 auto 18px">
                 <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>

@@ -122,12 +122,11 @@ class AuthController extends ApiController
      */
     public function login(LoginRequest $request): JsonResponse
     {
-        $maxAttempts = (int) config('mazayada.security.login_max_attempts', 5);
-        $decayMinutes = (int) config('mazayada.security.login_decay_minutes', 15);
-
         $field = filter_var($request->input('nin_or_email'), FILTER_VALIDATE_EMAIL) ? 'email' : 'nin';
         $user = User::where($field, $request->input('nin_or_email'))->first();
 
+        // Per-account lockout applies only to regular citizens — staff (admin /
+        // entity / entity-staff) are never locked out. See User::isThrottleable().
         if ($user && $user->isLocked()) {
             throw ValidationException::withMessages([
                 'nin_or_email' => __('auth.account_locked', ['time' => $user->locked_until->diffForHumans()]),
@@ -135,17 +134,8 @@ class AuthController extends ApiController
         }
 
         if (! $user || ! Hash::check($request->input('password'), $user->password)) {
-            if ($user) {
-                $attempts = ($user->failed_login_attempts ?? 0) + 1;
-                $update = ['failed_login_attempts' => $attempts];
-
-                if ($attempts >= $maxAttempts) {
-                    $update['locked_until'] = now()->addMinutes($decayMinutes);
-                    $update['failed_login_attempts'] = 0;
-                }
-
-                $user->update($update);
-            }
+            // Escalating per-account lock — no-op for staff accounts.
+            $user?->registerFailedLogin();
 
             AuditLog::log('LOGIN_FAILED', 'User', $user?->id ?? 'unknown', null, null, [
                 'input' => $request->input('nin_or_email'),
@@ -179,7 +169,7 @@ class AuthController extends ApiController
             );
         }
 
-        $user->update(['failed_login_attempts' => 0, 'locked_until' => null]);
+        $user->clearLoginThrottle();
 
         AuditLog::log('LOGIN_SUCCESS', 'User', $user->id, $user->id, $user->role?->value, [
             'ip' => $request->ip(),

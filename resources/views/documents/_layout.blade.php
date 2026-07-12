@@ -37,6 +37,7 @@
         .legal { font-size: 9px; color: #6b7280; margin-top: 14px; border-top: 1px solid #e5e7eb; padding-top: 8px; }
         .footer { font-size: 9px; color: #9ca3af; text-align: center; margin-top: 18px; border-top: 1px solid #e5e7eb; padding-top: 8px; }
         .stamp { display: inline-block; border: 2px solid #15573f; color: #15573f; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: bold; }
+        .sig-fp { display: inline-block; margin-inline-start: 10px; font-size: 9px; color: #6b7280; letter-spacing: .5px; direction: ltr; }
     </style>
 </head>
 <body>
@@ -69,8 +70,14 @@
                 </div>
             </td>
             <td class="qr-box" style="width:38%">
-                @if(!empty($qrImage))<img src="{{ $qrImage }}" alt="QR">
-                <div class="qr-cap">{{ __('documents.common.qr_caption') }}</div>@endif
+                @if(!empty($qrImage))
+                <img src="{{ $qrImage }}" alt="QR">
+                <div class="qr-cap">{{ __('documents.common.qr_caption') }}</div>
+                @else
+                {{-- QR failed to generate: keep the document verifiable by printing
+                     the verify link as text so it can be typed / clicked. --}}
+                <div class="qr-cap" style="direction:ltr;text-align:end;word-break:break-all"><a href="{{ $verifyUrl }}" style="color:#15573f">{{ $verifyUrl }}</a></div>
+                @endif
             </td>
         </tr>
     </table>
@@ -78,9 +85,18 @@
 
     @yield('doc-content')
 
+    @isset($signatureFingerprint)
+    <div class="section" style="margin-top:18px">
+        <span class="stamp">{{ __('documents.common.electronic_signature') }}</span>
+        <span class="sig-fp">{{ __('documents.common.signature_ref') }}: {{ $signatureFingerprint }}</span>
+    </div>
+    @endisset
+
     <div class="footer">
         {{ __('documents.common.verify_footer') }}<br>
-        {{ $verifyUrl }}
+        {{-- Wrap in an <a> so the URL is a real clickable link in the PDF, not
+             plain text (mpdf only makes anchored URLs clickable). --}}
+        <a href="{{ $verifyUrl }}" style="color:#15573f;text-decoration:underline;direction:ltr;word-break:break-all">{{ $verifyUrl }}</a>
     </div>
 </body>
 </html>

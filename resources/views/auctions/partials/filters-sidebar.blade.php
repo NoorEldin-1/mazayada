@@ -124,7 +124,7 @@
                             data-locale="{{ app()->getLocale() }}">
                         <option value="">{{ __('common.all') }}</option>
                         @foreach($wilayas ?? [] as $w)
-                            <option value="{{ $w->id }}" @selected(request('wilaya') == $w->id)>{{ $w->name }}</option>
+                            <option value="{{ $w->id }}" @selected(request('wilaya') == $w->id)>{{ $w->code }} - {{ $w->name }}</option>
                         @endforeach
                     </select>
                 </div>

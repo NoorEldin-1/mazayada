@@ -16,8 +16,4 @@
             @endif
         </table>
     </div>
-
-    <div class="section" style="margin-top:18px">
-        <span class="stamp">{{ __('documents.common.electronic_signature') }}</span>
-    </div>
 @endsection

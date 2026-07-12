@@ -41,99 +41,96 @@
                 <td><span class="chip {{ $appeal->status->chipClass() }}">{{ $appeal->status->label() }}</span></td>
                 <td>{{ $appeal->created_at->format('Y-m-d') }}</td>
                 <td>
-                    <x-ui.btn variant="ghost" size="sm" type="button"
-                        onclick="document.getElementById('ap-{{ $appeal->id }}').style.display = document.getElementById('ap-{{ $appeal->id }}').style.display === 'none' ? 'block' : 'none'">
-                        {{ __('common.view') }}
-                    </x-ui.btn>
+                    <x-ui.action-menu>
+                        <x-ui.action-menu.item data-modal-target="#appeal-{{ $appeal->id }}">{{ __('common.view') }}</x-ui.action-menu.item>
+                    </x-ui.action-menu>
 
-                    <div id="ap-{{ $appeal->id }}" style="display:none;margin-top:0.75rem;min-width:320px">
-                        <x-ui.card>
-                            {{-- Context: the citizen's appeal --}}
-                            <p style="font-size:0.85rem;margin-bottom:0.5rem"><strong>{{ __('appeals.reason_label') }}</strong> {{ $appeal->reason }}</p>
+                    <x-ui.modal id="appeal-{{ $appeal->id }}" :title="$appeal->subject" size="lg">
+                        {{-- Context: the citizen's appeal --}}
+                        <p style="font-size:0.9rem;margin-bottom:0.6rem"><strong>{{ __('appeals.reason_label') }}</strong> {{ $appeal->reason }}</p>
 
-                            {{-- The entity's decision, once it has decided --}}
-                            @if($appeal->entity_decision)
-                                <div style="margin:0.5rem 0;padding:0.5rem 0.75rem;border-radius:0.5rem;background:var(--bg-2,#f6f7f5)">
-                                    <p style="font-size:0.82rem;margin-bottom:0.25rem">
-                                        <strong>{{ __('appeals.entity_decision_label') }}</strong>
-                                        <span class="chip {{ $appeal->entity_decision->publicChipClass() }}">{{ $appeal->entity_decision->label() }}</span>
-                                    </p>
-                                    @if($appeal->entity_response)
-                                        <p style="font-size:0.82rem;color:var(--ink-2,#555)"><strong>{{ __('appeals.entity_response_label') }}</strong> {{ $appeal->entity_response }}</p>
-                                    @endif
-                                </div>
+                        {{-- The entity's decision, once it has decided --}}
+                        @if($appeal->entity_decision)
+                            <div style="margin:0.5rem 0 0.75rem;padding:0.6rem 0.85rem;border-radius:0.6rem;background:var(--bg-2)">
+                                <p style="font-size:0.85rem;margin-bottom:0.25rem">
+                                    <strong>{{ __('appeals.entity_decision_label') }}</strong>
+                                    <span class="chip {{ $appeal->entity_decision->publicChipClass() }}">{{ $appeal->entity_decision->label() }}</span>
+                                </p>
+                                @if($appeal->entity_response)
+                                    <p style="font-size:0.85rem;color:var(--ink-2)"><strong>{{ __('appeals.entity_response_label') }}</strong> {{ $appeal->entity_response }}</p>
+                                @endif
+                            </div>
+                        @endif
+
+                        {{-- The platform's final note, once terminal --}}
+                        @if($appeal->status->isTerminal() && $appeal->admin_response)
+                            <p style="font-size:0.85rem;margin:0.5rem 0"><strong>{{ __('appeals.response_label') }}:</strong> {{ $appeal->admin_response }}</p>
+                        @endif
+
+                        {{-- ===== Stage-appropriate actions ===== --}}
+                        @if($isEntity)
+                            {{-- Organising entity: decide a forwarded appeal --}}
+                            @if($s === 'FORWARDED_TO_ENTITY')
+                                @can('decide', $appeal)
+                                    <form method="POST" action="{{ route('admin.appeals.decide', $appeal) }}" style="margin-top:0.75rem">
+                                        @csrf
+                                        <div class="field" style="margin-bottom:0.5rem">
+                                            <label style="font-size:0.85rem;display:block;margin-bottom:.3rem">{{ __('appeals.entity_response_field') }}</label>
+                                            <textarea name="entity_response" class="textarea" rows="3" required placeholder="{{ __('appeals.entity_response_placeholder') }}"></textarea>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <x-ui.btn variant="primary" size="sm" name="decision" value="APPROVED">{{ __('appeals.decision_approve') }}</x-ui.btn>
+                                            <x-ui.btn variant="danger" size="sm" name="decision" value="REJECTED">{{ __('appeals.decision_reject') }}</x-ui.btn>
+                                        </div>
+                                    </form>
+                                @endcan
+                            @else
+                                <p class="text-muted" style="font-size:0.85rem;margin-top:0.5rem">{{ __('appeals.entity_no_action') }}</p>
                             @endif
-
-                            {{-- The platform's final note, once terminal --}}
-                            @if($appeal->status->isTerminal() && $appeal->admin_response)
-                                <p style="font-size:0.82rem;margin:0.5rem 0"><strong>{{ __('appeals.response_label') }}:</strong> {{ $appeal->admin_response }}</p>
-                            @endif
-
-                            {{-- ===== Stage-appropriate actions ===== --}}
-                            @if($isEntity)
-                                {{-- Organising entity: decide a forwarded appeal --}}
-                                @if($s === 'FORWARDED_TO_ENTITY')
-                                    @can('decide', $appeal)
-                                        <form method="POST" action="{{ route('admin.appeals.decide', $appeal) }}" style="margin-top:0.75rem">
+                        @else
+                            {{-- Platform admin --}}
+                            @if($s === 'PENDING')
+                                <div style="margin-top:0.75rem">
+                                    @can('forward', $appeal)
+                                        <form method="POST" action="{{ route('admin.appeals.forward', $appeal) }}" style="margin-bottom:0.75rem">
                                             @csrf
-                                            <div class="field" style="margin-bottom:0.5rem">
-                                                <label style="font-size:0.85rem">{{ __('appeals.entity_response_field') }}</label>
-                                                <textarea name="entity_response" class="textarea" rows="3" required placeholder="{{ __('appeals.entity_response_placeholder') }}"></textarea>
-                                            </div>
-                                            <div class="flex gap-2">
-                                                <x-ui.btn variant="primary" size="sm" name="decision" value="APPROVED">{{ __('appeals.decision_approve') }}</x-ui.btn>
-                                                <x-ui.btn variant="danger" size="sm" name="decision" value="REJECTED">{{ __('appeals.decision_reject') }}</x-ui.btn>
-                                            </div>
+                                            <x-ui.btn variant="primary" size="sm">{{ __('appeals.forward_btn') }}</x-ui.btn>
                                         </form>
                                     @endcan
-                                @else
-                                    <p class="text-muted" style="font-size:0.8rem;margin-top:0.5rem">{{ __('appeals.entity_no_action') }}</p>
-                                @endif
-                            @else
-                                {{-- Platform admin --}}
-                                @if($s === 'PENDING')
-                                    <div style="margin-top:0.75rem">
-                                        @can('forward', $appeal)
-                                            <form method="POST" action="{{ route('admin.appeals.forward', $appeal) }}" style="margin-bottom:0.75rem">
-                                                @csrf
-                                                <x-ui.btn variant="primary" size="sm">{{ __('appeals.forward_btn') }}</x-ui.btn>
-                                            </form>
-                                        @endcan
-                                        @can('rejectAtIntake', $appeal)
-                                            <form method="POST" action="{{ route('admin.appeals.reject', $appeal) }}">
-                                                @csrf
-                                                <div class="field" style="margin-bottom:0.5rem">
-                                                    <label style="font-size:0.85rem">{{ __('appeals.reject_intake_label') }}</label>
-                                                    <textarea name="admin_response" class="textarea" rows="2" required placeholder="{{ __('appeals.response_placeholder') }}"></textarea>
-                                                </div>
-                                                <x-ui.btn variant="danger" size="sm">{{ __('appeals.reject_intake_btn') }}</x-ui.btn>
-                                            </form>
-                                        @endcan
-                                    </div>
-                                @elseif($s === 'FORWARDED_TO_ENTITY')
-                                    <p class="text-muted" style="font-size:0.8rem;margin-top:0.5rem">{{ __('appeals.awaiting_entity') }}</p>
-                                @elseif($s === 'ENTITY_APPROVED' || $s === 'ENTITY_REJECTED')
-                                    @can('confirm', $appeal)
-                                        <form method="POST" action="{{ route('admin.appeals.confirm', $appeal) }}" style="margin-top:0.75rem">
+                                    @can('rejectAtIntake', $appeal)
+                                        <form method="POST" action="{{ route('admin.appeals.reject', $appeal) }}">
                                             @csrf
                                             <div class="field" style="margin-bottom:0.5rem">
-                                                <label style="font-size:0.85rem">{{ __('appeals.final_decision_label') }}</label>
-                                                <select name="decision" class="input">
-                                                    <option value="APPROVED" @selected($appeal->entity_decision?->value === 'APPROVED')>{{ __('appeals.decision_approve') }}</option>
-                                                    <option value="REJECTED" @selected($appeal->entity_decision?->value === 'REJECTED')>{{ __('appeals.decision_reject') }}</option>
-                                                </select>
-                                            </div>
-                                            <div class="field" style="margin-bottom:0.5rem">
-                                                <label style="font-size:0.85rem">{{ __('appeals.response_label') }}</label>
+                                                <label style="font-size:0.85rem;display:block;margin-bottom:.3rem">{{ __('appeals.reject_intake_label') }}</label>
                                                 <textarea name="admin_response" class="textarea" rows="2" required placeholder="{{ __('appeals.response_placeholder') }}"></textarea>
                                             </div>
-                                            <x-ui.btn variant="primary" size="sm">{{ __('appeals.confirm_btn') }}</x-ui.btn>
+                                            <x-ui.btn variant="danger" size="sm">{{ __('appeals.reject_intake_btn') }}</x-ui.btn>
                                         </form>
                                     @endcan
-                                @endif
+                                </div>
+                            @elseif($s === 'FORWARDED_TO_ENTITY')
+                                <p class="text-muted" style="font-size:0.85rem;margin-top:0.5rem">{{ __('appeals.awaiting_entity') }}</p>
+                            @elseif($s === 'ENTITY_APPROVED' || $s === 'ENTITY_REJECTED')
+                                @can('confirm', $appeal)
+                                    <form method="POST" action="{{ route('admin.appeals.confirm', $appeal) }}" style="margin-top:0.75rem">
+                                        @csrf
+                                        <div class="field" style="margin-bottom:0.5rem">
+                                            <label style="font-size:0.85rem;display:block;margin-bottom:.3rem">{{ __('appeals.final_decision_label') }}</label>
+                                            <select name="decision" class="input">
+                                                <option value="APPROVED" @selected($appeal->entity_decision?->value === 'APPROVED')>{{ __('appeals.decision_approve') }}</option>
+                                                <option value="REJECTED" @selected($appeal->entity_decision?->value === 'REJECTED')>{{ __('appeals.decision_reject') }}</option>
+                                            </select>
+                                        </div>
+                                        <div class="field" style="margin-bottom:0.5rem">
+                                            <label style="font-size:0.85rem;display:block;margin-bottom:.3rem">{{ __('appeals.response_label') }}</label>
+                                            <textarea name="admin_response" class="textarea" rows="2" required placeholder="{{ __('appeals.response_placeholder') }}"></textarea>
+                                        </div>
+                                        <x-ui.btn variant="primary" size="sm">{{ __('appeals.confirm_btn') }}</x-ui.btn>
+                                    </form>
+                                @endcan
                             @endif
-                        </x-ui.card>
-                    </div>
+                        @endif
+                    </x-ui.modal>
                 </td>
             </tr>
         @empty

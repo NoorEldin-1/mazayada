@@ -38,8 +38,4 @@
             <p style="font-size:11px">— {{ __('documents.condition_book.requires_newspaper') }}</p>
         @endif
     </div>
-
-    <div class="section" style="margin-top:18px">
-        <span class="stamp">{{ __('documents.common.electronic_signature') }}</span>
-    </div>
 @endsection

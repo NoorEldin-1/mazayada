@@ -280,6 +280,83 @@ class User extends Authenticatable implements HasLocalePreference
         return $this->locked_until !== null && $this->locked_until->isFuture();
     }
 
+    /**
+     * Whether failed-login throttling / lockout applies to this account. Only
+     * regular citizens are throttled — staff (admin, entity accounts, and entity
+     * staff) are never locked out, no matter how many times they mistype their
+     * password (spec: institutional/admin operators must not be self-DoS'd).
+     */
+    public function isThrottleable(): bool
+    {
+        return ! $this->isStaff();
+    }
+
+    /**
+     * Record a failed login attempt and lock the account once the max is reached,
+     * using a PROGRESSIVE backoff (short first, escalating on repeat lockouts).
+     * No-op for staff accounts. Returns true if this attempt triggered a lock.
+     */
+    public function registerFailedLogin(): bool
+    {
+        if (! $this->isThrottleable()) {
+            return false;
+        }
+
+        $maxAttempts = (int) config('mazayada.security.login_max_attempts', 5);
+        $attempts = ($this->failed_login_attempts ?? 0) + 1;
+
+        if ($attempts < $maxAttempts) {
+            $this->update(['failed_login_attempts' => $attempts]);
+
+            return false;
+        }
+
+        // Reached the threshold — pick the next backoff step and lock.
+        $minutes = $this->nextLockoutMinutes();
+
+        $this->update([
+            'failed_login_attempts' => 0,
+            'locked_until' => now()->addMinutes($minutes),
+        ]);
+
+        return true;
+    }
+
+    /**
+     * Clear all failed-login state after a successful authentication.
+     */
+    public function clearLoginThrottle(): void
+    {
+        $this->update(['failed_login_attempts' => 0, 'locked_until' => null]);
+        \Illuminate\Support\Facades\Cache::forget($this->lockoutLevelKey());
+    }
+
+    /**
+     * Resolve the lockout duration (minutes) for the current escalation level and
+     * advance the level. The level lives in the cache and self-expires after a
+     * calm period, so an occasional wrong password doesn't compound over weeks.
+     */
+    protected function nextLockoutMinutes(): int
+    {
+        $backoff = (array) config('mazayada.security.login_lockout_backoff', [1, 3, 5, 10, 15]);
+        $backoff = array_values(array_filter(array_map('intval', $backoff), fn ($m) => $m > 0)) ?: [15];
+
+        $key = $this->lockoutLevelKey();
+        $level = (int) \Illuminate\Support\Facades\Cache::get($key, 0);
+
+        $minutes = $backoff[min($level, count($backoff) - 1)];
+
+        $resetMinutes = (int) config('mazayada.security.login_lockout_reset_minutes', 60);
+        \Illuminate\Support\Facades\Cache::put($key, $level + 1, now()->addMinutes($resetMinutes));
+
+        return $minutes;
+    }
+
+    protected function lockoutLevelKey(): string
+    {
+        return "login_lockout_level_{$this->id}";
+    }
+
     public function canBid(): bool
     {
         return $this->isKycComplete()

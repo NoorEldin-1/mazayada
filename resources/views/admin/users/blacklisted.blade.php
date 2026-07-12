@@ -25,13 +25,10 @@
                 <td class="lat" dir="ltr">{{ $user->email }}</td>
                 <td>{{ $user->blacklist_reason }}</td>
                 <td>
-                    <div class="flex flex-wrap items-center gap-2">
-                        <form method="POST" action="{{ route('admin.users.unblacklist', $user) }}" style="display:inline"
-                              data-confirm="{{ __('admin.users.confirm_unblacklist_prompt') }}" data-confirm-label="{{ __('admin.users.unblacklist_action') }}">
-                            @csrf
-                            <x-ui.btn variant="ghost" size="sm" class="text-ok">{{ __('admin.users.unblacklist_action') }}</x-ui.btn>
-                        </form>
-                    </div>
+                    <x-ui.action-menu>
+                        <x-ui.action-menu.item :action="route('admin.users.unblacklist', $user)"
+                            :confirm="__('admin.users.confirm_unblacklist_prompt')" :confirm-label="__('admin.users.unblacklist_action')">{{ __('admin.users.unblacklist_action') }}</x-ui.action-menu.item>
+                    </x-ui.action-menu>
                 </td>
             </tr>
         @empty

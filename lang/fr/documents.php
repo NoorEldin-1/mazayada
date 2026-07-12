@@ -9,6 +9,7 @@ return [
         'qr_caption' => 'Scannez pour vérifier',
         'verify_footer' => 'Ce document est généré et signé électroniquement. Vérifiez son authenticité sur :',
         'electronic_signature' => 'Signature électronique — conforme à la loi 15-04',
+        'signature_ref' => 'Référence de signature',
     ],
 
     'condition_book' => [
@@ -80,5 +81,9 @@ return [
         'doc_type' => 'Type de document',
         'issued_at' => 'Date d’émission',
         'auction' => 'Enchère',
+        'entity' => 'Entité organisatrice',
+        'amount' => 'Montant',
+        'signature_ref' => 'Référence de signature',
+        'tamper_hint' => 'Comparez le montant et la référence de signature ci-dessus à ce qui est imprimé sur votre document ; toute différence signifie qu’il a été modifié.',
     ],
 ];

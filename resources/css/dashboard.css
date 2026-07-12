@@ -428,3 +428,133 @@ html[data-theme="dark"] .mdl-btn--ghost:hover { filter: brightness(1.12); }
   .mdl-actions { flex-direction: column; }
   .mdl-btn { inline-size: 100%; }
 }
+
+/* =============================================================
+   Row-action dropdown (⋮) — <x-ui.action-menu>
+   The trigger sits inline in the table cell; the panel is
+   position:fixed (JS-positioned from the trigger rect) so it
+   escapes the table's `overflow-x:auto` clip and can flip above
+   near the viewport bottom. Unlayered class selectors → they
+   outrank mazayada.css's global button/anchor element resets.
+   ============================================================= */
+.act-menu { display: inline-block; }
+
+.act-menu__trigger {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 36px;
+  block-size: 36px;
+  border-radius: 10px;
+  color: var(--ink-2);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.act-menu__trigger > svg { inline-size: 18px; block-size: 18px; }
+.act-menu__trigger:hover { background: var(--bg-2); color: var(--ink); }
+.act-menu__trigger[aria-expanded="true"] {
+  background: color-mix(in oklab, var(--primary) 10%, transparent);
+  border-color: color-mix(in oklab, var(--primary) 35%, var(--line));
+  color: var(--primary);
+}
+.act-menu__trigger:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+.act-menu__panel {
+  position: fixed;
+  z-index: 60;
+  min-inline-size: 190px;
+  max-inline-size: 260px;
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow-lg, 0 20px 45px rgba(0, 0, 0, .2));
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: act-menu-pop .12s ease-out;
+}
+.act-menu__panel[hidden] { display: none; }
+@keyframes act-menu-pop { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+.act-menu__form { display: block; margin: 0; }
+
+.act-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  inline-size: 100%;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: start;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background .12s ease, color .12s ease;
+}
+.act-menu__item:hover,
+.act-menu__item:focus-visible {
+  background: color-mix(in oklab, var(--primary) 8%, transparent);
+  color: var(--primary);
+  outline: none;
+}
+.act-menu__item--danger { color: var(--danger); }
+.act-menu__item--danger:hover,
+.act-menu__item--danger:focus-visible {
+  background: color-mix(in oklab, var(--danger) 10%, transparent);
+  color: var(--danger);
+}
+
+/* =============================================================
+   Form-hosting modal — <x-ui.modal>. Reuses the .mdl-overlay
+   backdrop + animations above; overrides the narrow text-only
+   .mdl-box into a start-aligned box with header + scrollable body.
+   ============================================================= */
+.mdl-box--form {
+  --mdl-accent: var(--primary);
+  max-inline-size: 480px;
+  padding: 0;
+  text-align: start;
+  overflow: hidden;
+}
+.mdl-box--form.mdl-box--lg { max-inline-size: 620px; }
+
+.mdl-form-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 22px;
+  border-block-end: 1px solid var(--line);
+}
+.mdl-form-title { font-size: 16px; font-weight: 700; color: var(--ink); margin: 0; }
+.mdl-form-close {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 34px;
+  block-size: 34px;
+  border-radius: 9px;
+  border: 0;
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background .15s ease, color .15s ease;
+}
+.mdl-form-close:hover { background: var(--bg-2); color: var(--ink); }
+.mdl-form-close:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.mdl-form-close > svg { inline-size: 18px; block-size: 18px; }
+
+.mdl-form-body {
+  padding: 20px 22px 22px;
+  max-block-size: min(70vh, 560px);
+  overflow-y: auto;
+}
+/* Forms moved into modals shouldn't keep any inline max-width/margins. */
+.mdl-form-body > form { margin: 0; }

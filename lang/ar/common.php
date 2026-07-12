@@ -30,6 +30,7 @@ return [
     'confirm_title' => 'تأكيد الإجراء',
     'view' => 'عرض',
     'actions' => 'الإجراءات',
+    'actions_menu' => 'قائمة الإجراءات',
     'status' => 'الحالة',
     'date' => 'التاريخ',
     'all' => 'الكل',

@@ -44,31 +44,34 @@
                     @endif
                 </td>
                 <td>
-                    <div class="flex flex-wrap items-center gap-2">
-                        <x-ui.btn variant="ghost" size="sm" :href="route('admin.users.show', $user)">{{ __('common.view') }}</x-ui.btn>
+                    <x-ui.action-menu>
+                        <x-ui.action-menu.item :href="route('admin.users.show', $user)">{{ __('common.view') }}</x-ui.action-menu.item>
                         @if(!$user->is_blacklisted)
-                            <x-ui.btn variant="danger-ghost" size="sm" type="button"
-                                    onclick="document.getElementById('blacklist-{{ $user->id }}').style.display = document.getElementById('blacklist-{{ $user->id }}').style.display === 'none' ? 'block' : 'none'">
-                                {{ __('admin.users.blacklist_action') }}
-                            </x-ui.btn>
-                            <div id="blacklist-{{ $user->id }}" style="display:none;margin-top:0.5rem">
-                                <form method="POST" action="{{ route('admin.users.blacklist', $user) }}" data-confirm="{{ __('admin.users.confirm_blacklist_prompt') }}" data-confirm-variant="danger" data-confirm-label="{{ __('admin.users.confirm_blacklist') }}">
-                                    @csrf
-                                    <div class="field" style="margin-bottom:0.5rem">
-                                        <input type="text" name="reason" class="input" placeholder="{{ __('admin.users.blacklist_reason_placeholder') }}" required style="font-size:0.85rem">
-                                    </div>
-                                    <x-ui.btn variant="danger" size="sm">{{ __('admin.users.confirm_blacklist') }}</x-ui.btn>
-                                </form>
-                            </div>
+                            <x-ui.action-menu.item data-modal-target="#blacklist-{{ $user->id }}" variant="danger">{{ __('admin.users.blacklist_action') }}</x-ui.action-menu.item>
                         @else
-                            <form method="POST" action="{{ route('admin.users.unblacklist', $user) }}" style="display:inline"
-                                  data-confirm="{{ __('admin.users.confirm_unblacklist_prompt') }}" data-confirm-label="{{ __('admin.users.unblacklist_action') }}">
-                                @csrf
-                                <x-ui.btn variant="ghost" size="sm" class="text-ok">{{ __('admin.users.unblacklist_action') }}</x-ui.btn>
-                            </form>
-                            <div class="text-muted" style="font-size:0.8rem;margin-top:0.35rem">{{ $user->blacklist_reason }}</div>
+                            <x-ui.action-menu.item :action="route('admin.users.unblacklist', $user)"
+                                :confirm="__('admin.users.confirm_unblacklist_prompt')" :confirm-label="__('admin.users.unblacklist_action')">{{ __('admin.users.unblacklist_action') }}</x-ui.action-menu.item>
                         @endif
-                    </div>
+                    </x-ui.action-menu>
+                    @if($user->is_blacklisted && $user->blacklist_reason)
+                        <div class="text-muted" style="font-size:0.8rem;margin-top:0.35rem">{{ $user->blacklist_reason }}</div>
+                    @endif
+
+                    @if(!$user->is_blacklisted)
+                        <x-ui.modal id="blacklist-{{ $user->id }}" :title="__('admin.users.blacklist_action')">
+                            <form method="POST" action="{{ route('admin.users.blacklist', $user) }}">
+                                @csrf
+                                <div class="field" style="margin-bottom:0.9rem">
+                                    <label class="text-sm text-muted" style="display:block;margin-bottom:0.35rem">{{ __('admin.users.blacklist_reason') }}</label>
+                                    <input type="text" name="reason" class="input" placeholder="{{ __('admin.users.blacklist_reason_placeholder') }}" required>
+                                </div>
+                                <div class="flex gap-2">
+                                    <x-ui.btn variant="danger" size="sm">{{ __('admin.users.confirm_blacklist') }}</x-ui.btn>
+                                    <x-ui.btn variant="ghost" size="sm" type="button" data-modal-close>{{ __('common.cancel') }}</x-ui.btn>
+                                </div>
+                            </form>
+                        </x-ui.modal>
+                    @endif
                 </td>
             </tr>
         @empty

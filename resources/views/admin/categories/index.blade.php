@@ -39,12 +39,11 @@
                     @endif
                 </td>
                 <td>
-                    <x-ui.btn variant="ghost" size="sm" :href="route('admin.categories.edit', $category)">{{ __('common.edit') }}</x-ui.btn>
-                    <form method="POST" action="{{ route('admin.categories.destroy', $category) }}" style="display:inline"
-                          data-confirm="{{ __('admin.categories.confirm_delete') }}" data-confirm-variant="danger">
-                        @csrf @method('DELETE')
-                        <x-ui.btn variant="danger-ghost" size="sm">{{ __('common.delete') }}</x-ui.btn>
-                    </form>
+                    <x-ui.action-menu>
+                        <x-ui.action-menu.item :href="route('admin.categories.edit', $category)">{{ __('common.edit') }}</x-ui.action-menu.item>
+                        <x-ui.action-menu.item :action="route('admin.categories.destroy', $category)" method="DELETE" variant="danger"
+                            :confirm="__('admin.categories.confirm_delete')" confirm-variant="danger">{{ __('common.delete') }}</x-ui.action-menu.item>
+                    </x-ui.action-menu>
                 </td>
             </tr>
         @empty

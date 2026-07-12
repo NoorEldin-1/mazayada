@@ -33,8 +33,25 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
 
+        // Route-level brute-force guard for POST /login. It throttles only regular
+        // citizens (and unknown inputs) — staff accounts (admin / entity /
+        // entity-staff) are never rate-limited so an operator can't self-lock.
+        // NOTE: the login form field is `nin_or_email`, not Fortify's `nin`
+        // username — key off that so attempts are scoped per-account, not lumped
+        // together per-IP under an empty key.
         RateLimiter::for('login', function (Request $request) {
-            $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
+            $identifier = (string) $request->input('nin_or_email');
+
+            $field = filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'nin';
+            $user = $identifier !== ''
+                ? \App\Models\User::where($field, $identifier)->first()
+                : null;
+
+            if ($user && ! $user->isThrottleable()) {
+                return Limit::none();
+            }
+
+            $throttleKey = Str::transliterate(Str::lower($identifier).'|'.$request->ip());
 
             return Limit::perMinute(config('mazayada.security.login_max_attempts', 5))->by($throttleKey);
         });

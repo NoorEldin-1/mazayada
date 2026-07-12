@@ -30,6 +30,7 @@ return [
     'confirm_title' => 'Confirm action',
     'view' => 'View',
     'actions' => 'Actions',
+    'actions_menu' => 'Actions menu',
     'status' => 'Status',
     'date' => 'Date',
     'all' => 'All',

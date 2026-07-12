@@ -64,77 +64,58 @@
                     <span class="chip {{ $auction->status->chipClass() }}">{{ $auction->status->label() }}</span>
                 </td>
                 <td>
-                    <div class="flex flex-wrap items-center gap-2">
+                    <x-ui.action-menu>
                         {{-- Read-only full detail — available to every role that can view the auction. --}}
                         @can('view', $auction)
-                            <x-ui.btn variant="ghost" size="sm" :href="route('admin.auctions.show', $auction)">{{ __('admin.auctions.view_details') }}</x-ui.btn>
+                            <x-ui.action-menu.item :href="route('admin.auctions.show', $auction)">{{ __('admin.auctions.view_details') }}</x-ui.action-menu.item>
                         @endcan
                         {{-- §4 step 2 — condition book: generate (then download) for any pre-close auction --}}
                         @can('documents.generate')
                             @if(in_array($auction->status, [\App\Enums\AuctionStatus::DRAFT, \App\Enums\AuctionStatus::PUBLISHED, \App\Enums\AuctionStatus::ACTIVE, \App\Enums\AuctionStatus::EXTENDED], true))
                                 @php $cb = $auction->documents()->where('type', 'CONDITION_BOOK')->latest()->first(); @endphp
                                 @if($cb)
-                                    <x-ui.btn variant="ghost" size="sm" :href="route('documents.download', $cb)">↓ {{ __('admin.auctions.cb_download') }}</x-ui.btn>
+                                    <x-ui.action-menu.item :href="route('documents.download', $cb)">↓ {{ __('admin.auctions.cb_download') }}</x-ui.action-menu.item>
                                 @else
-                                    <form method="POST" action="{{ route('admin.auctions.condition-book', $auction) }}">
-                                        @csrf
-                                        <x-ui.btn variant="ghost" size="sm">{{ __('admin.auctions.cb_generate') }}</x-ui.btn>
-                                    </form>
+                                    <x-ui.action-menu.item :action="route('admin.auctions.condition-book', $auction)">{{ __('admin.auctions.cb_generate') }}</x-ui.action-menu.item>
                                 @endif
                             @endif
                         @endcan
                         @if($auction->status === \App\Enums\AuctionStatus::DRAFT)
                             {{-- Publish --}}
                             @can('publish', $auction)
-                            <form method="POST" action="{{ route('admin.auctions.publish', $auction) }}">
-                                @csrf
-                                <x-ui.btn variant="primary" size="sm">{{ __('admin.auctions.publish') }}</x-ui.btn>
-                            </form>
+                                <x-ui.action-menu.item :action="route('admin.auctions.publish', $auction)">{{ __('admin.auctions.publish') }}</x-ui.action-menu.item>
                             @endcan
                             {{-- Edit --}}
                             @can('update', $auction)
-                            <x-ui.btn variant="ghost" size="sm" :href="route('admin.auctions.edit', $auction)">{{ __('common.edit') }}</x-ui.btn>
+                                <x-ui.action-menu.item :href="route('admin.auctions.edit', $auction)">{{ __('common.edit') }}</x-ui.action-menu.item>
                             @endcan
                             {{-- Delete --}}
                             @can('delete', $auction)
-                            <form method="POST" action="{{ route('admin.auctions.destroy', $auction) }}" data-confirm="{{ __('admin.auctions.confirm_delete') }}" data-confirm-variant="danger" data-confirm-label="{{ __('common.delete') }}">
-                                @csrf
-                                @method('DELETE')
-                                <x-ui.btn variant="danger-ghost" size="sm">{{ __('common.delete') }}</x-ui.btn>
-                            </form>
+                                <x-ui.action-menu.item :action="route('admin.auctions.destroy', $auction)" method="DELETE" variant="danger"
+                                    :confirm="__('admin.auctions.confirm_delete')" confirm-variant="danger" :confirm-label="__('common.delete')">{{ __('common.delete') }}</x-ui.action-menu.item>
                             @endcan
                         @elseif($auction->status === \App\Enums\AuctionStatus::PUBLISHED)
                             {{-- Start --}}
                             @can('start', $auction)
-                            <form method="POST" action="{{ route('admin.auctions.start', $auction) }}">
-                                @csrf
-                                <x-ui.btn variant="accent" size="sm">{{ __('admin.auctions.start') }}</x-ui.btn>
-                            </form>
+                                <x-ui.action-menu.item :action="route('admin.auctions.start', $auction)">{{ __('admin.auctions.start') }}</x-ui.action-menu.item>
                             @endcan
                             @can('cancel', $auction)
-                            <form method="POST" action="{{ route('admin.auctions.cancel', $auction) }}" data-confirm="{{ __('admin.auctions.confirm_cancel') }}" data-confirm-variant="danger">
-                                @csrf
-                                <x-ui.btn variant="danger-ghost" size="sm">{{ __('admin.auctions.cancel') }}</x-ui.btn>
-                            </form>
+                                <x-ui.action-menu.item :action="route('admin.auctions.cancel', $auction)" variant="danger"
+                                    :confirm="__('admin.auctions.confirm_cancel')" confirm-variant="danger">{{ __('admin.auctions.cancel') }}</x-ui.action-menu.item>
                             @endcan
                         @elseif(in_array($auction->status, [\App\Enums\AuctionStatus::ACTIVE, \App\Enums\AuctionStatus::EXTENDED], true))
-                            <x-ui.btn variant="ghost" size="sm" :href="route('auctions.show', $auction)">{{ __('common.view') }}</x-ui.btn>
+                            <x-ui.action-menu.item :href="route('auctions.show', $auction)">{{ __('common.view') }}</x-ui.action-menu.item>
                             @can('extend', $auction)
-                            <form method="POST" action="{{ route('admin.auctions.extend', $auction) }}" data-confirm="{{ __('admin.auctions.confirm_extend') }}">
-                                @csrf
-                                <x-ui.btn variant="ghost" size="sm">{{ __('admin.auctions.extend') }}</x-ui.btn>
-                            </form>
+                                <x-ui.action-menu.item :action="route('admin.auctions.extend', $auction)" :confirm="__('admin.auctions.confirm_extend')">{{ __('admin.auctions.extend') }}</x-ui.action-menu.item>
                             @endcan
                             @can('cancel', $auction)
-                            <form method="POST" action="{{ route('admin.auctions.cancel', $auction) }}" data-confirm="{{ __('admin.auctions.confirm_cancel') }}" data-confirm-variant="danger">
-                                @csrf
-                                <x-ui.btn variant="danger-ghost" size="sm">{{ __('admin.auctions.cancel') }}</x-ui.btn>
-                            </form>
+                                <x-ui.action-menu.item :action="route('admin.auctions.cancel', $auction)" variant="danger"
+                                    :confirm="__('admin.auctions.confirm_cancel')" confirm-variant="danger">{{ __('admin.auctions.cancel') }}</x-ui.action-menu.item>
                             @endcan
                         @else
-                            <x-ui.btn variant="ghost" size="sm" :href="route('auctions.show', $auction)">{{ __('common.view') }}</x-ui.btn>
+                            <x-ui.action-menu.item :href="route('auctions.show', $auction)">{{ __('common.view') }}</x-ui.action-menu.item>
                         @endif
-                    </div>
+                    </x-ui.action-menu>
                 </td>
             </tr>
         @empty

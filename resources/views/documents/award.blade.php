@@ -64,8 +64,4 @@
     </div>
 
     <div class="legal">{{ __('documents.award.legal_notice') }}</div>
-
-    <div class="section" style="margin-top:18px">
-        <span class="stamp">{{ __('documents.common.electronic_signature') }}</span>
-    </div>
 @endsection

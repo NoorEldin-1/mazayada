@@ -29,9 +29,9 @@
                 <td>{{ $register->user?->fullNameAr() }}</td>
                 <td>{{ $register->submitted_at?->format('Y-m-d H:i') }}</td>
                 <td>
-                    <x-ui.btn variant="primary" size="sm" :href="route('admin.commercial-registers.show', $register)">
-                        {{ __('admin.commercial_registers.review') }}
-                    </x-ui.btn>
+                    <x-ui.action-menu>
+                        <x-ui.action-menu.item :href="route('admin.commercial-registers.show', $register)">{{ __('admin.commercial_registers.review') }}</x-ui.action-menu.item>
+                    </x-ui.action-menu>
                 </td>
             </tr>
         @empty

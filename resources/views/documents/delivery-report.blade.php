@@ -16,8 +16,4 @@
             <p style="font-size:11px;margin-top:8px">{{ $delivery->notes }}</p>
         @endif
     </div>
-
-    <div class="section" style="margin-top:18px">
-        <span class="stamp">{{ __('documents.common.electronic_signature') }}</span>
-    </div>
 @endsection

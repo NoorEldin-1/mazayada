@@ -42,13 +42,12 @@
                     @endif
                 </td>
                 <td>
-                    <x-ui.btn variant="ghost" size="sm" :href="route('admin.entities.show', $entity)">{{ __('common.view') }}</x-ui.btn>
-                    <x-ui.btn variant="ghost" size="sm" :href="route('admin.entities.edit', $entity)">{{ __('common.edit') }}</x-ui.btn>
-                    <form method="POST" action="{{ route('admin.entities.destroy', $entity) }}" style="display:inline"
-                          data-confirm="{{ __('admin.entities.confirm_delete') }}" data-confirm-variant="danger">
-                        @csrf @method('DELETE')
-                        <x-ui.btn variant="danger-ghost" size="sm">{{ __('common.delete') }}</x-ui.btn>
-                    </form>
+                    <x-ui.action-menu>
+                        <x-ui.action-menu.item :href="route('admin.entities.show', $entity)">{{ __('common.view') }}</x-ui.action-menu.item>
+                        <x-ui.action-menu.item :href="route('admin.entities.edit', $entity)">{{ __('common.edit') }}</x-ui.action-menu.item>
+                        <x-ui.action-menu.item :action="route('admin.entities.destroy', $entity)" method="DELETE" variant="danger"
+                            :confirm="__('admin.entities.confirm_delete')" confirm-variant="danger">{{ __('common.delete') }}</x-ui.action-menu.item>
+                    </x-ui.action-menu>
                 </td>
             </tr>
         @empty
