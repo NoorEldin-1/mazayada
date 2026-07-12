@@ -194,7 +194,7 @@ html[data-theme="dark"] input[type=radio] { background-color: var(--bg-2); borde
    ------------------------------------------------------------- */
 html[data-theme="dark"] .btn-ghost:hover,
 html[data-theme="dark"] .ent-cell:hover,
-html[data-theme="dark"] .ad-nav:hover,
+html[data-theme="dark"] .mzd-nav:hover,
 html[data-theme="dark"] .nav a:hover,
 html[data-theme="dark"] .hd-link:hover { background: var(--bg-2); color: var(--ink); }
 html[data-theme="dark"] .pgn-link:hover { background: var(--bg-2); border-color: var(--line); color: var(--primary-4); }

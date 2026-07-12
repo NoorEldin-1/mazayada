@@ -123,50 +123,50 @@ import 'swiper/css/free-mode';
 
     function lbSlideHtml(m) {
         if (m.type === 'video') {
-            return '<div class="swiper-slide ad-lb-slide" data-type="video">'
+            return '<div class="swiper-slide mzd-lb-slide" data-type="video">'
                 + '<video controls playsinline preload="metadata" src="' + escAttr(m.src) + '"></video></div>';
         }
-        return '<div class="swiper-slide ad-lb-slide" data-type="image">'
+        return '<div class="swiper-slide mzd-lb-slide" data-type="image">'
             + '<div class="swiper-zoom-container"><img src="' + escAttr(m.src) + '" alt=""></div></div>';
     }
 
     function updateLbCount() {
-        const c = lb && lb.querySelector('.ad-lb-count');
+        const c = lb && lb.querySelector('.mzd-lb-count');
         if (c && lbSwiper) c.textContent = (lbSwiper.activeIndex + 1) + ' / ' + total;
     }
 
     function buildLightbox() {
         lb = document.createElement('div');
-        lb.className = 'ad-lightbox';
+        lb.className = 'mzd-lightbox';
         lb.setAttribute('role', 'dialog');
         lb.setAttribute('aria-modal', 'true');
         lb.hidden = true;
         if (a11y.zoom) lb.setAttribute('aria-label', a11y.zoom);
 
         lb.innerHTML =
-            '<div class="ad-lb-backdrop" data-lb-close></div>'
-            + '<div class="ad-lb-stage">'
-            + '<div class="swiper ad-lb-swiper"><div class="swiper-wrapper">'
+            '<div class="mzd-lb-backdrop" data-lb-close></div>'
+            + '<div class="mzd-lb-stage">'
+            + '<div class="swiper mzd-lb-swiper"><div class="swiper-wrapper">'
             + media.map(lbSlideHtml).join('')
             + '</div>'
             + '</div>'
             + '</div>'
-            + '<button type="button" class="ad-lb-close" data-lb-close aria-label="' + escAttr(a11y.close) + '">' + ICON.close + '</button>'
+            + '<button type="button" class="mzd-lb-close" data-lb-close aria-label="' + escAttr(a11y.close) + '">' + ICON.close + '</button>'
             + (hasMany
-                ? '<button type="button" class="ad-nav ad-lb-nav ad-lb-prev" aria-label="' + escAttr(a11y.prev) + '">' + ICON.prev + '</button>'
-                + '<button type="button" class="ad-nav ad-lb-nav ad-lb-next" aria-label="' + escAttr(a11y.next) + '">' + ICON.next + '</button>'
-                + '<span class="ad-lb-count num"></span>'
+                ? '<button type="button" class="mzd-nav mzd-lb-nav mzd-lb-prev" aria-label="' + escAttr(a11y.prev) + '">' + ICON.prev + '</button>'
+                + '<button type="button" class="mzd-nav mzd-lb-nav mzd-lb-next" aria-label="' + escAttr(a11y.next) + '">' + ICON.next + '</button>'
+                + '<span class="mzd-lb-count num"></span>'
                 : '');
 
         document.body.appendChild(lb);
 
-        lbSwiper = new Swiper(lb.querySelector('.ad-lb-swiper'), {
+        lbSwiper = new Swiper(lb.querySelector('.mzd-lb-swiper'), {
             modules: [Zoom, Navigation, Keyboard, A11y],
             spaceBetween: 24,
             speed: 360,
             zoom: { maxRatio: 4, toggle: true },
             keyboard: { enabled: true },
-            navigation: hasMany ? { prevEl: lb.querySelector('.ad-lb-prev'), nextEl: lb.querySelector('.ad-lb-next') } : false,
+            navigation: hasMany ? { prevEl: lb.querySelector('.mzd-lb-prev'), nextEl: lb.querySelector('.mzd-lb-next') } : false,
             a11y: { prevSlideMessage: a11y.prev, nextSlideMessage: a11y.next },
             on: {
                 slideChange() {
@@ -191,7 +191,7 @@ import 'swiper/css/free-mode';
         lastFocus = document.activeElement;
         pauseAll(heroEl); // hand audio over to the lightbox
         lb.hidden = false;
-        document.documentElement.classList.add('ad-lb-open');
+        document.documentElement.classList.add('mzd-lb-open');
         // The swiper was initialised while hidden (display:none → zero-width);
         // recompute geometry now it's visible, then jump to the tapped slide.
         lbSwiper.update();
@@ -199,7 +199,7 @@ import 'swiper/css/free-mode';
         lbSwiper.slideTo(index, 0);
         updateLbCount();
         pauseVideosExcept(lb, lbSwiper.slides[lbSwiper.activeIndex]);
-        const closeBtn = lb.querySelector('.ad-lb-close');
+        const closeBtn = lb.querySelector('.mzd-lb-close');
         if (closeBtn) closeBtn.focus();
     }
 
@@ -208,7 +208,7 @@ import 'swiper/css/free-mode';
         if (lbSwiper && lbSwiper.zoom) lbSwiper.zoom.out();
         pauseAll(lb);
         lb.hidden = true;
-        document.documentElement.classList.remove('ad-lb-open');
+        document.documentElement.classList.remove('mzd-lb-open');
         if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
     }
 

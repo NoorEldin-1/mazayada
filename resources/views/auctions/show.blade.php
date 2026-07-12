@@ -31,7 +31,7 @@
         </div>
     @endif
 
-    <div class="ad-grid">
+    <div class="mzd-grid">
         {{-- Left Column (Main) --}}
         <div>
             {{-- Gallery — swipeable media carousel (photos + one short video), placeholder otherwise (spec §4 step 1) --}}
@@ -46,18 +46,18 @@
                 $depositPct = rtrim(rtrim(number_format((float) $auction->deposit_percent, 2, '.', ''), '0'), '.');
             @endphp
             @if($mediaCount)
-                <div class="ad-gallery"
+                <div class="mzd-gallery"
                      data-gallery
                      dir="{{ locale_dir() }}"
                      data-a11y-prev="{{ __('auctions.show.gallery_prev') }}"
                      data-a11y-next="{{ __('auctions.show.gallery_next') }}"
                      data-a11y-close="{{ __('auctions.show.gallery_close') }}"
                      data-a11y-zoom="{{ __('auctions.show.gallery_zoom_hint') }}">
-                    <div class="ad-hero">
-                        <div class="swiper ad-hero-swiper" data-hero>
+                    <div class="mzd-hero">
+                        <div class="swiper mzd-hero-swiper" data-hero>
                             <div class="swiper-wrapper">
                                 @foreach($media as $m)
-                                    <div class="swiper-slide ad-hero-slide" data-type="{{ $m['type'] }}">
+                                    <div class="swiper-slide mzd-hero-slide" data-type="{{ $m['type'] }}">
                                         @if($m['type'] === 'video')
                                             <video controls preload="metadata" playsinline src="{{ $m['url'] }}"></video>
                                         @else
@@ -69,16 +69,16 @@
                         </div>
 
                         @if($mediaCount > 1)
-                            <button type="button" class="ad-nav ad-nav-prev" data-prev aria-label="{{ __('auctions.show.gallery_prev') }}">
+                            <button type="button" class="mzd-nav mzd-nav-prev" data-prev aria-label="{{ __('auctions.show.gallery_prev') }}">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                             </button>
-                            <button type="button" class="ad-nav ad-nav-next" data-next aria-label="{{ __('auctions.show.gallery_next') }}">
+                            <button type="button" class="mzd-nav mzd-nav-next" data-next aria-label="{{ __('auctions.show.gallery_next') }}">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                             </button>
-                            <span class="ad-hero-count num" data-gcount>1 / {{ $mediaCount }}</span>
+                            <span class="mzd-hero-count num" data-gcount>1 / {{ $mediaCount }}</span>
                         @endif
 
-                        <button type="button" class="ad-expand" data-expand aria-label="{{ __('auctions.show.gallery_fullscreen') }}">
+                        <button type="button" class="mzd-expand" data-expand aria-label="{{ __('auctions.show.gallery_fullscreen') }}">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
                         </button>
                     </div>
@@ -87,7 +87,7 @@
                         <div class="swiper ad-thumbs" data-thumbs>
                             <div class="swiper-wrapper">
                                 @foreach($media as $i => $m)
-                                    <div class="swiper-slide ad-thumb {{ $m['type'] === 'video' ? 'is-video' : '' }}">
+                                    <div class="swiper-slide mzd-thumb {{ $m['type'] === 'video' ? 'is-video' : '' }}">
                                         @if($m['type'] === 'video')
                                             <video src="{{ $m['url'] }}#t=0.1" muted preload="metadata"></video>
                                             <span class="play" aria-label="{{ __('auctions.show.media_video') }}"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
@@ -101,8 +101,8 @@
                     @endif
                 </div>
             @else
-                <div class="ad-gallery ad-gallery--empty">
-                    <div class="ad-hero">
+                <div class="mzd-gallery mzd-gallery--empty">
+                    <div class="mzd-hero">
                         <svg width="90" height="90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5l6 6M3 21l1.5-4.5L17 4a1.41 1.41 0 0 1 2 2L6.5 18.5 3 21z"/><path d="M15 6l3 3"/></svg>
                     </div>
                 </div>
@@ -480,7 +480,7 @@
         </div>
 
         {{-- Right Column (Sidebar) --}}
-        <div class="ad-side">
+        <div class="mzd-side">
             {{-- Bid Panel --}}
             <div class="bid-panel" id="bidPanel">
                 @if($auction->isBiddable())
