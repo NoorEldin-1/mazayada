@@ -98,11 +98,11 @@
                     </button>
                     <div class="nav-dd">
                         <div class="nav-dd-inner">
-                            <a href="{{ route('how-it-works') }}" class="dd-link rich">
+                            <a href="{{ route('identity.guide') }}" class="dd-link rich">
                                 <span class="dd-ic ic-violet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg></span>
                                 <span class="dd-tx"><b>{{ __('nav.identity_verification') }}</b><small>{{ __('nav.identity_verification_desc') }}</small></span>
                             </a>
-                            <a href="{{ route('how-it-works') }}" class="dd-link rich">
+                            <a href="{{ route('appeals.guide') }}" class="dd-link rich">
                                 <span class="dd-ic ic-rose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg></span>
                                 <span class="dd-tx"><b>{{ __('nav.appeals_system') }}</b><small>{{ __('nav.appeals_system_desc') }}</small></span>
                             </a>

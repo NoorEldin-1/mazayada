@@ -30,9 +30,14 @@ use App\Http\Controllers\Api\GeoController;
 // Public
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/auctions', [AuctionController::class, 'index'])->name('auctions.index');
+// Live-search JSON endpoint — MUST precede the /auctions/{auction} wildcard, or
+// "search" would be treated as an auction id and 404 on route-model binding.
+Route::get('/auctions/search', [AuctionController::class, 'search'])->name('auctions.search');
 Route::get('/auctions/{auction}', [AuctionController::class, 'show'])->name('auctions.show');
 Route::get('/how-it-works', [PageController::class, 'howItWorks'])->name('how-it-works');
 Route::get('/about', [PageController::class, 'about'])->name('about');
+Route::get('/appeals-guide', [PageController::class, 'appealsGuide'])->name('appeals.guide');
+Route::get('/identity-guide', [PageController::class, 'identityGuide'])->name('identity.guide');
 
 // Public document verification via the QR code on every generated PDF (spec §9.3).
 Route::get('/verify', [DocumentController::class, 'verify'])->name('documents.verify');

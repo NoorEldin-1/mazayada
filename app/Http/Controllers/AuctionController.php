@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AuctionStatus;
 use App\Enums\DocumentType;
 use App\Enums\InspectionQuestionStatus;
 use App\Enums\PaymentStatus;
@@ -20,36 +21,133 @@ use RuntimeException;
 
 class AuctionController extends Controller
 {
-    public function index(Request $request): View
+    /**
+     * Public auction listing with an advanced, URL-driven filter sidebar.
+     *
+     * Every filter lives in the query string and the filter form carries NO `page`
+     * field, so applying any filter resets to page 1 by construction while the
+     * paginator links carry the active filters forward (withQueryString). That
+     * pairing is what keeps pagination and filtering from ever contradicting.
+     */
+    public function index(Request $request): View|RedirectResponse
     {
-        $query = Auction::public()->with(['entity', 'category', 'wilaya']);
+        $query = Auction::public()->with(['entity', 'category', 'wilaya', 'commune']);
 
+        // Keyword — matches the title in any locale or the free-text asset location.
         if ($request->filled('q')) {
-            $query->where('title_ar', 'LIKE', '%' . $request->q . '%');
+            $term = $request->q;
+            $query->where(function ($w) use ($term): void {
+                $w->where('title_ar', 'LIKE', '%'.$term.'%')
+                    ->orWhere('title_fr', 'LIKE', '%'.$term.'%')
+                    ->orWhere('title_en', 'LIKE', '%'.$term.'%')
+                    ->orWhere('asset_location', 'LIKE', '%'.$term.'%');
+            });
         }
 
-        if ($request->filled('category')) {
-            $query->where('category_id', $request->category);
-        }
+        $query->when($request->filled('category'), fn ($q) => $q->where('category_id', $request->category));
+        $query->when($request->filled('wilaya'), fn ($q) => $q->where('wilaya_id', $request->wilaya));
+        $query->when($request->filled('commune'), fn ($q) => $q->where('commune_id', $request->commune));
+        $query->when($request->filled('type'), fn ($q) => $q->where('auction_type', $request->type));
 
-        if ($request->filled('wilaya')) {
-            $query->where('wilaya_id', $request->wilaya);
-        }
-
+        // Status — user-facing tokens (upcoming/live/closed) expand to enum values.
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $map = [
+                'upcoming' => [AuctionStatus::PUBLISHED->value],
+                'live' => [AuctionStatus::ACTIVE->value, AuctionStatus::EXTENDED->value],
+                'closed' => [AuctionStatus::CLOSED->value],
+            ];
+            $values = collect((array) $request->status)
+                ->flatMap(fn ($token) => $map[$token] ?? [])
+                ->unique()
+                ->all();
+            // An unknown token set must yield nothing, not silently drop the filter.
+            $query->whereIn('status', $values ?: ['__none__']);
         }
 
-        if ($request->filled('type')) {
-            $query->where('auction_type', $request->type);
+        // Multi-value asset filters.
+        $query->when($request->filled('asset_class'), fn ($q) => $q->whereIn('asset_class', (array) $request->asset_class));
+        $query->when($request->filled('condition'), fn ($q) => $q->whereIn('condition', (array) $request->condition));
+
+        // Commercial-register requirement (explicit yes/no; blank = any). Checked
+        // with has()+!== '' rather than filled() because "0" (not required) is a
+        // meaningful value that filled() would wrongly treat as empty.
+        if ($request->has('requires_cr') && $request->input('requires_cr') !== '') {
+            $query->where('requires_commerce_register', $request->boolean('requires_cr'));
         }
 
-        $auctions = $query->latest('start_time')->paginate(12)->withQueryString();
+        // Opening-price range — the sidebar speaks dinars; storage is centimes.
+        $query->when($request->filled('price_min'), fn ($q) => $q->where('opening_price', '>=', (int) $request->price_min * 100));
+        $query->when($request->filled('price_max'), fn ($q) => $q->where('opening_price', '<=', (int) $request->price_max * 100));
+
+        // Sort.
+        match ($request->input('sort')) {
+            'price_asc' => $query->orderBy('opening_price'),
+            'price_desc' => $query->orderByDesc('opening_price'),
+            'most_bids' => $query->withCount(['bids as valid_bids_count' => fn ($b) => $b->where('is_valid', true)])->orderByDesc('valid_bids_count'),
+            'ending_soon' => $query->orderByRaw('end_time IS NULL, end_time ASC'),
+            default => $query->latest('start_time'),
+        };
+
+        $auctions = $query->paginate(5)->withQueryString();
+
+        // A hand-edited page number past the end would render an empty grid —
+        // bounce it back to the last real page (keeping the active filters).
+        if ($auctions->currentPage() > $auctions->lastPage() && $auctions->lastPage() >= 1) {
+            return redirect()->to($auctions->url($auctions->lastPage()));
+        }
 
         $categories = \App\Models\Category::where('is_active', true)->get();
         $wilayas = \App\Models\Wilaya::all();
 
-        return view('auctions.index', compact('auctions', 'categories', 'wilayas'));
+        // Pre-load the selected wilaya's communes so the cascading commune <select>
+        // renders with its options (and preserves the chosen one) after a reload;
+        // JS repopulates it on subsequent wilaya changes.
+        $communes = $request->filled('wilaya')
+            ? \App\Models\Commune::where('wilaya_id', $request->wilaya)->orderBy('code')->get()
+            : collect();
+
+        return view('auctions.index', compact('auctions', 'categories', 'wilayas', 'communes'));
+    }
+
+    /**
+     * Live-search JSON for the sidebar's YouTube-style dropdown. Returns up to a
+     * handful of public auctions matching the term by title (any locale) or asset
+     * location; each row carries what the dropdown needs to render + a jump URL.
+     */
+    public function search(Request $request): JsonResponse
+    {
+        $term = trim((string) $request->query('q', ''));
+
+        if (mb_strlen($term) < 2) {
+            return response()->json(['results' => []]);
+        }
+
+        $results = Auction::public()
+            ->with(['category', 'wilaya'])
+            ->where(function ($w) use ($term): void {
+                $w->where('title_ar', 'LIKE', '%'.$term.'%')
+                    ->orWhere('title_fr', 'LIKE', '%'.$term.'%')
+                    ->orWhere('title_en', 'LIKE', '%'.$term.'%')
+                    ->orWhere('asset_location', 'LIKE', '%'.$term.'%');
+            })
+            ->latest('start_time')
+            ->limit(8)
+            ->get()
+            ->map(fn (Auction $a) => [
+                'title' => $a->localizedTitle(),
+                'url' => route('auctions.show', $a),
+                'thumb' => $a->coverPhotoUrl(),
+                // Isolated .money markup (same as <x-money>) so RTL never reorders
+                // the digits/currency when the dropdown injects it. Rendered raw in
+                // the browse JS — this is a web-only endpoint, not the mobile API.
+                'price_html' => (string) dzd_html($a->currentPrice()),
+                'wilaya' => $a->wilaya?->name,
+                'category' => $a->category?->name,
+                'live' => $a->isLive(),
+                'status' => $a->status->label(),
+            ]);
+
+        return response()->json(['results' => $results]);
     }
 
     public function show(Auction $auction, AuctionService $auctions, PaymentService $payments): View

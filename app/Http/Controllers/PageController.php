@@ -16,6 +16,16 @@ class PageController extends Controller
         return view('pages.about');
     }
 
+    public function appealsGuide(): View
+    {
+        return view('pages.appeals-guide');
+    }
+
+    public function identityGuide(): View
+    {
+        return view('pages.identity-guide');
+    }
+
     public function terms(): View
     {
         return view('pages.legal.terms');

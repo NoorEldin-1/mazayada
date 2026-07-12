@@ -119,11 +119,13 @@
         </div>
     </div>
 
-    <div class="flex flex-wrap items-center gap-2 mt-5 pt-4 border-t border-line">
-        <x-ui.btn type="submit" variant="primary" size="sm">{{ __('reports.apply') }}</x-ui.btn>
-        @if($filters->isActive())
-            <x-ui.btn :href="route($routeIndex)" variant="ghost" size="sm">{{ __('reports.reset') }}</x-ui.btn>
-        @endif
-        <span class="text-xs text-muted ms-auto">{{ __('reports.date_note') }}</span>
+    <div class="mt-5 pt-4 border-t border-line">
+        <div class="flex items-stretch gap-3">
+            <x-ui.btn type="submit" variant="primary" size="lg" class="basis-4/5 grow text-base">{{ __('reports.apply') }}</x-ui.btn>
+            @if($filters->isActive())
+                <x-ui.btn :href="route($routeIndex)" variant="ghost" size="lg" class="basis-1/5 grow text-base">{{ __('reports.reset') }}</x-ui.btn>
+            @endif
+        </div>
+        <p class="text-xs text-muted mt-3">{{ __('reports.date_note') }}</p>
     </div>
 </form>
