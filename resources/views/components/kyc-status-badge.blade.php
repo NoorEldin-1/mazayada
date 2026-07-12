@@ -1,31 +1,30 @@
 {{--
-    Compact KYC status badge — an icon chip coloured per the user's verification
-    status, shown next to the user's name (citizen sidebar + top bar).
-    Tone (bg + text + dark-mode) is reused from <x-ui.badge> via badgeVariant().
+    Premium KYC verification seal — the scalloped "verified" mark shown next
+    to the user's name (citizen sidebar + account dropdown). Tone follows the
+    status; the COMPLETE (موثّق) seal is the hero — brand-green with a soft
+    glow, reading like the verified marks on major platforms. Other statuses
+    reuse the same seal shape in a calmer tone (review = blue, rejected /
+    suspended = red, pending = neutral grey — deliberately understated so
+    "not yet verified" never shouts).
+
+    Icon set is shared with <x-kyc-status-pill> via <x-kyc.glyph>.
+    Usage:  <x-kyc-status-badge />
 --}}
 @auth
 @php
     $st = auth()->user()->kyc_status;
+    $tone = match ($st) {
+        \App\Enums\KycStatus::COMPLETE => 'ok',
+        \App\Enums\KycStatus::UNDER_REVIEW => 'info',
+        \App\Enums\KycStatus::REJECTED, \App\Enums\KycStatus::SUSPENDED => 'danger',
+        default => 'muted',
+    };
 @endphp
-<x-ui.badge :variant="$st->badgeVariant()" class="!px-1.5 !py-1 shrink-0" :title="$st->label()" aria-label="{{ $st->label() }}">
-    <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        @switch($st)
-            @case(\App\Enums\KycStatus::COMPLETE)
-                <polyline points="20 6 9 17 4 12"/>
-                @break
-            @case(\App\Enums\KycStatus::UNDER_REVIEW)
-                <circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/>
-                @break
-            @case(\App\Enums\KycStatus::REJECTED)
-                <circle cx="12" cy="12" r="9"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
-                @break
-            @case(\App\Enums\KycStatus::SUSPENDED)
-                <rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
-                @break
-            @default
-                {{-- PENDING --}}
-                <circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16.5" x2="12.01" y2="16.5"/>
-        @endswitch
+<span {{ $attributes->merge(['class' => "kyc-seal kyc-seal--{$tone}"]) }}
+      role="img" title="{{ $st->label() }}" aria-label="{{ $st->label() }}">
+    <svg class="kyc-seal__svg" viewBox="0 0 24 24" aria-hidden="true">
+        <path class="kyc-seal__disc" d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/>
+        <x-kyc.glyph :status="$st" />
     </svg>
-</x-ui.badge>
+</span>
 @endauth

@@ -19,7 +19,7 @@
 
 {{-- Sidebar --}}
 <aside class="dash-side fixed inset-y-0 start-0 z-40 w-64 flex flex-col bg-[var(--sidebar-bg)] text-white border-e border-white/5">
-    <div class="flex items-center gap-3 px-5 py-[1.35rem] border-b border-white/10">
+    <a href="{{ url('/') }}" class="flex items-center gap-3 px-5 py-[1.35rem] border-b border-white/10 hover:bg-white/5 transition" title="{{ __('nav.home') }}">
         <span class="grid place-items-center size-10 rounded-xl bg-white/15">
             <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 17.5 3 3 3-3"/><path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
         </span>
@@ -27,7 +27,7 @@
             <div class="text-lg font-bold leading-none">{{ __('common.app_name') }}</div>
             <div class="text-[11px] opacity-60 mt-1">{{ __('admin.panel') }}</div>
         </div>
-    </div>
+    </a>
 
     <nav class="flex-1 overflow-y-auto px-2.5 py-3.5 flex flex-col gap-1">
         {{-- The platform dashboard surfaces global figures; entity (read-only)
@@ -167,17 +167,10 @@
             <h1 class="text-xl sm:text-[22px] font-bold truncate">@yield('page-title', __('admin.page_title_default'))</h1>
         </div>
         <div class="flex items-center gap-2.5">
-            <x-ui.theme-toggle />
-            <x-lang-switcher />
-            <form method="POST" action="{{ route('logout') }}"
-                  data-confirm="{{ __('nav.logout_confirm_message') }}"
-                  data-confirm-title="{{ __('nav.logout_confirm_title') }}"
-                  data-confirm-label="{{ __('nav.logout') }}">
-                @csrf
-                <x-ui.icon-button type="submit" title="{{ __('admin.logout') }}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                </x-ui.icon-button>
-            </form>
+            <x-ui.user-menu
+                :name="auth()->user()->fullNameAr()"
+                :subtitle="auth()->user()->role->label()"
+                :initial="mb_substr(auth()->user()->first_name_ar, 0, 1)" />
         </div>
     </header>
 

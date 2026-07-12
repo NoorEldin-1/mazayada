@@ -44,4 +44,8 @@ return [
     'notif_approved_body' => 'تمت الموافقة على سجلك التجاري. يمكنك الآن المشاركة في المزايدات التي تتطلب سجلاً تجارياً.',
     'notif_rejected_title' => 'تم رفض السجل التجاري',
     'notif_rejected_body' => 'تم رفض سجلك التجاري. السبب: :reason. يرجى التصحيح وإعادة الإرسال.',
+
+    // ===== Verified-merchant badge (dashboard dropdown + sidebar) =====
+    'badge_verified' => 'تاجر معتمد',
+    'badge_verified_hint' => 'سجل تجاري معتمد وساري المفعول',
 ];

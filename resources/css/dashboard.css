@@ -512,6 +512,239 @@ html[data-theme="dark"] .mdl-btn--ghost:hover { filter: brightness(1.12); }
 }
 
 /* =============================================================
+   Account dropdown — <x-ui.user-menu>.
+   Reuses the .act-menu engine (data-act-*) + .act-menu__panel /
+   .act-menu__item base above; adds an avatar+name trigger, a wider
+   panel, an identity header, and label+control rows for the theme
+   and language switchers. Fully token-driven + logical properties.
+   ============================================================= */
+.usermenu__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-inline-size: 220px;
+  padding: 5px 10px 5px 6px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.usermenu__trigger:hover { background: var(--bg-2); }
+.usermenu__trigger:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.usermenu__trigger[aria-expanded="true"] {
+  background: color-mix(in oklab, var(--primary) 10%, transparent);
+  border-color: color-mix(in oklab, var(--primary) 35%, var(--line));
+}
+
+.usermenu__avatar {
+  display: grid;
+  place-items: center;
+  inline-size: 30px;
+  block-size: 30px;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--primary) 14%, transparent);
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.usermenu__avatar--lg { inline-size: 42px; block-size: 42px; font-size: 17px; }
+
+.usermenu__name {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.usermenu__caret { inline-size: 15px; block-size: 15px; color: var(--muted); flex-shrink: 0; }
+.usermenu__trigger[aria-expanded="true"] .usermenu__caret { transform: rotate(180deg); }
+
+/* Compact to avatar-only on narrow screens. */
+@media (max-width: 639px) {
+  .usermenu__name { display: none; }
+  .usermenu__trigger { padding: 4px; }
+}
+
+.usermenu__panel { min-inline-size: 250px; max-inline-size: 300px; padding: 8px; }
+
+.usermenu__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px 10px;
+}
+.usermenu__id { min-inline-size: 0; }
+.usermenu__id-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.usermenu__id-name > .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.usermenu__id-sub { margin-block-start: 2px; font-size: 12px; color: var(--muted); }
+.usermenu__meta { margin-block-start: 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+
+.usermenu__divider { block-size: 1px; margin: 6px 0; background: var(--line); }
+
+.usermenu__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 8px;
+}
+.usermenu__row-label { font-size: 13px; font-weight: 500; color: var(--ink-2); }
+
+/* The logout item carries an icon here (table items are text-only). */
+.usermenu__panel .act-menu__item svg { inline-size: 17px; block-size: 17px; flex-shrink: 0; }
+
+/* =============================================================
+   Verified-merchant badge — <x-commercial-register-badge>.
+   A premium gold seal that marks accounts with an approved, in-date
+   Commercial Register. Deliberately richer than the neutral KYC chip:
+   gold gradient + engraved highlight + a slow shine sweep, so it reads
+   as a distinct trust signal. Token-driven (--accent), RTL-aware,
+   and it goes still under prefers-reduced-motion.
+   ============================================================= */
+.cr-badge {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-block: 4px;
+  padding-inline: 9px 11px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: .01em;
+  line-height: 1;
+  white-space: nowrap;
+  /* Near-black warm ink on a vivid gold fill — the classic gold-medal
+     contrast, far clearer than deep-brown on the muted --accent tokens. */
+  color: #2c1f04;
+  background: linear-gradient(135deg, #F8D874 0%, #E9BA46 48%, #D19E2C 100%);
+  border: 1px solid #A97C16;
+  box-shadow: 0 1px 3px rgba(120, 85, 10, .30), inset 0 1px 0 rgba(255, 255, 255, .65);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .35);   /* slight emboss for legibility */
+}
+/* Keep icon + label above the shine so the sweep never washes them out. */
+.cr-badge__seal { inline-size: 15px; block-size: 15px; flex-shrink: 0; position: relative; z-index: 1; }
+.cr-badge__text { position: relative; z-index: 1; }
+
+/* Icon-only chip variant (tight inline rows). */
+.cr-badge--chip { padding: 4px; gap: 0; }
+.cr-badge--chip .cr-badge__seal { inline-size: 16px; block-size: 16px; }
+
+/* Slow gloss sweep — a soft highlight band travels across the metal.
+   Sits UNDER the icon/label (no z-index) so it reads as sheen, not glare. */
+.cr-badge::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, .40) 50%, transparent 60%);
+  transform: translateX(-130%);
+  animation: cr-shine 5s ease-in-out infinite;
+  pointer-events: none;
+}
+[dir="rtl"] .cr-badge::after { transform: translateX(130%); animation-name: cr-shine-rtl; }
+
+@keyframes cr-shine     { 0%, 55% { transform: translateX(-130%); } 78%, 100% { transform: translateX(130%); } }
+@keyframes cr-shine-rtl { 0%, 55% { transform: translateX(130%); }  78%, 100% { transform: translateX(-130%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .cr-badge::after { animation: none; opacity: 0; }
+}
+
+/* Dark mode: brighter gold + a warm glow so it pops off the dark surface;
+   ink stays dark (gold + dark text is the readable pairing on both themes). */
+html[data-theme="dark"] .cr-badge {
+  color: #2c1f04;
+  background: linear-gradient(135deg, #FBDE82 0%, #EEC257 48%, #D9A736 100%);
+  border-color: #7d5a10;
+  box-shadow: 0 2px 10px rgba(233, 186, 70, .40), inset 0 1px 0 rgba(255, 255, 255, .6);
+}
+
+/* =============================================================
+   KYC verification — premium seal (<x-kyc-status-badge>, next to the
+   name) + labelled status pill (<x-kyc-status-pill>, under the name).
+   Tone-driven (--seal / --sp). COMPLETE is the hero (brand-green fill,
+   glow + gloss sweep, platform-verified feel); review is calm blue,
+   problems are red, and "not yet verified" is a quiet neutral pill.
+   ============================================================= */
+
+/* --- Seal: the scalloped verified mark beside the name --- */
+.kyc-seal { --seal: var(--muted); display: inline-grid; place-items: center; line-height: 0; flex-shrink: 0; }
+.kyc-seal__svg  { inline-size: 18px; block-size: 18px; display: block; color: #fff; }  /* glyph draws white */
+.kyc-seal__disc { fill: var(--seal); }
+.kyc-seal--ok     { --seal: var(--ok);     filter: drop-shadow(0 1px 3px color-mix(in oklab, var(--ok) 55%, transparent)); }
+.kyc-seal--info   { --seal: var(--info); }
+.kyc-seal--danger { --seal: var(--danger); }
+.kyc-seal--muted  { --seal: var(--muted); }
+html[data-theme="dark"] .kyc-seal--ok { filter: drop-shadow(0 0 5px color-mix(in oklab, var(--ok) 65%, transparent)); }
+
+/* --- Status pill: labelled chip under the name --- */
+.status-pill {
+  --sp: var(--primary);
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding-block: 4px;
+  padding-inline: 8px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .01em;
+  line-height: 1;
+  white-space: nowrap;
+  color: #fff;
+  background: linear-gradient(135deg, color-mix(in oklab, var(--sp) 84%, #fff) 0%, var(--sp) 52%, color-mix(in oklab, var(--sp) 80%, #000) 100%);
+  border: 1px solid color-mix(in oklab, var(--sp) 60%, #000);
+  box-shadow: 0 1px 3px color-mix(in oklab, var(--sp) 34%, transparent), inset 0 1px 0 rgba(255, 255, 255, .28);
+}
+.status-pill__ico  { inline-size: 14px; block-size: 14px; flex-shrink: 0; position: relative; z-index: 1; color: #fff; }
+.status-pill__text { position: relative; z-index: 1; }
+
+.status-pill--ok     { --sp: var(--ok); }
+.status-pill--info   { --sp: var(--info); }
+.status-pill--danger { --sp: var(--danger); }
+
+/* Verified = hero: a soft halo ring + the same slow gloss sweep as the gold badge. */
+.status-pill--ok {
+  box-shadow: 0 1px 3px color-mix(in oklab, var(--ok) 42%, transparent),
+              0 0 0 3px color-mix(in oklab, var(--ok) 12%, transparent),
+              inset 0 1px 0 rgba(255, 255, 255, .30);
+}
+.status-pill--ok::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, .35) 50%, transparent 60%);
+  transform: translateX(-130%);
+  animation: cr-shine 5s ease-in-out infinite;   /* keyframes defined with .cr-badge above */
+}
+[dir="rtl"] .status-pill--ok::after { transform: translateX(130%); animation-name: cr-shine-rtl; }
+@media (prefers-reduced-motion: reduce) { .status-pill--ok::after { animation: none; opacity: 0; } }
+
+/* Pending / "not yet verified": quiet neutral pill, dark muted text — never shouts. */
+.status-pill--muted {
+  color: var(--ink-2);
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+.status-pill--muted .status-pill__ico { color: var(--muted); }
+
+/* =============================================================
    Form-hosting modal — <x-ui.modal>. Reuses the .mdl-overlay
    backdrop + animations above; overrides the narrow text-only
    .mdl-box into a start-aligned box with header + scrollable body.

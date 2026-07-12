@@ -44,4 +44,8 @@ return [
     'notif_approved_body' => 'Your commercial register has been approved. You can now participate in auctions that require one.',
     'notif_rejected_title' => 'Commercial register rejected',
     'notif_rejected_body' => 'Your commercial register was rejected. Reason: :reason. Please correct and resubmit.',
+
+    // ===== Verified-merchant badge (dashboard dropdown + sidebar) =====
+    'badge_verified' => 'Verified Merchant',
+    'badge_verified_hint' => 'Verified, in-date commercial register',
 ];

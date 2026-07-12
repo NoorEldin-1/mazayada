@@ -46,10 +46,7 @@
 
         {{-- Actions --}}
         <div class="flex items-center gap-2.5 ms-auto">
-            <x-lang-switcher />
-            <x-ui.theme-toggle />
-
-            {{-- Notifications --}}
+            {{-- Notifications (kept outside the menu so its unread badge stays visible) --}}
             <a href="{{ route('citizen.notifications') }}" class="relative inline-grid place-items-center size-9 rounded-lg text-ink-2 bg-bg border border-line hover:bg-bg-2 hover:text-ink transition" aria-label="{{ __('dashboard.nav_notifications') }}">
                 <svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                 @if(auth()->check() && auth()->user()->unreadNotificationsCount() > 0)
@@ -57,26 +54,23 @@
                 @endif
             </a>
 
-            {{-- User --}}
-            <div class="hidden sm:flex items-center gap-2.5">
-                <div class="grid place-items-center size-9 rounded-lg bg-primary/10 text-primary font-bold text-sm">
-                    {{ auth()->check() ? mb_substr(auth()->user()->name, 0, 1) : '?' }}
-                </div>
-                <span class="text-sm font-semibold text-ink max-w-[140px] truncate">{{ auth()->check() ? auth()->user()->name : '' }}</span>
-                <x-kyc-status-badge />
-            </div>
+            {{-- Account menu (language + theme + profile + logout) --}}
+            <x-ui.user-menu
+                :name="auth()->check() ? auth()->user()->name : ''"
+                :initial="auth()->check() ? mb_substr(auth()->user()->name, 0, 1) : '?'">
+                <x-slot:badge>
+                    <x-kyc-status-badge />
+                </x-slot:badge>
+                <x-slot:meta>
+                    <x-kyc-status-pill />
+                    <x-commercial-register-badge />
+                </x-slot:meta>
 
-            {{-- Logout --}}
-            <form method="POST" action="{{ route('logout') }}"
-                  data-confirm="{{ __('nav.logout_confirm_message') }}"
-                  data-confirm-title="{{ __('nav.logout_confirm_title') }}"
-                  data-confirm-label="{{ __('nav.logout') }}">
-                @csrf
-                <x-ui.btn type="submit" variant="ghost" size="sm">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                    <span class="hidden sm:inline">{{ __('nav.logout') }}</span>
-                </x-ui.btn>
-            </form>
+                <x-ui.action-menu.item :href="route('citizen.profile')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span>{{ __('dashboard.nav_profile') }}</span>
+                </x-ui.action-menu.item>
+            </x-ui.user-menu>
         </div>
     </div>
 </header>
@@ -95,7 +89,10 @@
                     <span class="text-sm font-bold text-ink truncate">{{ auth()->check() ? auth()->user()->name : '' }}</span>
                     <x-kyc-status-badge />
                 </div>
-                <div class="text-xs font-medium {{ auth()->user()->kyc_status->textClass() }}">{{ auth()->user()->kyc_status->label() }}</div>
+                <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                    <x-kyc-status-pill />
+                    <x-commercial-register-badge />
+                </div>
             </div>
         </div>
 

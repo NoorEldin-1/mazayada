@@ -44,4 +44,8 @@ return [
     'notif_approved_body' => 'Votre registre de commerce a été approuvé. Vous pouvez désormais participer aux enchères qui l’exigent.',
     'notif_rejected_title' => 'Registre de commerce rejeté',
     'notif_rejected_body' => 'Votre registre de commerce a été rejeté. Motif : :reason. Veuillez corriger et renvoyer.',
+
+    // ===== Verified-merchant badge (dashboard dropdown + sidebar) =====
+    'badge_verified' => 'Marchand vérifié',
+    'badge_verified_hint' => 'Registre de commerce vérifié et en cours de validité',
 ];

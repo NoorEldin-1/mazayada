@@ -11,6 +11,9 @@ return [
     'my_account' => 'My Account',
     'logout' => 'Log Out',
     'menu' => 'Menu',
+    'account_menu' => 'Account',
+    'appearance' => 'Appearance',
+    'language' => 'Language',
     'logout_confirm_title' => 'Confirm sign out',
     'logout_confirm_message' => 'Are you sure you want to sign out?',
 
