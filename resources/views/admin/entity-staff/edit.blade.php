@@ -30,7 +30,7 @@
          login password (the entity cannot manage its own staff). --}}
     <x-ui.card :title="__('admin.entity_staff.sec_reset_password')" class="mb-6">
         <p class="text-sm text-muted mb-4">{{ __('admin.entity_staff.reset_password_note') }}</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:1rem">
             <div class="field">
                 <label for="password">{{ __('admin.entity_staff.f_password') }} <span class="text-danger">*</span></label>
                 <input type="password" id="password" name="password" class="input" style="direction:ltr" autocomplete="new-password" required>

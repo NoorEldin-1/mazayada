@@ -2,7 +2,7 @@
 @php($c = $category ?? null)
 
 <x-ui.card class="mb-6">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:1rem">
         <div class="field">
             <label for="name_ar">{{ __('admin.categories.f_name_ar') }} <span class="text-danger">*</span></label>
             <input type="text" id="name_ar" name="name_ar" class="input" value="{{ old('name_ar', $c?->name_ar) }}" required>

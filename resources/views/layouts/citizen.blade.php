@@ -96,8 +96,10 @@
             </div>
         </div>
 
-        {{-- Navigation --}}
-        <nav class="flex flex-col gap-1">
+        {{-- Navigation — 2-up grid on mobile keeps the stacked sidebar compact
+             (all links visible without a tall scroll); reverts to a vertical
+             list on desktop where the sidebar is a fixed column. --}}
+        <nav class="grid grid-cols-2 gap-1.5 lg:flex lg:flex-col lg:gap-1">
             <x-ui.nav-link :href="route('citizen.dashboard')" :active="request()->routeIs('citizen.dashboard')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
                 <span>{{ __('dashboard.nav_dashboard') }}</span>

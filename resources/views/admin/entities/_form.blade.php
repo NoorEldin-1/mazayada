@@ -8,7 +8,7 @@
         @error('name') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:1rem">
         <div class="field">
             <label for="name_ar">{{ __('admin.entities.f_name_ar') }} <span class="text-danger">*</span></label>
             <input type="text" id="name_ar" name="name_ar" class="input" value="{{ old('name_ar', $e?->name_ar) }}" required>
@@ -36,7 +36,7 @@
 </x-ui.card>
 
 <x-ui.card :title="__('admin.entities.sec_location')" class="mb-6">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:1rem">
         <div class="field">
             <label for="wilaya_id">{{ __('admin.entities.f_wilaya') }} <span class="text-danger">*</span></label>
             <select id="wilaya_id" name="wilaya_id" class="select" required data-selected-commune="{{ old('commune_id', $e?->commune_id) }}">
@@ -64,7 +64,7 @@
         @error('address') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:1rem">
         <div class="field">
             <label for="phone">{{ __('admin.entities.f_phone') }}</label>
             <input type="text" id="phone" name="phone" class="input" value="{{ old('phone', $e?->phone) }}" style="direction:ltr">
@@ -90,7 +90,7 @@
      email above. Password is required on create; on edit, leave blank to keep. --}}
 <x-ui.card :title="__('admin.entities.sec_account')" class="mb-6">
     <p class="text-sm text-muted mb-4">{{ __('admin.entities.account_note') }}</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:1rem">
         <div class="field">
             <label for="password">{{ __('admin.entities.f_password') }} @unless($e)<span class="text-danger">*</span>@endunless</label>
             <input type="password" id="password" name="password" class="input" style="direction:ltr" autocomplete="new-password" @unless($e) required @endunless>

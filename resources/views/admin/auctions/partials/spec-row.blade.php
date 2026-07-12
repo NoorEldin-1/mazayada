@@ -12,7 +12,7 @@
         </button>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:1rem">
         <div class="field">
             <label>{{ __('admin.auctions.f_spec_title_ar') }} <span class="text-danger">*</span></label>
             <input type="text" name="specifications[{{ $index }}][title_ar]" class="input" value="{{ $spec['title_ar'] ?? '' }}" maxlength="150">
@@ -25,7 +25,7 @@
         </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-block-start:0.5rem">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:1rem;margin-block-start:0.5rem">
         <div class="field">
             <label>{{ __('admin.auctions.f_spec_body_ar') }} <span class="text-danger">*</span></label>
             <textarea name="specifications[{{ $index }}][body_ar]" class="textarea" rows="3" maxlength="2000">{{ $spec['body_ar'] ?? '' }}</textarea>

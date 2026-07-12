@@ -43,7 +43,7 @@
             @error('professional_id_no') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:1rem">
             <div class="field">
                 <label for="first_name_ar">{{ __('admin.entity_staff.f_first_name_ar') }} <span class="text-danger">*</span></label>
                 <input type="text" id="first_name_ar" name="first_name_ar" class="input" value="{{ old('first_name_ar') }}" required>
@@ -78,7 +78,7 @@
     </x-ui.card>
 
     <x-ui.card :title="__('admin.entity_staff.sec_credentials')" class="mb-6">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:1rem">
             <div class="field">
                 <label for="password">{{ __('admin.entity_staff.f_password') }} <span class="text-danger">*</span></label>
                 <input type="password" id="password" name="password" class="input" style="direction:ltr" required>

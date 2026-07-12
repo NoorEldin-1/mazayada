@@ -110,7 +110,7 @@
 
             {{-- Title + Status --}}
             <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px">
-                <h1 style="margin:0;font-size:26px;font-weight:700;letter-spacing:-.4px">{{ $auction->title_ar }}</h1>
+                <h1 style="margin:0;font-size:clamp(20px,5.5vw,26px);font-weight:700;letter-spacing:-.4px;word-break:break-word">{{ $auction->title_ar }}</h1>
                 <span class="chip {{ $auction->status->chipClass() }}">
                     <span class="dot"></span>
                     {{ $auction->status->label() }}

@@ -13,7 +13,7 @@
             <p>{{ __('pages.hiw.subtitle') }}</p>
         </div>
 
-        <div class="steps" style="grid-template-columns:repeat(3,1fr);gap:32px;margin-bottom:64px">
+        <div class="steps" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:32px;margin-bottom:64px">
             @foreach([
                 ['n' => '1', 'title' => __('pages.hiw.step_1_title'), 'desc' => __('pages.hiw.step_1_desc')],
                 ['n' => '2', 'title' => __('pages.hiw.step_2_title'), 'desc' => __('pages.hiw.step_2_desc'), 'alt' => true],

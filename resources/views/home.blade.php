@@ -4,13 +4,13 @@
 
 @section('content')
 {{-- ===== Hero ===== --}}
-<div class="hero" style="padding:80px 0 64px">
+<div class="hero" style="padding:clamp(32px,8vw,80px) 0 clamp(28px,6vw,64px)">
     <div class="container" style="text-align:center">
         <span class="hero-eyebrow" style="margin:0 auto 22px">
             <span class="pulse"></span>
             {{ __('home.live_now') }}
         </span>
-        <h1 style="font-size:52px;line-height:1.15;font-weight:700;letter-spacing:-1.5px;margin:0 0 18px">{{ __('home.hero_title_pre') }} <span class="hl">{{ __('home.hero_title_hl') }}</span><br>{{ __('home.hero_title_post') }}</h1>
+        <h1 style="font-size:clamp(26px,6.5vw,52px);line-height:1.15;font-weight:700;letter-spacing:-1.5px;margin:0 0 18px">{{ __('home.hero_title_pre') }} <span class="hl">{{ __('home.hero_title_hl') }}</span><br>{{ __('home.hero_title_post') }}</h1>
         <p class="lede" style="max-width:620px;margin:0 auto 32px;text-align:center">{{ __('home.hero_desc') }}</p>
 
         <form action="{{ route('auctions.index') }}" method="GET" class="hero-search" style="max-width:640px;margin:0 auto">

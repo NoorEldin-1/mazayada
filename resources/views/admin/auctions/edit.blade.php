@@ -101,7 +101,7 @@
     {{-- Section 2: Classification --}}
     <x-ui.card :title="__('admin.auctions.sec_classification')" class="mb-6">
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:1rem">
             <div class="field">
                 <label for="category_id">{{ __('admin.auctions.f_category') }} <span class="text-danger">*</span></label>
                 <select id="category_id" name="category_id" class="select" required>
@@ -187,7 +187,7 @@
 
         {{-- Lease-specific fields --}}
         <div id="lease-fields" style="display:none;margin-top:1rem">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:1rem">
                 <div class="field">
                     <label for="lease_duration_years">{{ __('admin.auctions.f_lease_duration') }}</label>
                     <input type="number" id="lease_duration_years" name="lease_duration_years" class="input" value="{{ old('lease_duration_years', $auction->lease_duration_years) }}" min="1">
@@ -204,7 +204,7 @@
 
     {{-- Section 2b: Lifecycle (spec §2/§4) --}}
     <x-ui.card :title="__('admin.auctions.sec_lifecycle')" class="mb-6">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:1rem">
             <div class="field">
                 <label for="asset_class">{{ __('admin.auctions.f_asset_class') }}</label>
                 <select id="asset_class" name="asset_class" class="select">
@@ -280,7 +280,7 @@
     <x-ui.card :title="__('admin.auctions.sec_pricing')" class="mb-6">
         <p style="font-size:0.85rem;color:var(--ink-muted);margin-bottom:1rem">{{ __('admin.auctions.pricing_note') }}</p>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:1rem">
             <div class="field">
                 <label for="opening_price">{{ __('admin.auctions.f_opening_price') }} <span class="text-danger">*</span></label>
                 <input type="number" id="opening_price" name="opening_price" class="input num" value="{{ old('opening_price', $auction->opening_price / 100) }}" min="0" step="0.01" required>
@@ -307,7 +307,7 @@
     {{-- Section 4: Scheduling --}}
     <x-ui.card :title="__('admin.auctions.sec_scheduling')" class="mb-6">
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:1rem">
             <div class="field">
                 <label for="start_time">{{ __('admin.auctions.f_start_time') }} <span class="text-danger">*</span></label>
                 <input type="datetime-local" id="start_time" name="start_time" class="input" value="{{ old('start_time', $auction->start_time?->format('Y-m-d\TH:i')) }}" required>

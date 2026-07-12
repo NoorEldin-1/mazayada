@@ -15,7 +15,7 @@
         </div>
 
         {{-- Intro + Eligibility --}}
-        <div style="max-width:900px;margin:0 auto 56px;display:grid;gap:20px;grid-template-columns:1fr 1fr">
+        <div style="max-width:900px;margin:0 auto 56px;display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))">
             <div class="card card-pad">
                 <h4 style="margin:0 0 10px;color:var(--ink)">{{ __('appeals_guide.intro_title') }}</h4>
                 <p style="font-size:14px;color:var(--muted);line-height:1.8;margin:0">{{ __('appeals_guide.intro_body') }}</p>
@@ -34,7 +34,7 @@
         <div class="sect-head">
             <h2>{{ __('appeals_guide.steps_title_pre') }} <span class="hl">{{ __('appeals_guide.steps_title_hl') }}</span></h2>
         </div>
-        <div class="steps" style="grid-template-columns:repeat(3,1fr);gap:32px;margin-bottom:64px">
+        <div class="steps" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:32px;margin-bottom:64px">
             @foreach([
                 ['n' => '1', 'title' => __('appeals_guide.step_1_title'), 'desc' => __('appeals_guide.step_1_desc')],
                 ['n' => '2', 'title' => __('appeals_guide.step_2_title'), 'desc' => __('appeals_guide.step_2_desc'), 'alt' => true],
@@ -52,7 +52,7 @@
         </div>
 
         {{-- Window / conditions --}}
-        <div style="max-width:900px;margin:0 auto 56px;display:grid;gap:20px;grid-template-columns:1fr 1fr">
+        <div style="max-width:900px;margin:0 auto 56px;display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))">
             <div class="card card-pad">
                 <h4 style="margin:0 0 10px;color:var(--ink)">{{ __('appeals_guide.window_title') }}</h4>
                 <p style="font-size:14px;color:var(--muted);line-height:1.8;margin:0">{{ __('appeals_guide.window_days_body', ['days' => config('mazayada.appeals.window_days')]) }}</p>

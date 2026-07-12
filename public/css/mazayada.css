@@ -898,6 +898,10 @@ html[dir="rtl"] .auth-carousel-arrow svg{transform:scaleX(-1)}
   .sect-head h2{font-size:20px}
   .sect-head p{font-size:13px}
   .fgrid,.cats,.auc-grid,.entities-grid{grid-template-columns:1fr;gap:12px}
+  /* Steps timeline collapses to a single column on the smallest phones so
+     numbered cards aren't crammed two-up (guide pages force their own
+     auto-fit grid inline, so this only affects the class default e.g. home). */
+  .steps{grid-template-columns:1fr;gap:22px}
 
   section{padding:32px 0}
   .bigcta{padding:24px 18px;border-radius:16px}
@@ -1187,9 +1191,24 @@ html[dir="rtl"] .legal-related-card .arr{transform:scaleX(-1)}
 @media (max-width: 960px){
   .nav-burger{display:grid}
 
-  .hd .nav{position:fixed;inset-block:0;inset-inline-end:0;width:min(360px,86vw);margin:0;flex-direction:column;align-items:stretch;gap:4px;background:var(--surface);border-inline-start:1px solid var(--line);box-shadow:var(--shadow-lg);padding:14px;z-index:120;overflow-y:auto;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);overscroll-behavior:contain}
-  /* RTL: drawer slides in from the right; LTR override below */
-  html:not([dir="rtl"]) .hd .nav{transform:translateX(-100%);inset-inline-end:auto;inset-inline-start:0;border-inline-start:0;border-inline-end:1px solid var(--line)}
+  /* CRITICAL: .hd carries `backdrop-filter` (glass) AND `will-change:transform`,
+     and EITHER makes .hd the containing block for its `position:fixed` children.
+     That clamped the drawer's `inset-block:0` to the header's ~60px height, so
+     only the nav-head strip showed. Drop both on mobile so the fixed drawer
+     measures against the VIEWPORT and fills the screen. (`.hd` still forms a
+     stacking context via sticky+z-index, lifted above the backdrop below.) */
+  .hd{-webkit-backdrop-filter:none;backdrop-filter:none;will-change:auto;background:rgba(255,255,255,.94)}
+  .hd.is-scrolled{background:rgba(255,255,255,.98)}
+
+  /* Anchor to the inline-START edge — right in RTL, left in LTR — so the drawer
+     covers the correct side, and hide it by translating OUTWARD off that edge.
+     (Previously anchored inset-inline-end + translateX(100%): in RTL that pins
+     it to the LEFT then shoves it right, leaving a ~48px sliver of nav chevrons
+     peeking on the right edge. `translateX` is never mirrored by `dir`, so only
+     the translate — not the anchor — flips per direction.) */
+  .hd .nav{position:fixed;inset-block:0;inset-inline-start:0;width:min(360px,86vw);margin:0;flex-direction:column;align-items:stretch;gap:4px;background:var(--surface);border-inline-end:1px solid var(--line);box-shadow:var(--shadow-lg);padding:14px;z-index:120;overflow-y:auto;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);overscroll-behavior:contain}
+  /* LTR: same start-edge anchor resolves to the LEFT, so hide toward the left. */
+  html:not([dir="rtl"]) .hd .nav{transform:translateX(-100%)}
   html.nav-open .hd .nav{transform:translateX(0)}
 
   .nav-head{display:flex;align-items:center;justify-content:space-between;padding:4px 6px 14px;margin-bottom:6px;border-bottom:1px solid var(--line)}
@@ -1217,6 +1236,16 @@ html[dir="rtl"] .legal-related-card .arr{transform:scaleX(-1)}
   /* Backdrop */
   .nav-backdrop{position:fixed;inset:0;background:rgba(10,26,35,.5);backdrop-filter:blur(2px);z-index:110;opacity:0;transition:opacity .25s ease}
   html.nav-open .nav-backdrop{opacity:1}
+  /* The drawer is a child of .hd, which is its own stacking context (sticky +
+     z-index:50 + will-change:transform), so the drawer's z-index:120 is trapped
+     at the header's level (50) — BELOW the z-index:110 backdrop, which then
+     painted over it (open menu showed only the dim, no list). Lift the whole
+     header above the backdrop while the drawer is open so the panel shows. */
+  html.nav-open .hd{z-index:120}
+  /* With the header lifted above the backdrop, its own row items (brand, burger,
+     account button) would peek bright in the ~48px gap beside the drawer. Hide
+     everything in the row except the drawer (<nav data-nav>) while it's open. */
+  html.nav-open .hd .row > :not([data-nav]){visibility:hidden}
   html.nav-open{overflow:hidden}
 }
 .nav-backdrop[hidden]{display:none}
@@ -1371,4 +1400,23 @@ html[dir="rtl"] .legal-related-card .arr{transform:scaleX(-1)}
   .auc-row{flex-direction:column;align-items:stretch;gap:12px}
   .auc-row-img{width:100%;min-height:160px}
   .auc-row-foot{flex-direction:row;align-items:center;justify-content:space-between;border-inline-start:none;border-top:1px solid var(--line);padding-inline-start:0;padding-top:10px;width:100%;text-align:start}
+}
+
+/* ============================================================
+   Late-class responsive fixes — MUST stay at the end of the file.
+   .detail-cols and .detail-nav are (re)defined in the "premium
+   refinements" block far BELOW the phone media queries above
+   (~L745). Same specificity + later source order meant those
+   mobile overrides silently lost the cascade, so on phones the
+   auction-detail specs/aside stayed two-up (cramped) and the tab
+   bar squeezed its labels instead of scrolling. Re-declared here,
+   after the base rules, so they actually win.
+   ============================================================ */
+@media (max-width: 760px){
+  /* Specs (wide) + entity/location (narrow) stack into one column so the
+     map + address get full width instead of a ~130px sliver. */
+  .detail-cols{grid-template-columns:1fr}
+  /* Tabs size to their label and scroll horizontally (.detail-nav already
+     sets overflow-x:auto) rather than cramming 3–4 equal tabs into 344px. */
+  .detail-nav a{flex:0 0 auto;text-align:start}
 }
