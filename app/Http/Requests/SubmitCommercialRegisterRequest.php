@@ -33,8 +33,9 @@ class SubmitCommercialRegisterRequest extends FormRequest
             'register_number' => ['required', 'string', 'max:100'],
             'tax_number' => ['required', 'string', 'max:100'],
             'activity_type' => ['required', 'string', 'max:255'],
-            // Must be a currently-valid register, so its expiry is in the future.
-            'expiry_date' => ['required', 'date', 'after:today'],
+            // The register's issue (start) date — a real, already-issued register,
+            // so it cannot be in the future.
+            'start_date' => ['required', 'date', 'before_or_equal:today'],
 
             // PDF or image scans, stored on the private disk (Law 18-07).
             'register_document' => [$registerDocRule, 'file', 'mimes:pdf,jpg,jpeg,png', 'max:'.$maxKb],
@@ -45,7 +46,7 @@ class SubmitCommercialRegisterRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'expiry_date.after' => __('commercial-register.expiry_must_be_future'),
+            'start_date.before_or_equal' => __('commercial-register.start_must_not_be_future'),
         ];
     }
 }

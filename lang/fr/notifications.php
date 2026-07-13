@@ -71,5 +71,9 @@ return [
             'title' => 'Décision de l’organisme sur un recours',
             'body' => 'L’organisme a rendu sa décision (:decision) sur un recours relatif à l’enchère « :auction ».',
         ],
+        'auction_report_referred' => [
+            'title' => 'Rapport de vente transmis',
+            'body' => 'Un rapport concernant l’enchère « :auction » vous a été transmis.',
+        ],
     ],
 ];

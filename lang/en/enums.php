@@ -124,6 +124,7 @@ return [
         'AWARD' => 'Award document',
         'PAYMENT_RECEIPT' => 'Payment receipt',
         'DELIVERY_REPORT' => 'Delivery report',
+        'AUCTION_REPORT' => 'Auction report',
     ],
 
     'notification_channel' => [

@@ -131,5 +131,9 @@ return [
             'subject' => 'Entity decision on an appeal — Mazayada',
             'line' => 'The entity issued its decision (:decision) on an appeal regarding the auction “:auction”, awaiting your confirmation.',
         ],
+        'auction_report_referred' => [
+            'subject' => 'Auction report referred to you — Mazayada',
+            'line' => 'A report on the auction “:auction” has been referred to you; it is now available in the auction reports section.',
+        ],
     ],
 ];

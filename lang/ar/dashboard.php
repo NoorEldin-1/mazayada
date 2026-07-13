@@ -5,6 +5,7 @@ return [
     'account_user' => 'مستخدم',
     'nav_dashboard' => 'لوحة التحكم',
     'nav_my_auctions' => 'مزايداتي',
+    'nav_documents' => 'الوثائق',
     'nav_reports' => 'تقاريري المالية',
     'nav_identity' => 'التحقق من الهوية',
     'nav_commercial_register' => 'السجل التجاري',

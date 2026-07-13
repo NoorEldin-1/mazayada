@@ -103,6 +103,43 @@ class RegistrationPaymentApiTest extends ApiTestCase
             ->assertJsonStructure(['message']);
     }
 
+    public function test_final_payment_preview_returns_the_fee_breakdown_for_the_winner(): void
+    {
+        $winner = $this->makeCitizen();
+        $auction = $this->makeAuction([
+            'status' => AuctionStatus::CLOSED,
+            'winner_user_id' => $winner->id,
+            'final_price' => 2_000_000,
+            'closed_at' => now(),
+        ]);
+        Sanctum::actingAs($winner, ['access']);
+
+        $this->getJson("/api/v1/auctions/{$auction->id}/final-payment/preview")
+            ->assertOk()
+            ->assertJsonPath('data.already_paid', false)
+            ->assertJsonStructure([
+                'data' => [
+                    'lines' => [['key', 'label', 'amount', 'formatted']],
+                    'confirmed_deposit', 'amount_due', 'amount_due_formatted', 'due_at', 'deadline_days',
+                ],
+            ]);
+    }
+
+    public function test_final_payment_preview_is_forbidden_for_a_non_winner(): void
+    {
+        $winner = $this->makeCitizen();
+        $auction = $this->makeAuction([
+            'status' => AuctionStatus::CLOSED,
+            'winner_user_id' => $winner->id,
+            'final_price' => 2_000_000,
+            'closed_at' => now(),
+        ]);
+        Sanctum::actingAs($this->makeCitizen(), ['access']);
+
+        $this->getJson("/api/v1/auctions/{$auction->id}/final-payment/preview")
+            ->assertStatus(403);
+    }
+
     public function test_ask_question_creates_a_pending_public_question(): void
     {
         $auction = $this->makeAuction(['status' => AuctionStatus::ACTIVE]);

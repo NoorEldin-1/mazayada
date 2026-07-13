@@ -62,7 +62,7 @@
     "isDynamicEntry": true
   },
   "resources/css/app.css": {
-    "file": "assets/app-Dv981rZ2.css",
+    "file": "assets/app-JSNsw9YV.css",
     "name": "app",
     "names": [
       "app.css"
@@ -71,7 +71,7 @@
     "isEntry": true
   },
   "resources/css/dashboard.css": {
-    "file": "assets/dashboard-C9tAQuPY.css",
+    "file": "assets/dashboard-j1he-Nf-.css",
     "name": "dashboard",
     "names": [
       "dashboard.css"
@@ -98,7 +98,7 @@
     ]
   },
   "resources/js/dashboard.js": {
-    "file": "assets/dashboard-DW8hsrK2.js",
+    "file": "assets/dashboard-C6HmNdze.js",
     "name": "dashboard",
     "src": "resources/js/dashboard.js",
     "isEntry": true,

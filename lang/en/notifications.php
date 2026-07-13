@@ -71,5 +71,9 @@ return [
             'title' => 'Entity decision on an appeal',
             'body' => 'The entity issued its decision (:decision) on an appeal regarding the auction “:auction”.',
         ],
+        'auction_report_referred' => [
+            'title' => 'Auction report referred to you',
+            'body' => 'A report on the auction “:auction” has been referred to you.',
+        ],
     ],
 ];

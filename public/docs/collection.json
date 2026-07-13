@@ -10,7 +10,7 @@
     ],
     "info": {
         "name": "Mazayada API Documentation",
-        "_postman_id": "0a92982c-26ef-425f-9dbc-cc5d15f0738b",
+        "_postman_id": "065a5a27-d5ee-44a2-be4e-4e11a1893449",
         "description": "Mazayada mobile API (v1). Token-authenticated JSON API for the Flutter client covering auctions and the citizen dashboard. All responses use a unified envelope ({data, message, meta} on success; {message, errors} on error). Money is returned in dinars; send Accept-Language (ar|fr|en) to localize responses.",
         "schema": "https:\/\/schema.getpostman.com\/json\/collection\/v2.1.0\/collection.json"
     },
@@ -331,7 +331,7 @@
                                 {
                                     "key": "q",
                                     "value": "\u0633\u064a\u0627\u0631\u0629",
-                                    "description": "Search in the Arabic title.",
+                                    "description": "Keyword \u2014 matches the title in any locale or the asset location.",
                                     "disabled": false
                                 },
                                 {
@@ -347,15 +347,57 @@
                                     "disabled": false
                                 },
                                 {
-                                    "key": "status",
-                                    "value": "ACTIVE",
-                                    "description": "One of PUBLISHED, ACTIVE, EXTENDED, CLOSED.",
+                                    "key": "commune",
+                                    "value": "17",
+                                    "description": "Filter by commune id.",
                                     "disabled": false
+                                },
+                                {
+                                    "key": "status[]",
+                                    "value": "",
+                                    "description": "User tokens (upcoming, live, closed) or raw enum values.",
+                                    "disabled": true
                                 },
                                 {
                                     "key": "type",
                                     "value": "SALE",
                                     "description": "Auction type: SALE or LEASE.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "asset_class[]",
+                                    "value": "",
+                                    "description": "One or more asset classes.",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "condition[]",
+                                    "value": "",
+                                    "description": "One or more asset conditions.",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "requires_cr",
+                                    "value": "1",
+                                    "description": "Commercial-register requirement (1 = required, 0 = not).",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "price_min",
+                                    "value": "100000",
+                                    "description": "Minimum opening price in dinars.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "price_max",
+                                    "value": "5000000",
+                                    "description": "Maximum opening price in dinars.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "sort",
+                                    "value": "ending_soon",
+                                    "description": "newest (default), price_asc, price_desc, most_bids, ending_soon.",
                                     "disabled": false
                                 },
                                 {
@@ -365,7 +407,7 @@
                                     "disabled": false
                                 }
                             ],
-                            "raw": "{{baseUrl}}\/api\/v1\/auctions?q=%D8%B3%D9%8A%D8%A7%D8%B1%D8%A9&category=consequatur&wilaya=16&status=ACTIVE&type=SALE&per_page=12"
+                            "raw": "{{baseUrl}}\/api\/v1\/auctions?q=%D8%B3%D9%8A%D8%A7%D8%B1%D8%A9&category=consequatur&wilaya=16&commune=17&status%5B%5D=&type=SALE&asset_class%5B%5D=&condition%5B%5D=&requires_cr=1&price_min=100000&price_max=5000000&sort=ending_soon&per_page=12"
                         },
                         "method": "GET",
                         "header": [
@@ -383,7 +425,7 @@
                             }
                         ],
                         "body": null,
-                        "description": "Paginated, filterable list of public auctions.",
+                        "description": "Paginated, filterable list of public auctions. The filter vocabulary is\nidentical to the web browse page (App\\Support\\AuctionFilters).",
                         "auth": {
                             "type": "noauth"
                         }
@@ -406,6 +448,124 @@
                             ],
                             "code": 200,
                             "body": "{\"data\":[],\"message\":null,\"meta\":{\"pagination\":{\"current_page\":1,\"last_page\":1,\"per_page\":12,\"total\":0,\"count\":0}}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Search auctions",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auctions\/search",
+                            "query": [
+                                {
+                                    "key": "q",
+                                    "value": "villa",
+                                    "description": "The search term (min 2 chars).",
+                                    "disabled": false
+                                }
+                            ],
+                            "raw": "{{baseUrl}}\/api\/v1\/auctions\/search?q=villa"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Lightweight autocomplete for the browse search box \u2014 the enveloped, dinar\nmobile counterpart of the web live-search dropdown. Returns up to 8 public\nauctions matching the term by title (any locale) or asset location. Requires\nat least 2 characters; a shorter term returns an empty list.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 200,
+                            "body": "{\"data\":[],\"message\":null,\"meta\":{}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Filter options",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auctions\/filters",
+                            "query": [
+                                {
+                                    "key": "wilaya",
+                                    "value": "16",
+                                    "description": "Optionally include this wilaya's communes.",
+                                    "disabled": false
+                                }
+                            ],
+                            "raw": "{{baseUrl}}\/api\/v1\/auctions\/filters?wilaya=16"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "The reference data the mobile browse screen needs to build its filter UI:\nactive categories, wilayas, and the enumerated token sets (status, type,\nasset class, condition, sort). Cached-friendly and locale-aware (names come\nfrom the localized accessor). Pass `wilaya` to also get that wilaya's communes.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 200,
+                            "body": "{\"data\":{\"categories\":[{\"id\":1,\"name\":\"\\u0645\\u0631\\u0643\\u0628\\u0627\\u062a\"},{\"id\":2,\"name\":\"\\u0639\\u0642\\u0627\\u0631\\u0627\\u062a\"},{\"id\":3,\"name\":\"\\u0645\\u0639\\u062f\\u0627\\u062a \\u0635\\u0646\\u0627\\u0639\\u064a\\u0629\"},{\"id\":4,\"name\":\"\\u0625\\u0644\\u0643\\u062a\\u0631\\u0648\\u0646\\u064a\\u0627\\u062a\"},{\"id\":5,\"name\":\"\\u062e\\u0631\\u062f\\u0629\"},{\"id\":6,\"name\":\"\\u0645\\u0646\\u062a\\u062c\\u0627\\u062a \\u0632\\u0631\\u0627\\u0639\\u064a\\u0629\"},{\"id\":7,\"name\":\"\\u0623\\u062b\\u0627\\u062b \\u0645\\u0643\\u062a\\u0628\\u064a\"},{\"id\":8,\"name\":\"\\u0623\\u062e\\u0631\\u0649\"},{\"id\":9,\"name\":\"\\u0650\\u0633\\u064a\\u0634\\u0633\\u064a\\u0634\\u0633\\u064a\"}],\"wilayas\":[{\"id\":1,\"code\":\"01\",\"name\":\"\\u0623\\u062f\\u0631\\u0627\\u0631\"},{\"id\":2,\"code\":\"02\",\"name\":\"\\u0627\\u0644\\u0634\\u0644\\u0641\"},{\"id\":3,\"code\":\"03\",\"name\":\"\\u0627\\u0644\\u0623\\u063a\\u0648\\u0627\\u0637\"},{\"id\":4,\"code\":\"04\",\"name\":\"\\u0623\\u0645 \\u0627\\u0644\\u0628\\u0648\\u0627\\u0642\\u064a\"},{\"id\":5,\"code\":\"05\",\"name\":\"\\u0628\\u0627\\u062a\\u0646\\u0629\"},{\"id\":6,\"code\":\"06\",\"name\":\"\\u0628\\u062c\\u0627\\u064a\\u0629\"},{\"id\":7,\"code\":\"07\",\"name\":\"\\u0628\\u0633\\u0643\\u0631\\u0629\"},{\"id\":8,\"code\":\"08\",\"name\":\"\\u0628\\u0634\\u0627\\u0631\"},{\"id\":9,\"code\":\"09\",\"name\":\"\\u0627\\u0644\\u0628\\u0644\\u064a\\u062f\\u0629\"},{\"id\":10,\"code\":\"10\",\"name\":\"\\u0627\\u0644\\u0628\\u0648\\u064a\\u0631\\u0629\"},{\"id\":11,\"code\":\"11\",\"name\":\"\\u062a\\u0645\\u0646\\u0631\\u0627\\u0633\\u062a\"},{\"id\":12,\"code\":\"12\",\"name\":\"\\u062a\\u0628\\u0633\\u0629\"},{\"id\":13,\"code\":\"13\",\"name\":\"\\u062a\\u0644\\u0645\\u0633\\u0627\\u0646\"},{\"id\":14,\"code\":\"14\",\"name\":\"\\u062a\\u064a\\u0627\\u0631\\u062a\"},{\"id\":15,\"code\":\"15\",\"name\":\"\\u062a\\u064a\\u0632\\u064a \\u0648\\u0632\\u0648\"},{\"id\":16,\"code\":\"16\",\"name\":\"\\u0627\\u0644\\u062c\\u0632\\u0627\\u0626\\u0631\"},{\"id\":17,\"code\":\"17\",\"name\":\"\\u0627\\u0644\\u062c\\u0644\\u0641\\u0629\"},{\"id\":18,\"code\":\"18\",\"name\":\"\\u062c\\u064a\\u062c\\u0644\"},{\"id\":19,\"code\":\"19\",\"name\":\"\\u0633\\u0637\\u064a\\u0641\"},{\"id\":20,\"code\":\"20\",\"name\":\"\\u0633\\u0639\\u064a\\u062f\\u0629\"},{\"id\":21,\"code\":\"21\",\"name\":\"\\u0633\\u0643\\u064a\\u0643\\u062f\\u0629\"},{\"id\":22,\"code\":\"22\",\"name\":\"\\u0633\\u064a\\u062f\\u064a \\u0628\\u0644\\u0639\\u0628\\u0627\\u0633\"},{\"id\":23,\"code\":\"23\",\"name\":\"\\u0639\\u0646\\u0627\\u0628\\u0629\"},{\"id\":24,\"code\":\"24\",\"name\":\"\\u0642\\u0627\\u0644\\u0645\\u0629\"},{\"id\":25,\"code\":\"25\",\"name\":\"\\u0642\\u0633\\u0646\\u0637\\u064a\\u0646\\u0629\"},{\"id\":26,\"code\":\"26\",\"name\":\"\\u0627\\u0644\\u0645\\u062f\\u064a\\u0629\"},{\"id\":27,\"code\":\"27\",\"name\":\"\\u0645\\u0633\\u062a\\u063a\\u0627\\u0646\\u0645\"},{\"id\":28,\"code\":\"28\",\"name\":\"\\u0627\\u0644\\u0645\\u0633\\u064a\\u0644\\u0629\"},{\"id\":29,\"code\":\"29\",\"name\":\"\\u0645\\u0639\\u0633\\u0643\\u0631\"},{\"id\":30,\"code\":\"30\",\"name\":\"\\u0648\\u0631\\u0642\\u0644\\u0629\"},{\"id\":31,\"code\":\"31\",\"name\":\"\\u0648\\u0647\\u0631\\u0627\\u0646\"},{\"id\":32,\"code\":\"32\",\"name\":\"\\u0627\\u0644\\u0628\\u064a\\u0636\"},{\"id\":33,\"code\":\"33\",\"name\":\"\\u0625\\u0644\\u064a\\u0632\\u064a\"},{\"id\":34,\"code\":\"34\",\"name\":\"\\u0628\\u0631\\u062c \\u0628\\u0648\\u0639\\u0631\\u064a\\u0631\\u064a\\u062c\"},{\"id\":35,\"code\":\"35\",\"name\":\"\\u0628\\u0648\\u0645\\u0631\\u062f\\u0627\\u0633\"},{\"id\":36,\"code\":\"36\",\"name\":\"\\u0627\\u0644\\u0637\\u0627\\u0631\\u0641\"},{\"id\":37,\"code\":\"37\",\"name\":\"\\u062a\\u0646\\u062f\\u0648\\u0641\"},{\"id\":38,\"code\":\"38\",\"name\":\"\\u062a\\u064a\\u0633\\u0645\\u0633\\u064a\\u0644\\u062a\"},{\"id\":39,\"code\":\"39\",\"name\":\"\\u0627\\u0644\\u0648\\u0627\\u062f\\u064a\"},{\"id\":40,\"code\":\"40\",\"name\":\"\\u062e\\u0646\\u0634\\u0644\\u0629\"},{\"id\":41,\"code\":\"41\",\"name\":\"\\u0633\\u0648\\u0642 \\u0623\\u0647\\u0631\\u0627\\u0633\"},{\"id\":42,\"code\":\"42\",\"name\":\"\\u062a\\u064a\\u0628\\u0627\\u0632\\u0629\"},{\"id\":43,\"code\":\"43\",\"name\":\"\\u0645\\u064a\\u0644\\u0629\"},{\"id\":44,\"code\":\"44\",\"name\":\"\\u0639\\u064a\\u0646 \\u0627\\u0644\\u062f\\u0641\\u0644\\u0649\"},{\"id\":45,\"code\":\"45\",\"name\":\"\\u0627\\u0644\\u0646\\u0639\\u0627\\u0645\\u0629\"},{\"id\":46,\"code\":\"46\",\"name\":\"\\u0639\\u064a\\u0646 \\u062a\\u0645\\u0648\\u0634\\u0646\\u062a\"},{\"id\":47,\"code\":\"47\",\"name\":\"\\u063a\\u0631\\u062f\\u0627\\u064a\\u0629\"},{\"id\":48,\"code\":\"48\",\"name\":\"\\u063a\\u0644\\u064a\\u0632\\u0627\\u0646\"},{\"id\":49,\"code\":\"49\",\"name\":\"\\u062a\\u064a\\u0645\\u064a\\u0645\\u0648\\u0646\"},{\"id\":50,\"code\":\"50\",\"name\":\"\\u0628\\u0631\\u062c \\u0628\\u0627\\u062c\\u064a \\u0645\\u062e\\u062a\\u0627\\u0631\"},{\"id\":51,\"code\":\"51\",\"name\":\"\\u0623\\u0648\\u0644\\u0627\\u062f \\u062c\\u0644\\u0627\\u0644\"},{\"id\":52,\"code\":\"52\",\"name\":\"\\u0628\\u0646\\u064a \\u0639\\u0628\\u0627\\u0633\"},{\"id\":53,\"code\":\"53\",\"name\":\"\\u0639\\u064a\\u0646 \\u0635\\u0627\\u0644\\u062d\"},{\"id\":54,\"code\":\"54\",\"name\":\"\\u0639\\u064a\\u0646 \\u0642\\u0632\\u0627\\u0645\"},{\"id\":55,\"code\":\"55\",\"name\":\"\\u062a\\u0648\\u0642\\u0631\\u062a\"},{\"id\":56,\"code\":\"56\",\"name\":\"\\u062c\\u0627\\u0646\\u062a\"},{\"id\":57,\"code\":\"57\",\"name\":\"\\u0627\\u0644\\u0645\\u063a\\u064a\\u0631\"},{\"id\":58,\"code\":\"58\",\"name\":\"\\u0627\\u0644\\u0645\\u0646\\u064a\\u0639\\u0629\"}],\"communes\":[{\"id\":522,\"name\":\"\\u0639\\u064a\\u0646 \\u0628\\u0646\\u064a\\u0627\\u0646\"},{\"id\":523,\"name\":\"\\u0639\\u064a\\u0646 \\u0637\\u0627\\u064a\\u0629\"},{\"id\":524,\"name\":\"\\u0627\\u0644\\u062c\\u0632\\u0627\\u0626\\u0631 \\u0627\\u0644\\u0648\\u0633\\u0637\\u0649\"},{\"id\":525,\"name\":\"\\u0628\\u0627\\u0628 \\u0627\\u0644\\u0648\\u0627\\u062f\\u064a\"},{\"id\":526,\"name\":\"\\u0628\\u0627\\u0628 \\u0627\\u0644\\u0632\\u0648\\u0627\\u0631\"},{\"id\":527,\"name\":\"\\u0628\\u0627\\u0628\\u0627 \\u062d\\u0633\\u0646\"},{\"id\":528,\"name\":\"\\u0628\\u0627\\u0634 \\u062c\\u0631\\u0627\\u062d\"},{\"id\":529,\"name\":\"\\u0628\\u0631\\u0627\\u0642\\u064a\"},{\"id\":530,\"name\":\"\\u0627\\u0628\\u0646 \\u0639\\u0643\\u0646\\u0648\\u0646\"},{\"id\":531,\"name\":\"\\u0628\\u0646\\u064a \\u0645\\u0633\\u0648\\u0633\"},{\"id\":532,\"name\":\"\\u0628\\u0626\\u0631 \\u0645\\u0631\\u0627\\u062f \\u0631\\u0627\\u064a\\u0633\"},{\"id\":533,\"name\":\"\\u0628\\u0626\\u0631 \\u062a\\u0648\\u062a\\u0629\"},{\"id\":534,\"name\":\"\\u0628\\u0626\\u0631 \\u062e\\u0627\\u062f\\u0645\"},{\"id\":535,\"name\":\"\\u0628\\u0648\\u0644\\u0648\\u063a\\u064a\\u0646 \\u0628\\u0646 \\u0632\\u064a\\u0631\\u064a\"},{\"id\":536,\"name\":\"\\u0628\\u0631\\u062c \\u0627\\u0644\\u0628\\u062d\\u0631\\u064a\"},{\"id\":537,\"name\":\"\\u0628\\u0631\\u062c \\u0627\\u0644\\u0643\\u064a\\u0641\\u0627\\u0646\"},{\"id\":538,\"name\":\"\\u0628\\u0648\\u0631\\u0648\\u0628\\u0629\"},{\"id\":539,\"name\":\"\\u0628\\u0648\\u0632\\u0631\\u064a\\u0639\\u0629\"},{\"id\":540,\"name\":\"\\u0627\\u0644\\u0642\\u0635\\u0628\\u0629\"},{\"id\":541,\"name\":\"\\u0627\\u0644\\u0634\\u0631\\u0627\\u0642\\u0629\"},{\"id\":542,\"name\":\"\\u0627\\u0644\\u062f\\u0627\\u0631 \\u0627\\u0644\\u0628\\u064a\\u0636\\u0627\\u0621\"},{\"id\":543,\"name\":\"\\u062f\\u0627\\u0644\\u064a \\u0627\\u0628\\u0631\\u0627\\u0647\\u064a\\u0645\"},{\"id\":544,\"name\":\"\\u062c\\u0633\\u0631 \\u0642\\u0633\\u0646\\u0637\\u064a\\u0646\\u0629\"},{\"id\":545,\"name\":\"\\u0627\\u0644\\u062f\\u0648\\u064a\\u0631\\u0629\"},{\"id\":546,\"name\":\"\\u0627\\u0644\\u062f\\u0631\\u0627\\u0631\\u064a\\u0629\"},{\"id\":547,\"name\":\"\\u0627\\u0644\\u0639\\u0627\\u0634\\u0648\\u0631\"},{\"id\":548,\"name\":\"\\u0627\\u0644\\u0627\\u0628\\u064a\\u0627\\u0631\"},{\"id\":549,\"name\":\"\\u0627\\u0644\\u062d\\u0631\\u0627\\u0634\"},{\"id\":550,\"name\":\"\\u0627\\u0644\\u0645\\u062f\\u0646\\u064a\\u0629\"},{\"id\":551,\"name\":\"\\u0627\\u0644\\u0645\\u063a\\u0627\\u0631\\u064a\\u0629\"},{\"id\":552,\"name\":\"\\u0627\\u0644\\u0645\\u0631\\u0633\\u0649\"},{\"id\":553,\"name\":\"\\u0627\\u0644\\u0645\\u0631\\u0627\\u062f\\u064a\\u0629\"},{\"id\":554,\"name\":\"\\u0627\\u0644\\u062d\\u0645\\u0627\\u0645\\u0627\\u062a\"},{\"id\":555,\"name\":\"\\u0647\\u0631\\u0627\\u0648\\u0629\"},{\"id\":556,\"name\":\"\\u062d\\u0633\\u064a\\u0646 \\u062f\\u0627\\u064a\"},{\"id\":557,\"name\":\"\\u062d\\u064a\\u062f\\u0631\\u0629\"},{\"id\":558,\"name\":\"\\u0627\\u0644\\u062e\\u0631\\u0627\\u064a\\u0633\\u064a\\u0629\"},{\"id\":559,\"name\":\"\\u0627\\u0644\\u0642\\u0628\\u0629\"},{\"id\":560,\"name\":\"\\u0627\\u0644\\u0643\\u0627\\u0644\\u064a\\u062a\\u0648\\u0633\"},{\"id\":561,\"name\":\"\\u0627\\u0644\\u0645\\u0639\\u0627\\u0644\\u0645\\u0629\"},{\"id\":562,\"name\":\"\\u0645\\u062d\\u0645\\u062f \\u0628\\u0644\\u0648\\u0632\\u062f\\u0627\\u062f\"},{\"id\":563,\"name\":\"\\u0627\\u0644\\u0645\\u062d\\u0645\\u062f\\u064a\\u0629\"},{\"id\":564,\"name\":\"\\u0648\\u0627\\u062f\\u064a \\u0642\\u0631\\u064a\\u0634\"},{\"id\":565,\"name\":\"\\u0648\\u0627\\u062f\\u064a \\u0627\\u0644\\u0633\\u0645\\u0627\\u0631\"},{\"id\":566,\"name\":\"\\u0627\\u0648\\u0644\\u0627\\u062f \\u0634\\u0628\\u0644\"},{\"id\":567,\"name\":\"\\u0627\\u0648\\u0644\\u0627\\u062f \\u0641\\u0627\\u064a\\u062a\"},{\"id\":568,\"name\":\"\\u0627\\u0644\\u0631\\u062d\\u0645\\u0627\\u0646\\u064a\\u0629\"},{\"id\":569,\"name\":\"\\u0627\\u0644\\u0631\\u0627\\u064a\\u0633 \\u062d\\u0645\\u064a\\u062f\\u0648\"},{\"id\":570,\"name\":\"\\u0631\\u063a\\u0627\\u064a\\u0629\"},{\"id\":571,\"name\":\"\\u0627\\u0644\\u0631\\u0648\\u064a\\u0628\\u0629\"},{\"id\":572,\"name\":\"\\u0627\\u0644\\u0633\\u062d\\u0627\\u0648\\u0644\\u0629\"},{\"id\":573,\"name\":\"\\u0633\\u064a\\u062f\\u064a \\u0627\\u0645\\u062d\\u0645\\u062f\"},{\"id\":574,\"name\":\"\\u0633\\u064a\\u062f\\u064a \\u0645\\u0648\\u0633\\u0649\"},{\"id\":575,\"name\":\"\\u0633\\u0648\\u064a\\u062f\\u0627\\u0646\\u064a\\u0629\"},{\"id\":576,\"name\":\"\\u0633\\u0637\\u0627\\u0648\\u0627\\u0644\\u064a\"},{\"id\":577,\"name\":\"\\u062a\\u0633\\u0627\\u0644\\u0629 \\u0627\\u0644\\u0645\\u0631\\u062c\\u0629\"},{\"id\":578,\"name\":\"\\u0632\\u0631\\u0627\\u0644\\u062f\\u0629\"}],\"statuses\":[\"upcoming\",\"live\",\"closed\"],\"types\":[\"SALE\",\"LEASE\"],\"asset_classes\":[\"MOVABLE\",\"REAL_ESTATE\",\"CUSTOMS\"],\"conditions\":[\"NEW\",\"GOOD\",\"FAIR\",\"POOR\",\"SCRAP\"],\"sorts\":[\"newest\",\"price_asc\",\"price_desc\",\"most_bids\",\"ending_soon\"]},\"message\":null,\"meta\":{}}",
                             "name": ""
                         }
                     ]
@@ -465,7 +625,7 @@
                                 }
                             ],
                             "code": 200,
-                            "body": "{\"data\":{\"id\":\"a2050443-68af-41f5-8080-20d4b878c6ca\",\"title\":\"new one\",\"titles\":{\"ar\":\"new one\",\"fr\":\"new one\",\"en\":null},\"description\":\"new one\\r\\nnew one\\r\\nnew one\\r\\nnew one\",\"descriptions\":{\"ar\":\"new one\\r\\nnew one\\r\\nnew one\\r\\nnew one\",\"fr\":\"new one\\r\\nnew one\\r\\nnew one\\r\\nnew one\"},\"specifications\":[],\"status\":\"CLOSED\",\"auction_type\":\"SALE\",\"asset_class\":\"REAL_ESTATE\",\"condition\":\"NEW\",\"unit_count\":1,\"condition_terms\":null,\"award_terms\":null,\"category\":{\"id\":2,\"name\":\"\\u0639\\u0642\\u0627\\u0631\\u0627\\u062a\"},\"wilaya\":{\"id\":2,\"code\":\"02\",\"name\":\"\\u0627\\u0644\\u0634\\u0644\\u0641\"},\"commune\":{\"id\":23,\"name\":\"\\u0628\\u0648\\u0642\\u0627\\u062f\\u064a\\u0631\"},\"entity\":{\"id\":\"a1dc9d20-adb9-4238-9c3d-a600ccd3075e\",\"name\":\"\\u0627\\u0644\\u0645\\u062c\\u0644\\u0633 \\u0627\\u0644\\u0634\\u0639\\u0628\\u064a \\u0627\\u0644\\u0628\\u0644\\u062f\\u064a \\u0644\\u062e\\u0646\\u0634\\u0644\\u0629\"},\"asset_location\":\"new site\",\"latitude\":null,\"longitude\":null,\"mayor_name\":\"new name\",\"photos\":[\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/JHBtdQWhA4LOIjXbioJHCzgG8ovifXRrNtxAjLlz.jpg\",\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/vLQTdRnwLwgvzRM53r87vWOePYcMCOHnTfVqeBJD.jpg\",\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/JcshBU0KGcgYrwxQhkikA3vDcM4fhI2V8ZQGMxSB.jpg\"],\"cover_photo_url\":\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/JHBtdQWhA4LOIjXbioJHCzgG8ovifXRrNtxAjLlz.jpg\",\"video_url\":\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/video\\\/knxMOt8C3yG3JwAnyiIPuKkDbHOWVAVTPa0mrGpD.mp4\",\"opening_price\":{\"amount\":1000000,\"formatted\":\"1 000 000 \\u062f\\u062c\"},\"current_price\":{\"amount\":6100000,\"formatted\":\"6 100 000 \\u062f\\u062c\"},\"deposit_amount\":{\"amount\":200,\"formatted\":\"200 \\u062f\\u062c\"},\"deposit_percent\":10,\"book_price\":{\"amount\":200,\"formatted\":\"200 \\u062f\\u062c\"},\"has_book_access\":false,\"bid_count\":15,\"start_time\":\"2026-06-14T11:10:00+01:00\",\"end_time\":\"2026-06-14T12:00:00+01:00\",\"seconds_remaining\":0,\"is_live\":false,\"is_biddable\":false,\"has_ended\":false,\"extension_count\":0,\"max_extensions\":10,\"inspection\":{\"start\":\"2026-06-14T11:03:00+01:00\",\"end\":\"2026-06-20T11:03:00+01:00\",\"location\":\"new site\",\"is_open\":false},\"appeal_window\":{\"days\":8,\"is_open\":false,\"deadline\":\"2026-06-23T19:27:21+01:00\"},\"requires_commerce_register\":false,\"requires_newspaper_announcement\":true,\"winner_alias\":\"Bold_Falcon_197\",\"final_price\":{\"amount\":6100000,\"formatted\":\"6 100 000 \\u062f\\u062c\"},\"condition_book\":{\"id\":\"f5cea43f-df52-4942-89bf-716077671467\",\"type\":\"CONDITION_BOOK\",\"title\":\"\\u0643\\u0631\\u0627\\u0633\\u0629 \\u0634\\u0631\\u0648\\u0637 \\u2014 new one\",\"is_public\":false,\"download_url\":\"http:\\\/\\\/mazayada.findosystem.com\\\/api\\\/v1\\\/documents\\\/f5cea43f-df52-4942-89bf-716077671467\\\/download\"},\"award_document\":null},\"message\":null,\"meta\":{\"viewer\":null}}",
+                            "body": "{\"data\":{\"id\":\"a2050443-68af-41f5-8080-20d4b878c6ca\",\"title\":\"new one\",\"titles\":{\"ar\":\"new one\",\"fr\":\"new one\",\"en\":null},\"description\":\"new one\\r\\nnew one\\r\\nnew one\\r\\nnew one\",\"descriptions\":{\"ar\":\"new one\\r\\nnew one\\r\\nnew one\\r\\nnew one\",\"fr\":\"new one\\r\\nnew one\\r\\nnew one\\r\\nnew one\"},\"specifications\":[],\"status\":\"CLOSED\",\"auction_type\":\"SALE\",\"asset_class\":\"REAL_ESTATE\",\"condition\":\"NEW\",\"unit_count\":1,\"condition_terms\":null,\"award_terms\":null,\"category\":{\"id\":2,\"name\":\"\\u0639\\u0642\\u0627\\u0631\\u0627\\u062a\"},\"wilaya\":{\"id\":2,\"code\":\"02\",\"name\":\"\\u0627\\u0644\\u0634\\u0644\\u0641\"},\"commune\":{\"id\":23,\"name\":\"\\u0628\\u0648\\u0642\\u0627\\u062f\\u064a\\u0631\"},\"entity\":{\"id\":\"a1dc9d20-adb9-4238-9c3d-a600ccd3075e\",\"name\":\"\\u0627\\u0644\\u0645\\u062c\\u0644\\u0633 \\u0627\\u0644\\u0634\\u0639\\u0628\\u064a \\u0627\\u0644\\u0628\\u0644\\u062f\\u064a \\u0644\\u062e\\u0646\\u0634\\u0644\\u0629\"},\"asset_location\":\"new site\",\"latitude\":null,\"longitude\":null,\"mayor_name\":\"new name\",\"photos\":[\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/JHBtdQWhA4LOIjXbioJHCzgG8ovifXRrNtxAjLlz.jpg\",\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/vLQTdRnwLwgvzRM53r87vWOePYcMCOHnTfVqeBJD.jpg\",\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/JcshBU0KGcgYrwxQhkikA3vDcM4fhI2V8ZQGMxSB.jpg\"],\"cover_photo_url\":\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/JHBtdQWhA4LOIjXbioJHCzgG8ovifXRrNtxAjLlz.jpg\",\"video_url\":\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/video\\\/knxMOt8C3yG3JwAnyiIPuKkDbHOWVAVTPa0mrGpD.mp4\",\"opening_price\":{\"amount\":1000000,\"formatted\":\"1 000 000 \\u062f\\u062c\"},\"current_price\":{\"amount\":6100000,\"formatted\":\"6 100 000 \\u062f\\u062c\"},\"deposit_amount\":{\"amount\":200,\"formatted\":\"200 \\u062f\\u062c\"},\"deposit_percent\":10,\"book_price\":{\"amount\":200,\"formatted\":\"200 \\u062f\\u062c\"},\"has_book_access\":false,\"bid_count\":15,\"start_time\":\"2026-06-14T11:10:00+01:00\",\"end_time\":\"2026-06-14T12:00:00+01:00\",\"seconds_remaining\":0,\"is_live\":false,\"is_biddable\":false,\"has_ended\":false,\"extension_count\":0,\"max_extensions\":10,\"inspection\":{\"start\":\"2026-06-14T11:03:00+01:00\",\"end\":\"2026-06-20T11:03:00+01:00\",\"location\":\"new site\",\"is_open\":false},\"appeal_window\":{\"days\":8,\"is_open\":false,\"deadline\":\"2026-06-23T19:27:21+01:00\"},\"requires_commerce_register\":false,\"requires_newspaper_announcement\":true,\"winner_alias\":\"Bold_Falcon_197\",\"final_price\":{\"amount\":6100000,\"formatted\":\"6 100 000 \\u062f\\u062c\"},\"condition_book\":{\"id\":\"f5cea43f-df52-4942-89bf-716077671467\",\"type\":\"CONDITION_BOOK\",\"type_label\":\"\\u0643\\u0631\\u0627\\u0633\\u0629 \\u0627\\u0644\\u0634\\u0631\\u0648\\u0637\",\"title\":\"\\u0643\\u0631\\u0627\\u0633\\u0629 \\u0634\\u0631\\u0648\\u0637 \\u2014 new one\",\"is_public\":false,\"file_size\":56144,\"file_size_human\":\"54.8 KB\",\"issued_at\":\"2026-06-14T08:05:04+01:00\",\"download_url\":\"http:\\\/\\\/mazayada.findosystem.com\\\/api\\\/v1\\\/documents\\\/f5cea43f-df52-4942-89bf-716077671467\\\/download\",\"verify_url\":\"http:\\\/\\\/mazayada.findosystem.com\\\/verify?doc=f5cea43f-df52-4942-89bf-716077671467&sig=8a080d731cbc88a58981e64e0cb855eeafb200d24fa8e9caecddfdec8c02bd8c\"},\"award_document\":null},\"message\":null,\"meta\":{\"viewer\":null}}",
                             "name": ""
                         }
                     ]
@@ -689,7 +849,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"nin\":\"consequatur\",\"first_name_ar\":\"mqeopfuudtdsufvyvddqa\",\"last_name_ar\":\"mniihfqcoynlazghdtqtq\",\"phone\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"birth_date\":\"2006-04-01\",\"password\":\"O[2UZ5ij-e\\\/dl4m{o,\",\"device_name\":\"dqamniihfqcoynlazghdt\"}"
+                            "raw": "{\"nin\":\"consequatur\",\"first_name_ar\":\"mqeopfuudtdsufvyvddqa\",\"last_name_ar\":\"mniihfqcoynlazghdtqtq\",\"phone\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"birth_date\":\"2006-04-05\",\"password\":\"O[2UZ5ij-e\\\/dl4m{o,\",\"device_name\":\"dqamniihfqcoynlazghdt\"}"
                         },
                         "description": "Create a CITIZEN account and email a 6-digit verification code. Does NOT log\nthe user in \u2014 call verify-otp with the returned user_id to obtain tokens.",
                         "auth": {
@@ -1112,7 +1272,7 @@
         },
         {
             "name": "Commercial Register",
-            "description": "\nThe user's Commercial Register (\u0627\u0644\u0633\u062c\u0644 \u0627\u0644\u062a\u062c\u0627\u0631\u064a) submission. Mirrors the web flow:\nsubmit the register data plus two scans, an admin reviews it, and only a valid\n(APPROVED and un-expired) register unlocks participation in auctions flagged\n`requires_commerce_register`. Independent of KYC \u2014 a user may hold either, both\nor neither.",
+            "description": "\nThe user's Commercial Register (\u0627\u0644\u0633\u062c\u0644 \u0627\u0644\u062a\u062c\u0627\u0631\u064a) submission. Mirrors the web flow:\nsubmit the register data plus two scans, an admin reviews it, and only an\nAPPROVED register unlocks participation in auctions flagged\n`requires_commerce_register`. Independent of KYC \u2014 a user may hold either, both\nor neither.",
             "item": [
                 {
                     "name": "Register status",
@@ -1218,10 +1378,10 @@
                                     "description": "The registered commercial activity."
                                 },
                                 {
-                                    "key": "expiry_date",
-                                    "value": "2030-12-31",
+                                    "key": "start_date",
+                                    "value": "2022-01-15",
                                     "type": "text",
-                                    "description": "The register expiry date (must be in the future)."
+                                    "description": "The register issue (start) date (cannot be in the future)."
                                 },
                                 {
                                     "key": "register_document",
@@ -1423,7 +1583,7 @@
         },
         {
             "name": "Documents",
-            "description": "\nStreams generated PDFs (condition book \/ award \/ receipt) from the private\ndisk. Access is gated by DocumentPolicy@download (public docs to any\nauthenticated user; private docs to the owner \/ auction winner \/ entity staff).",
+            "description": "\nThe signed-in user's personal document library \u2014 every generated PDF tied to an\nauction they engaged with (condition book \/ award \/ receipt \/ delivery report),\nplus the policy-gated binary download. Streams from the private disk; access is\ngated by DocumentPolicy@download.",
             "item": [
                 {
                     "name": "Download a document",
@@ -1459,6 +1619,165 @@
                         ],
                         "body": null,
                         "description": "Streams the document binary (application\/pdf).",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "List my documents",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/documents",
+                            "query": [
+                                {
+                                    "key": "search",
+                                    "value": "villa",
+                                    "description": "Match auction title or document name.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "type[0]",
+                                    "value": "consequatur",
+                                    "description": "Document types: CONDITION_BOOK, AWARD, PAYMENT_RECEIPT, DELIVERY_REPORT.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "preset",
+                                    "value": "30d",
+                                    "description": "Date preset: today, 7d, 30d, this_month, this_year, all.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "from",
+                                    "value": "2026-01-01",
+                                    "description": "date Custom range start (Y-m-d).",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "to",
+                                    "value": "2026-12-31",
+                                    "description": "date Custom range end (Y-m-d).",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "category_id",
+                                    "value": "3",
+                                    "description": "Filter by auction category.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "wilaya_id",
+                                    "value": "16",
+                                    "description": "Filter by auction wilaya.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "entity_id",
+                                    "value": "consequatur",
+                                    "description": "Filter by organizing entity.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "sort",
+                                    "value": "recent",
+                                    "description": "One of recent, oldest, auction (default recent).",
+                                    "disabled": false
+                                }
+                            ],
+                            "raw": "{{baseUrl}}\/api\/v1\/documents?search=villa&type%5B0%5D=consequatur&preset=30d&from=2026-01-01&to=2026-12-31&category_id=3&wilaya_id=16&entity_id=consequatur&sort=recent"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "The user's documents with the same advanced filters as the web library.\nEvery returned document is one the user may download.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "My documents summary",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/documents\/summary",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/documents\/summary"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Per-type counts and total size \u2014 the stat tiles for the mobile library.",
                         "auth": {
                             "type": "noauth"
                         }
@@ -1590,7 +1909,7 @@
                                 },
                                 {
                                     "key": "set-cookie",
-                                    "value": "XSRF-TOKEN=eyJpdiI6IjZucmNtM1hvb1NQR01VTUE2dmIyc1E9PSIsInZhbHVlIjoidS81amdsQmVTck1NRktPcGpzK3lKTFhiVCtYTnhPWng5NnlVWnJxeEhpUndjSi8rSEFEUUxkaHZyaWlzN1RIWG5LU1ZiRlZGVEw4azVveDBoNytXaFRFZWYwdFNEdFI1Vk52a0ZkY0F2SFJwbWx5WWNFaWkrZHdpNGFpcU1KZGwiLCJtYWMiOiI1YzAwMjBjMTA3YmI1YTlmMjBiZjAwOTcwNzYxY2IyN2MwMTA2NGQ1ZTAyYTE3ZTUxZDEzYjgxOWUxMDcxOWU1IiwidGFnIjoiIn0%3D; expires=Thu, 09 Jul 2026 07:17:08 GMT; Max-Age=7200; path=\/; samesite=lax; mazayada-session=eyJpdiI6InJuQXNkTDUrZ0gvVXltZmRZSUIrV1E9PSIsInZhbHVlIjoibmo3VC9FN2dtenltZXlNUTlYU2EyblVvS3VaYlUxWldaMlp4d3hDR1ZmTXJVdVNZeGFaZGdYRUh5dzFIMTUzNFlKaXJoNXFEaGQrL2V5T2FieGxONThHTDJNb1F2MDVXbWttYlRmYnk5eWFjV3Y0bU9UaGdObFhOdlhQVGNUTlkiLCJtYWMiOiI3MzVlYmFkYzA0NDkyZjg3YzY5MWRmZDdiZjEzNjkwNDM1Mjg2NDZlY2FhM2EwYTdhYzM5MjA2NWZmMjk1MTYxIiwidGFnIjoiIn0%3D; expires=Thu, 09 Jul 2026 07:17:08 GMT; Max-Age=7200; path=\/; httponly; samesite=lax"
+                                    "value": "XSRF-TOKEN=eyJpdiI6IkNMcEU3TzIzS2FyQ1laWFc1RFByOHc9PSIsInZhbHVlIjoiQitQQlJQTE5KMFhyeTFQblNmL1BaUmY3TlMzMmtFOSt2WEd6OGJhZW80MjRxVldtZHlYV3RTKzRiK1VyQmJVYmljbVhWeTdCRGgwaEpMcTBXNEJyMlN5N0tpdWt6STduNE9PNnJJTStkUWdObkF3a3dIOUMwWldQc0t6N21wQW8iLCJtYWMiOiI3MDA1ZWFkZDYyNDJkMmZiMzI5NzRhNjBlYmYzYTgwODBkZjU3N2I1MTUzODMwOWM0MjRkYTM3OGQzNTEyODNlIiwidGFnIjoiIn0%3D; expires=Mon, 13 Jul 2026 19:31:55 GMT; Max-Age=7200; path=\/; samesite=lax; mazayada-session=eyJpdiI6ImJ3aEJHSC9ZaUV6WFBHbTFGWDhjOGc9PSIsInZhbHVlIjoiblkxb3dDS3BNZjFEdVMzUmtHZ3RJSndvL0pqRjVXcjUrNC9IaTYvdUJwUHZEWWJ4bk43S1QzK3pOc3oybHhGS1NFaVhXWFdIS20yMFFnc1hGU2oxc2kzZDk2ZjRxaklpbmE4OUdzVWZvb0Z1ejQ5TDB2cVYreFM0UHgzNHo3RjgiLCJtYWMiOiJhOGIyYTdhYTAxNWViNWUyNDBmYjUzZTQyYTVhNTZlNDljNDk5MTQxYTUwZTdhZmU2YjI0ZDk1MTc4NDMzNzhmIiwidGFnIjoiIn0%3D; expires=Mon, 13 Jul 2026 19:31:55 GMT; Max-Age=7200; path=\/; httponly; samesite=lax"
                                 }
                             ],
                             "code": 200,
@@ -1654,7 +1973,7 @@
                                 },
                                 {
                                     "key": "set-cookie",
-                                    "value": "XSRF-TOKEN=eyJpdiI6ImdtUVdpUzROYzkzRGtzRmZXVG5qNkE9PSIsInZhbHVlIjoiNCtucmlOaFBqQ09yNWdiQThUcGR6bnlGRFprejRtMXp1V1g5bnJ5V09PU2Rla25pTkRvdTdiQVJVVmQ4T2tGOW5xc2RBZy91SllQTWUvcXhwWW9rM0dsOE8zRUJiWU9QVTQvaWI4MENuaFhKZnR3UC9mZ3pmYzRlbnNqcnlxUi8iLCJtYWMiOiI1Y2QxMDY3MjNmZWYwODQzMjFlOWM0MzM2YWU3MGEzN2U0MWQ1YTNkOWQzYTI2MGY0YmI0YWJiOWY5ZjI5MGM4IiwidGFnIjoiIn0%3D; expires=Thu, 09 Jul 2026 07:17:08 GMT; Max-Age=7200; path=\/; samesite=lax; mazayada-session=eyJpdiI6ImdhT0p4OXpmNGovZmdaZ1lmRUtrNFE9PSIsInZhbHVlIjoicnIweENPSjhFazZiVVFTaU9MM1ZZUGlDc09PbnRJLzlBMWtHMzQwOTNGWjhMaEdmMnhlcHJSOEF3QVJ4aUxrNjNYYTZlb21EZHRtY1AwQ2hJNEpDNTAwNGlJRkdGTUtsWHZnR0xmaGx3RjZiN21aUUtwMkNwekhkdGJYUEppa0giLCJtYWMiOiJmYTVhMmNiM2ZjMTFiOTFhZjU5Mzg3OTQ3ZDBiMDk3OGFkMzIwNDQ5ZmY5YWRiODI3OGU1OWM4MDcyNzY2OWM4IiwidGFnIjoiIn0%3D; expires=Thu, 09 Jul 2026 07:17:08 GMT; Max-Age=7200; path=\/; httponly; samesite=lax"
+                                    "value": "XSRF-TOKEN=eyJpdiI6InEwRFM0TlRsSDVRamxmNXRLUWZJcWc9PSIsInZhbHVlIjoiWWhVR0VTL2tWZlJQZzVZWmFCNFZsQnhMdUNBWW9BdmwzT082aG5sbHNPdEg2enJZbVZkSEsrMVczcmZxT0wrR01Sc3llOG5TNDFWVFhKNnBZY0ZRTFd1RFdkSDdoU2R0ckZIMXJlSGRPSVdCaGxSNjVldWNBUVJmNEhJczVaVU0iLCJtYWMiOiI5MzMzNjUyNmExZTIxNTllOTkxY2M4YmI1ODNiMDdmYThlYmI2N2ZjMjhmMWRhMzgyZGE2NjcwYTc2MTEyMmE4IiwidGFnIjoiIn0%3D; expires=Mon, 13 Jul 2026 19:31:55 GMT; Max-Age=7200; path=\/; samesite=lax; mazayada-session=eyJpdiI6InJUaDFjVGJ6ZXNUS3FLWElKd2MzUHc9PSIsInZhbHVlIjoidGx0alQ3NERtY0cwM0FZa2QwYTBDdzBNR1J6YmRvZDRwdi83eG9zRXJ2bjRkNWovRzg0L0k0ekRyZTJOK2VTcGl6RjNlTS9jdFQzK0VmSTRRS2Y5MTVCR011WStPQ2Vjb3Q3NkVGcS9DNzZaNy9SeWJ6OWw3UkxuUWFuczNOdFMiLCJtYWMiOiJkZDczMzIyOTc1MjE1MGRhOWU3NWVkYjExN2M4MjQyYTFiNWJmOTExMzAwYzdmYzk4NWI3MGEzMTdjZWFiMGIxIiwidGFnIjoiIn0%3D; expires=Mon, 13 Jul 2026 19:31:55 GMT; Max-Age=7200; path=\/; httponly; samesite=lax"
                                 }
                             ],
                             "code": 200,
@@ -2283,6 +2602,66 @@
                     ]
                 },
                 {
+                    "name": "Final payment preview",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auctions\/:auction_id\/final-payment\/preview",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auctions\/:auction_id\/final-payment\/preview",
+                            "variable": [
+                                {
+                                    "id": "auction_id",
+                                    "key": "auction_id",
+                                    "value": "a2050443-68af-41f5-8080-20d4b878c6ca",
+                                    "description": "The ID of the auction."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "The winner's Decree 97-33 fee breakdown BEFORE paying: itemised fee lines\n(localized labels + dinars), the deposit already credited, the net amount\nstill due, and the payment deadline. Read-only \u2014 nothing is charged. Lets the\nmobile app show the full cost sheet before it sends the winner to the gateway.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
                     "name": "Start final payment",
                     "request": {
                         "url": {
@@ -2406,7 +2785,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"phone\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"address\":\"fuudtdsufvyvddqamniih\",\"postal_code\":\"15627\",\"profession\":\"udtdsufvyvddqamniihfq\",\"locale\":\"ar\",\"secret_question\":\"pet_name\",\"secret_answer\":\"coynlazghdtqtqxbajwbp\"}"
+                            "raw": "{\"phone\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"address\":\"fuudtdsufvyvddqamniih\",\"postal_code\":\"15627\",\"profession\":\"udtdsufvyvddqamniihfq\",\"locale\":\"fr\",\"secret_question\":\"mother_maiden\",\"secret_answer\":\"coynlazghdtqtqxbajwbp\"}"
                         },
                         "description": "Updates contact details, address and the security question. Identity fields\n(NIN, names) are not editable here.",
                         "auth": {

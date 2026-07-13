@@ -69,6 +69,16 @@
                         @can('view', $auction)
                             <x-ui.action-menu.item :href="route('admin.auctions.show', $auction)">{{ __('admin.auctions.view_details') }}</x-ui.action-menu.item>
                         @endcan
+                        {{-- تقرير المزاد — issue a fresh full-detail PDF or view the last one.
+                             Available for any auction that has left DRAFT. --}}
+                        @if($auction->status !== \App\Enums\AuctionStatus::DRAFT)
+                            @can('generate', $auction)
+                                <x-ui.action-menu.submenu :label="__('auction_reports.menu_report')">
+                                    <x-ui.action-menu.item :action="route('admin.auctions.reports.generate', $auction)">{{ __('auction_reports.action_generate') }}</x-ui.action-menu.item>
+                                    <x-ui.action-menu.item :href="route('admin.auctions.reports.latest', $auction)" target="_blank" rel="noopener">{{ __('auction_reports.action_view') }}</x-ui.action-menu.item>
+                                </x-ui.action-menu.submenu>
+                            @endcan
+                        @endif
                         {{-- §4 step 2 — condition book: generate (then download) for any pre-close auction --}}
                         @can('documents.generate')
                             @if(in_array($auction->status, [\App\Enums\AuctionStatus::DRAFT, \App\Enums\AuctionStatus::PUBLISHED, \App\Enums\AuctionStatus::ACTIVE, \App\Enums\AuctionStatus::EXTENDED], true))

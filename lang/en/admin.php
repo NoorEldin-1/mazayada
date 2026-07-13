@@ -13,6 +13,7 @@ return [
     'nav_deliveries' => 'Deliveries',
     'nav_audit' => 'Audit Log',
     'nav_reports' => 'Financial Reports',
+    'nav_auction_reports' => 'Auction Reports',
     'nav_entities' => 'Entities',
     'nav_entity_staff' => 'Entity staff',
     'nav_categories' => 'Categories',

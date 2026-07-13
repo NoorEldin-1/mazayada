@@ -113,6 +113,12 @@
                                                     <li class="tocify-item level-2" data-unique="auctions-GETapi-v1-auctions">
                                 <a href="#auctions-GETapi-v1-auctions">List auctions</a>
                             </li>
+                                                                                <li class="tocify-item level-2" data-unique="auctions-GETapi-v1-auctions-search">
+                                <a href="#auctions-GETapi-v1-auctions-search">Search auctions</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="auctions-GETapi-v1-auctions-filters">
+                                <a href="#auctions-GETapi-v1-auctions-filters">Filter options</a>
+                            </li>
                                                                                 <li class="tocify-item level-2" data-unique="auctions-GETapi-v1-auctions--id-">
                                 <a href="#auctions-GETapi-v1-auctions--id-">Get an auction</a>
                             </li>
@@ -214,6 +220,12 @@
                                                     <li class="tocify-item level-2" data-unique="documents-GETapi-v1-documents--document_id--download">
                                 <a href="#documents-GETapi-v1-documents--document_id--download">Download a document</a>
                             </li>
+                                                                                <li class="tocify-item level-2" data-unique="documents-GETapi-v1-documents">
+                                <a href="#documents-GETapi-v1-documents">List my documents</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="documents-GETapi-v1-documents-summary">
+                                <a href="#documents-GETapi-v1-documents-summary">My documents summary</a>
+                            </li>
                                                                         </ul>
                             </ul>
                     <ul id="tocify-header-endpoints" class="tocify-header">
@@ -294,6 +306,9 @@
                                                                                 <li class="tocify-item level-2" data-unique="payments-GETapi-v1-payments--ref--status">
                                 <a href="#payments-GETapi-v1-payments--ref--status">Payment status</a>
                             </li>
+                                                                                <li class="tocify-item level-2" data-unique="payments-GETapi-v1-auctions--auction_id--final-payment-preview">
+                                <a href="#payments-GETapi-v1-auctions--auction_id--final-payment-preview">Final payment preview</a>
+                            </li>
                                                                                 <li class="tocify-item level-2" data-unique="payments-POSTapi-v1-auctions--auction_id--final-payment">
                                 <a href="#payments-POSTapi-v1-auctions--auction_id--final-payment">Start final payment</a>
                             </li>
@@ -331,7 +346,7 @@
     </ul>
 
     <ul class="toc-footer" id="last-updated">
-        <li>Last updated: July 9, 2026</li>
+        <li>Last updated: July 13, 2026</li>
     </ul>
 </div>
 
@@ -1304,7 +1319,8 @@ shown only by their deterministic alias.</p>
 <p>
 </p>
 
-<p>Paginated, filterable list of public auctions.</p>
+<p>Paginated, filterable list of public auctions. The filter vocabulary is
+identical to the web browse page (App\Support\AuctionFilters).</p>
 
 <span id="example-requests-GETapi-v1-auctions">
 <blockquote>Example request:</blockquote>
@@ -1312,7 +1328,7 @@ shown only by their deterministic alias.</p>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "https://mazayada.findosystem.com/api/v1/auctions?q=%D8%B3%D9%8A%D8%A7%D8%B1%D8%A9&amp;category=consequatur&amp;wilaya=16&amp;status=ACTIVE&amp;type=SALE&amp;per_page=12" \
+    --get "https://mazayada.findosystem.com/api/v1/auctions?q=%D8%B3%D9%8A%D8%A7%D8%B1%D8%A9&amp;category=consequatur&amp;wilaya=16&amp;commune=17&amp;status=&amp;type=SALE&amp;asset_class=&amp;condition=&amp;requires_cr=1&amp;price_min=100000&amp;price_max=5000000&amp;sort=ending_soon&amp;per_page=12" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --header "Accept-Language: ar"</code></pre></div>
@@ -1327,8 +1343,15 @@ const params = {
     "q": "سيارة",
     "category": "consequatur",
     "wilaya": "16",
-    "status": "ACTIVE",
+    "commune": "17",
+    "status": "",
     "type": "SALE",
+    "asset_class": "",
+    "condition": "",
+    "requires_cr": "1",
+    "price_min": "100000",
+    "price_max": "5000000",
+    "sort": "ending_soon",
     "per_page": "12",
 };
 Object.keys(params)
@@ -1470,7 +1493,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value="سيارة"
                data-component="query">
     <br>
-<p>Search in the Arabic title. Example: <code>سيارة</code></p>
+<p>Keyword — matches the title in any locale or the asset location. Example: <code>سيارة</code></p>
             </div>
                                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>category</code></b>&nbsp;&nbsp;
@@ -1497,16 +1520,30 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>Filter by wilaya id. Example: <code>16</code></p>
             </div>
                                     <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>commune</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="commune"                data-endpoint="GETapi-v1-auctions"
+               value="17"
+               data-component="query">
+    <br>
+<p>Filter by commune id. Example: <code>17</code></p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>status</code></b>&nbsp;&nbsp;
-<small>string</small>&nbsp;
+<small>string[]</small>&nbsp;
 <i>optional</i> &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="status"                data-endpoint="GETapi-v1-auctions"
-               value="ACTIVE"
+                              name="status[0]"                data-endpoint="GETapi-v1-auctions"
+               data-component="query">
+        <input type="text" style="display: none"
+               name="status[1]"                data-endpoint="GETapi-v1-auctions"
                data-component="query">
     <br>
-<p>One of PUBLISHED, ACTIVE, EXTENDED, CLOSED. Example: <code>ACTIVE</code></p>
+<p>User tokens (upcoming, live, closed) or raw enum values.</p>
             </div>
                                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>type</code></b>&nbsp;&nbsp;
@@ -1521,6 +1558,92 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>Auction type: SALE or LEASE. Example: <code>SALE</code></p>
             </div>
                                     <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>asset_class</code></b>&nbsp;&nbsp;
+<small>string[]</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="asset_class[0]"                data-endpoint="GETapi-v1-auctions"
+               data-component="query">
+        <input type="text" style="display: none"
+               name="asset_class[1]"                data-endpoint="GETapi-v1-auctions"
+               data-component="query">
+    <br>
+<p>One or more asset classes.</p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>condition</code></b>&nbsp;&nbsp;
+<small>string[]</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="condition[0]"                data-endpoint="GETapi-v1-auctions"
+               data-component="query">
+        <input type="text" style="display: none"
+               name="condition[1]"                data-endpoint="GETapi-v1-auctions"
+               data-component="query">
+    <br>
+<p>One or more asset conditions.</p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>requires_cr</code></b>&nbsp;&nbsp;
+<small>boolean</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <label data-endpoint="GETapi-v1-auctions" style="display: none">
+            <input type="radio" name="requires_cr"
+                   value="1"
+                   data-endpoint="GETapi-v1-auctions"
+                   data-component="query"             >
+            <code>true</code>
+        </label>
+        <label data-endpoint="GETapi-v1-auctions" style="display: none">
+            <input type="radio" name="requires_cr"
+                   value="0"
+                   data-endpoint="GETapi-v1-auctions"
+                   data-component="query"             >
+            <code>false</code>
+        </label>
+    <br>
+<p>Commercial-register requirement (1 = required, 0 = not). Example: <code>true</code></p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>price_min</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="price_min"                data-endpoint="GETapi-v1-auctions"
+               value="100000"
+               data-component="query">
+    <br>
+<p>Minimum opening price in dinars. Example: <code>100000</code></p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>price_max</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="price_max"                data-endpoint="GETapi-v1-auctions"
+               value="5000000"
+               data-component="query">
+    <br>
+<p>Maximum opening price in dinars. Example: <code>5000000</code></p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>sort</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="sort"                data-endpoint="GETapi-v1-auctions"
+               value="ending_soon"
+               data-component="query">
+    <br>
+<p>newest (default), price_asc, price_desc, most_bids, ending_soon. Example: <code>ending_soon</code></p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>per_page</code></b>&nbsp;&nbsp;
 <small>integer</small>&nbsp;
 <i>optional</i> &nbsp;
@@ -1531,6 +1654,925 @@ You can check the Dev Tools console for debugging information.</code></pre>
                data-component="query">
     <br>
 <p>Items per page (1-50, default 12). Example: <code>12</code></p>
+            </div>
+                </form>
+
+                    <h2 id="auctions-GETapi-v1-auctions-search">Search auctions</h2>
+
+<p>
+</p>
+
+<p>Lightweight autocomplete for the browse search box — the enveloped, dinar
+mobile counterpart of the web live-search dropdown. Returns up to 8 public
+auctions matching the term by title (any locale) or asset location. Requires
+at least 2 characters; a shorter term returns an empty list.</p>
+
+<span id="example-requests-GETapi-v1-auctions-search">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "https://mazayada.findosystem.com/api/v1/auctions/search?q=villa" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/auctions/search"
+);
+
+const params = {
+    "q": "villa",
+};
+Object.keys(params)
+    .forEach(key =&gt; url.searchParams.append(key, params[key]));
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-v1-auctions-search">
+            <blockquote>
+            <p>Example response (200):</p>
+        </blockquote>
+                <details class="annotation">
+            <summary style="cursor: pointer;">
+                <small onclick="textContent = parentElement.parentElement.open ? 'Show headers' : 'Hide headers'">Show headers</small>
+            </summary>
+            <pre><code class="language-http">cache-control: no-cache, private
+content-type: application/json
+access-control-allow-origin: *
+ </code></pre></details>         <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;data&quot;: [],
+    &quot;message&quot;: null,
+    &quot;meta&quot;: {}
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-v1-auctions-search" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-v1-auctions-search"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-v1-auctions-search"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-v1-auctions-search" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-v1-auctions-search">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-v1-auctions-search" data-method="GET"
+      data-path="api/v1/auctions/search"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v1-auctions-search', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-v1-auctions-search"
+                    onclick="tryItOut('GETapi-v1-auctions-search');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-v1-auctions-search"
+                    onclick="cancelTryOut('GETapi-v1-auctions-search');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-v1-auctions-search"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v1/auctions/search</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-v1-auctions-search"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-v1-auctions-search"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="GETapi-v1-auctions-search"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                            <h4 class="fancy-heading-panel"><b>Query Parameters</b></h4>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>q</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="q"                data-endpoint="GETapi-v1-auctions-search"
+               value="villa"
+               data-component="query">
+    <br>
+<p>The search term (min 2 chars). Example: <code>villa</code></p>
+            </div>
+                </form>
+
+                    <h2 id="auctions-GETapi-v1-auctions-filters">Filter options</h2>
+
+<p>
+</p>
+
+<p>The reference data the mobile browse screen needs to build its filter UI:
+active categories, wilayas, and the enumerated token sets (status, type,
+asset class, condition, sort). Cached-friendly and locale-aware (names come
+from the localized accessor). Pass <code>wilaya</code> to also get that wilaya's communes.</p>
+
+<span id="example-requests-GETapi-v1-auctions-filters">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "https://mazayada.findosystem.com/api/v1/auctions/filters?wilaya=16" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/auctions/filters"
+);
+
+const params = {
+    "wilaya": "16",
+};
+Object.keys(params)
+    .forEach(key =&gt; url.searchParams.append(key, params[key]));
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-v1-auctions-filters">
+            <blockquote>
+            <p>Example response (200):</p>
+        </blockquote>
+                <details class="annotation">
+            <summary style="cursor: pointer;">
+                <small onclick="textContent = parentElement.parentElement.open ? 'Show headers' : 'Hide headers'">Show headers</small>
+            </summary>
+            <pre><code class="language-http">cache-control: no-cache, private
+content-type: application/json
+access-control-allow-origin: *
+ </code></pre></details>         <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;data&quot;: {
+        &quot;categories&quot;: [
+            {
+                &quot;id&quot;: 1,
+                &quot;name&quot;: &quot;مركبات&quot;
+            },
+            {
+                &quot;id&quot;: 2,
+                &quot;name&quot;: &quot;عقارات&quot;
+            },
+            {
+                &quot;id&quot;: 3,
+                &quot;name&quot;: &quot;معدات صناعية&quot;
+            },
+            {
+                &quot;id&quot;: 4,
+                &quot;name&quot;: &quot;إلكترونيات&quot;
+            },
+            {
+                &quot;id&quot;: 5,
+                &quot;name&quot;: &quot;خردة&quot;
+            },
+            {
+                &quot;id&quot;: 6,
+                &quot;name&quot;: &quot;منتجات زراعية&quot;
+            },
+            {
+                &quot;id&quot;: 7,
+                &quot;name&quot;: &quot;أثاث مكتبي&quot;
+            },
+            {
+                &quot;id&quot;: 8,
+                &quot;name&quot;: &quot;أخرى&quot;
+            },
+            {
+                &quot;id&quot;: 9,
+                &quot;name&quot;: &quot;ِسيشسيشسي&quot;
+            }
+        ],
+        &quot;wilayas&quot;: [
+            {
+                &quot;id&quot;: 1,
+                &quot;code&quot;: &quot;01&quot;,
+                &quot;name&quot;: &quot;أدرار&quot;
+            },
+            {
+                &quot;id&quot;: 2,
+                &quot;code&quot;: &quot;02&quot;,
+                &quot;name&quot;: &quot;الشلف&quot;
+            },
+            {
+                &quot;id&quot;: 3,
+                &quot;code&quot;: &quot;03&quot;,
+                &quot;name&quot;: &quot;الأغواط&quot;
+            },
+            {
+                &quot;id&quot;: 4,
+                &quot;code&quot;: &quot;04&quot;,
+                &quot;name&quot;: &quot;أم البواقي&quot;
+            },
+            {
+                &quot;id&quot;: 5,
+                &quot;code&quot;: &quot;05&quot;,
+                &quot;name&quot;: &quot;باتنة&quot;
+            },
+            {
+                &quot;id&quot;: 6,
+                &quot;code&quot;: &quot;06&quot;,
+                &quot;name&quot;: &quot;بجاية&quot;
+            },
+            {
+                &quot;id&quot;: 7,
+                &quot;code&quot;: &quot;07&quot;,
+                &quot;name&quot;: &quot;بسكرة&quot;
+            },
+            {
+                &quot;id&quot;: 8,
+                &quot;code&quot;: &quot;08&quot;,
+                &quot;name&quot;: &quot;بشار&quot;
+            },
+            {
+                &quot;id&quot;: 9,
+                &quot;code&quot;: &quot;09&quot;,
+                &quot;name&quot;: &quot;البليدة&quot;
+            },
+            {
+                &quot;id&quot;: 10,
+                &quot;code&quot;: &quot;10&quot;,
+                &quot;name&quot;: &quot;البويرة&quot;
+            },
+            {
+                &quot;id&quot;: 11,
+                &quot;code&quot;: &quot;11&quot;,
+                &quot;name&quot;: &quot;تمنراست&quot;
+            },
+            {
+                &quot;id&quot;: 12,
+                &quot;code&quot;: &quot;12&quot;,
+                &quot;name&quot;: &quot;تبسة&quot;
+            },
+            {
+                &quot;id&quot;: 13,
+                &quot;code&quot;: &quot;13&quot;,
+                &quot;name&quot;: &quot;تلمسان&quot;
+            },
+            {
+                &quot;id&quot;: 14,
+                &quot;code&quot;: &quot;14&quot;,
+                &quot;name&quot;: &quot;تيارت&quot;
+            },
+            {
+                &quot;id&quot;: 15,
+                &quot;code&quot;: &quot;15&quot;,
+                &quot;name&quot;: &quot;تيزي وزو&quot;
+            },
+            {
+                &quot;id&quot;: 16,
+                &quot;code&quot;: &quot;16&quot;,
+                &quot;name&quot;: &quot;الجزائر&quot;
+            },
+            {
+                &quot;id&quot;: 17,
+                &quot;code&quot;: &quot;17&quot;,
+                &quot;name&quot;: &quot;الجلفة&quot;
+            },
+            {
+                &quot;id&quot;: 18,
+                &quot;code&quot;: &quot;18&quot;,
+                &quot;name&quot;: &quot;جيجل&quot;
+            },
+            {
+                &quot;id&quot;: 19,
+                &quot;code&quot;: &quot;19&quot;,
+                &quot;name&quot;: &quot;سطيف&quot;
+            },
+            {
+                &quot;id&quot;: 20,
+                &quot;code&quot;: &quot;20&quot;,
+                &quot;name&quot;: &quot;سعيدة&quot;
+            },
+            {
+                &quot;id&quot;: 21,
+                &quot;code&quot;: &quot;21&quot;,
+                &quot;name&quot;: &quot;سكيكدة&quot;
+            },
+            {
+                &quot;id&quot;: 22,
+                &quot;code&quot;: &quot;22&quot;,
+                &quot;name&quot;: &quot;سيدي بلعباس&quot;
+            },
+            {
+                &quot;id&quot;: 23,
+                &quot;code&quot;: &quot;23&quot;,
+                &quot;name&quot;: &quot;عنابة&quot;
+            },
+            {
+                &quot;id&quot;: 24,
+                &quot;code&quot;: &quot;24&quot;,
+                &quot;name&quot;: &quot;قالمة&quot;
+            },
+            {
+                &quot;id&quot;: 25,
+                &quot;code&quot;: &quot;25&quot;,
+                &quot;name&quot;: &quot;قسنطينة&quot;
+            },
+            {
+                &quot;id&quot;: 26,
+                &quot;code&quot;: &quot;26&quot;,
+                &quot;name&quot;: &quot;المدية&quot;
+            },
+            {
+                &quot;id&quot;: 27,
+                &quot;code&quot;: &quot;27&quot;,
+                &quot;name&quot;: &quot;مستغانم&quot;
+            },
+            {
+                &quot;id&quot;: 28,
+                &quot;code&quot;: &quot;28&quot;,
+                &quot;name&quot;: &quot;المسيلة&quot;
+            },
+            {
+                &quot;id&quot;: 29,
+                &quot;code&quot;: &quot;29&quot;,
+                &quot;name&quot;: &quot;معسكر&quot;
+            },
+            {
+                &quot;id&quot;: 30,
+                &quot;code&quot;: &quot;30&quot;,
+                &quot;name&quot;: &quot;ورقلة&quot;
+            },
+            {
+                &quot;id&quot;: 31,
+                &quot;code&quot;: &quot;31&quot;,
+                &quot;name&quot;: &quot;وهران&quot;
+            },
+            {
+                &quot;id&quot;: 32,
+                &quot;code&quot;: &quot;32&quot;,
+                &quot;name&quot;: &quot;البيض&quot;
+            },
+            {
+                &quot;id&quot;: 33,
+                &quot;code&quot;: &quot;33&quot;,
+                &quot;name&quot;: &quot;إليزي&quot;
+            },
+            {
+                &quot;id&quot;: 34,
+                &quot;code&quot;: &quot;34&quot;,
+                &quot;name&quot;: &quot;برج بوعريريج&quot;
+            },
+            {
+                &quot;id&quot;: 35,
+                &quot;code&quot;: &quot;35&quot;,
+                &quot;name&quot;: &quot;بومرداس&quot;
+            },
+            {
+                &quot;id&quot;: 36,
+                &quot;code&quot;: &quot;36&quot;,
+                &quot;name&quot;: &quot;الطارف&quot;
+            },
+            {
+                &quot;id&quot;: 37,
+                &quot;code&quot;: &quot;37&quot;,
+                &quot;name&quot;: &quot;تندوف&quot;
+            },
+            {
+                &quot;id&quot;: 38,
+                &quot;code&quot;: &quot;38&quot;,
+                &quot;name&quot;: &quot;تيسمسيلت&quot;
+            },
+            {
+                &quot;id&quot;: 39,
+                &quot;code&quot;: &quot;39&quot;,
+                &quot;name&quot;: &quot;الوادي&quot;
+            },
+            {
+                &quot;id&quot;: 40,
+                &quot;code&quot;: &quot;40&quot;,
+                &quot;name&quot;: &quot;خنشلة&quot;
+            },
+            {
+                &quot;id&quot;: 41,
+                &quot;code&quot;: &quot;41&quot;,
+                &quot;name&quot;: &quot;سوق أهراس&quot;
+            },
+            {
+                &quot;id&quot;: 42,
+                &quot;code&quot;: &quot;42&quot;,
+                &quot;name&quot;: &quot;تيبازة&quot;
+            },
+            {
+                &quot;id&quot;: 43,
+                &quot;code&quot;: &quot;43&quot;,
+                &quot;name&quot;: &quot;ميلة&quot;
+            },
+            {
+                &quot;id&quot;: 44,
+                &quot;code&quot;: &quot;44&quot;,
+                &quot;name&quot;: &quot;عين الدفلى&quot;
+            },
+            {
+                &quot;id&quot;: 45,
+                &quot;code&quot;: &quot;45&quot;,
+                &quot;name&quot;: &quot;النعامة&quot;
+            },
+            {
+                &quot;id&quot;: 46,
+                &quot;code&quot;: &quot;46&quot;,
+                &quot;name&quot;: &quot;عين تموشنت&quot;
+            },
+            {
+                &quot;id&quot;: 47,
+                &quot;code&quot;: &quot;47&quot;,
+                &quot;name&quot;: &quot;غرداية&quot;
+            },
+            {
+                &quot;id&quot;: 48,
+                &quot;code&quot;: &quot;48&quot;,
+                &quot;name&quot;: &quot;غليزان&quot;
+            },
+            {
+                &quot;id&quot;: 49,
+                &quot;code&quot;: &quot;49&quot;,
+                &quot;name&quot;: &quot;تيميمون&quot;
+            },
+            {
+                &quot;id&quot;: 50,
+                &quot;code&quot;: &quot;50&quot;,
+                &quot;name&quot;: &quot;برج باجي مختار&quot;
+            },
+            {
+                &quot;id&quot;: 51,
+                &quot;code&quot;: &quot;51&quot;,
+                &quot;name&quot;: &quot;أولاد جلال&quot;
+            },
+            {
+                &quot;id&quot;: 52,
+                &quot;code&quot;: &quot;52&quot;,
+                &quot;name&quot;: &quot;بني عباس&quot;
+            },
+            {
+                &quot;id&quot;: 53,
+                &quot;code&quot;: &quot;53&quot;,
+                &quot;name&quot;: &quot;عين صالح&quot;
+            },
+            {
+                &quot;id&quot;: 54,
+                &quot;code&quot;: &quot;54&quot;,
+                &quot;name&quot;: &quot;عين قزام&quot;
+            },
+            {
+                &quot;id&quot;: 55,
+                &quot;code&quot;: &quot;55&quot;,
+                &quot;name&quot;: &quot;توقرت&quot;
+            },
+            {
+                &quot;id&quot;: 56,
+                &quot;code&quot;: &quot;56&quot;,
+                &quot;name&quot;: &quot;جانت&quot;
+            },
+            {
+                &quot;id&quot;: 57,
+                &quot;code&quot;: &quot;57&quot;,
+                &quot;name&quot;: &quot;المغير&quot;
+            },
+            {
+                &quot;id&quot;: 58,
+                &quot;code&quot;: &quot;58&quot;,
+                &quot;name&quot;: &quot;المنيعة&quot;
+            }
+        ],
+        &quot;communes&quot;: [
+            {
+                &quot;id&quot;: 522,
+                &quot;name&quot;: &quot;عين بنيان&quot;
+            },
+            {
+                &quot;id&quot;: 523,
+                &quot;name&quot;: &quot;عين طاية&quot;
+            },
+            {
+                &quot;id&quot;: 524,
+                &quot;name&quot;: &quot;الجزائر الوسطى&quot;
+            },
+            {
+                &quot;id&quot;: 525,
+                &quot;name&quot;: &quot;باب الوادي&quot;
+            },
+            {
+                &quot;id&quot;: 526,
+                &quot;name&quot;: &quot;باب الزوار&quot;
+            },
+            {
+                &quot;id&quot;: 527,
+                &quot;name&quot;: &quot;بابا حسن&quot;
+            },
+            {
+                &quot;id&quot;: 528,
+                &quot;name&quot;: &quot;باش جراح&quot;
+            },
+            {
+                &quot;id&quot;: 529,
+                &quot;name&quot;: &quot;براقي&quot;
+            },
+            {
+                &quot;id&quot;: 530,
+                &quot;name&quot;: &quot;ابن عكنون&quot;
+            },
+            {
+                &quot;id&quot;: 531,
+                &quot;name&quot;: &quot;بني مسوس&quot;
+            },
+            {
+                &quot;id&quot;: 532,
+                &quot;name&quot;: &quot;بئر مراد رايس&quot;
+            },
+            {
+                &quot;id&quot;: 533,
+                &quot;name&quot;: &quot;بئر توتة&quot;
+            },
+            {
+                &quot;id&quot;: 534,
+                &quot;name&quot;: &quot;بئر خادم&quot;
+            },
+            {
+                &quot;id&quot;: 535,
+                &quot;name&quot;: &quot;بولوغين بن زيري&quot;
+            },
+            {
+                &quot;id&quot;: 536,
+                &quot;name&quot;: &quot;برج البحري&quot;
+            },
+            {
+                &quot;id&quot;: 537,
+                &quot;name&quot;: &quot;برج الكيفان&quot;
+            },
+            {
+                &quot;id&quot;: 538,
+                &quot;name&quot;: &quot;بوروبة&quot;
+            },
+            {
+                &quot;id&quot;: 539,
+                &quot;name&quot;: &quot;بوزريعة&quot;
+            },
+            {
+                &quot;id&quot;: 540,
+                &quot;name&quot;: &quot;القصبة&quot;
+            },
+            {
+                &quot;id&quot;: 541,
+                &quot;name&quot;: &quot;الشراقة&quot;
+            },
+            {
+                &quot;id&quot;: 542,
+                &quot;name&quot;: &quot;الدار البيضاء&quot;
+            },
+            {
+                &quot;id&quot;: 543,
+                &quot;name&quot;: &quot;دالي ابراهيم&quot;
+            },
+            {
+                &quot;id&quot;: 544,
+                &quot;name&quot;: &quot;جسر قسنطينة&quot;
+            },
+            {
+                &quot;id&quot;: 545,
+                &quot;name&quot;: &quot;الدويرة&quot;
+            },
+            {
+                &quot;id&quot;: 546,
+                &quot;name&quot;: &quot;الدرارية&quot;
+            },
+            {
+                &quot;id&quot;: 547,
+                &quot;name&quot;: &quot;العاشور&quot;
+            },
+            {
+                &quot;id&quot;: 548,
+                &quot;name&quot;: &quot;الابيار&quot;
+            },
+            {
+                &quot;id&quot;: 549,
+                &quot;name&quot;: &quot;الحراش&quot;
+            },
+            {
+                &quot;id&quot;: 550,
+                &quot;name&quot;: &quot;المدنية&quot;
+            },
+            {
+                &quot;id&quot;: 551,
+                &quot;name&quot;: &quot;المغارية&quot;
+            },
+            {
+                &quot;id&quot;: 552,
+                &quot;name&quot;: &quot;المرسى&quot;
+            },
+            {
+                &quot;id&quot;: 553,
+                &quot;name&quot;: &quot;المرادية&quot;
+            },
+            {
+                &quot;id&quot;: 554,
+                &quot;name&quot;: &quot;الحمامات&quot;
+            },
+            {
+                &quot;id&quot;: 555,
+                &quot;name&quot;: &quot;هراوة&quot;
+            },
+            {
+                &quot;id&quot;: 556,
+                &quot;name&quot;: &quot;حسين داي&quot;
+            },
+            {
+                &quot;id&quot;: 557,
+                &quot;name&quot;: &quot;حيدرة&quot;
+            },
+            {
+                &quot;id&quot;: 558,
+                &quot;name&quot;: &quot;الخرايسية&quot;
+            },
+            {
+                &quot;id&quot;: 559,
+                &quot;name&quot;: &quot;القبة&quot;
+            },
+            {
+                &quot;id&quot;: 560,
+                &quot;name&quot;: &quot;الكاليتوس&quot;
+            },
+            {
+                &quot;id&quot;: 561,
+                &quot;name&quot;: &quot;المعالمة&quot;
+            },
+            {
+                &quot;id&quot;: 562,
+                &quot;name&quot;: &quot;محمد بلوزداد&quot;
+            },
+            {
+                &quot;id&quot;: 563,
+                &quot;name&quot;: &quot;المحمدية&quot;
+            },
+            {
+                &quot;id&quot;: 564,
+                &quot;name&quot;: &quot;وادي قريش&quot;
+            },
+            {
+                &quot;id&quot;: 565,
+                &quot;name&quot;: &quot;وادي السمار&quot;
+            },
+            {
+                &quot;id&quot;: 566,
+                &quot;name&quot;: &quot;اولاد شبل&quot;
+            },
+            {
+                &quot;id&quot;: 567,
+                &quot;name&quot;: &quot;اولاد فايت&quot;
+            },
+            {
+                &quot;id&quot;: 568,
+                &quot;name&quot;: &quot;الرحمانية&quot;
+            },
+            {
+                &quot;id&quot;: 569,
+                &quot;name&quot;: &quot;الرايس حميدو&quot;
+            },
+            {
+                &quot;id&quot;: 570,
+                &quot;name&quot;: &quot;رغاية&quot;
+            },
+            {
+                &quot;id&quot;: 571,
+                &quot;name&quot;: &quot;الرويبة&quot;
+            },
+            {
+                &quot;id&quot;: 572,
+                &quot;name&quot;: &quot;السحاولة&quot;
+            },
+            {
+                &quot;id&quot;: 573,
+                &quot;name&quot;: &quot;سيدي امحمد&quot;
+            },
+            {
+                &quot;id&quot;: 574,
+                &quot;name&quot;: &quot;سيدي موسى&quot;
+            },
+            {
+                &quot;id&quot;: 575,
+                &quot;name&quot;: &quot;سويدانية&quot;
+            },
+            {
+                &quot;id&quot;: 576,
+                &quot;name&quot;: &quot;سطاوالي&quot;
+            },
+            {
+                &quot;id&quot;: 577,
+                &quot;name&quot;: &quot;تسالة المرجة&quot;
+            },
+            {
+                &quot;id&quot;: 578,
+                &quot;name&quot;: &quot;زرالدة&quot;
+            }
+        ],
+        &quot;statuses&quot;: [
+            &quot;upcoming&quot;,
+            &quot;live&quot;,
+            &quot;closed&quot;
+        ],
+        &quot;types&quot;: [
+            &quot;SALE&quot;,
+            &quot;LEASE&quot;
+        ],
+        &quot;asset_classes&quot;: [
+            &quot;MOVABLE&quot;,
+            &quot;REAL_ESTATE&quot;,
+            &quot;CUSTOMS&quot;
+        ],
+        &quot;conditions&quot;: [
+            &quot;NEW&quot;,
+            &quot;GOOD&quot;,
+            &quot;FAIR&quot;,
+            &quot;POOR&quot;,
+            &quot;SCRAP&quot;
+        ],
+        &quot;sorts&quot;: [
+            &quot;newest&quot;,
+            &quot;price_asc&quot;,
+            &quot;price_desc&quot;,
+            &quot;most_bids&quot;,
+            &quot;ending_soon&quot;
+        ]
+    },
+    &quot;message&quot;: null,
+    &quot;meta&quot;: {}
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-v1-auctions-filters" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-v1-auctions-filters"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-v1-auctions-filters"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-v1-auctions-filters" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-v1-auctions-filters">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-v1-auctions-filters" data-method="GET"
+      data-path="api/v1/auctions/filters"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v1-auctions-filters', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-v1-auctions-filters"
+                    onclick="tryItOut('GETapi-v1-auctions-filters');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-v1-auctions-filters"
+                    onclick="cancelTryOut('GETapi-v1-auctions-filters');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-v1-auctions-filters"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v1/auctions/filters</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-v1-auctions-filters"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-v1-auctions-filters"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="GETapi-v1-auctions-filters"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                            <h4 class="fancy-heading-panel"><b>Query Parameters</b></h4>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>wilaya</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="wilaya"                data-endpoint="GETapi-v1-auctions-filters"
+               value="16"
+               data-component="query">
+    <br>
+<p>Optionally include this wilaya's communes. Example: <code>16</code></p>
             </div>
                 </form>
 
@@ -1685,9 +2727,14 @@ access-control-allow-origin: *
         &quot;condition_book&quot;: {
             &quot;id&quot;: &quot;f5cea43f-df52-4942-89bf-716077671467&quot;,
             &quot;type&quot;: &quot;CONDITION_BOOK&quot;,
+            &quot;type_label&quot;: &quot;كراسة الشروط&quot;,
             &quot;title&quot;: &quot;كراسة شروط &mdash; new one&quot;,
             &quot;is_public&quot;: false,
-            &quot;download_url&quot;: &quot;http://mazayada.findosystem.com/api/v1/documents/f5cea43f-df52-4942-89bf-716077671467/download&quot;
+            &quot;file_size&quot;: 56144,
+            &quot;file_size_human&quot;: &quot;54.8 KB&quot;,
+            &quot;issued_at&quot;: &quot;2026-06-14T08:05:04+01:00&quot;,
+            &quot;download_url&quot;: &quot;http://mazayada.findosystem.com/api/v1/documents/f5cea43f-df52-4942-89bf-716077671467/download&quot;,
+            &quot;verify_url&quot;: &quot;http://mazayada.findosystem.com/verify?doc=f5cea43f-df52-4942-89bf-716077671467&amp;sig=8a080d731cbc88a58981e64e0cb855eeafb200d24fa8e9caecddfdec8c02bd8c&quot;
         },
         &quot;award_document&quot;: null
     },
@@ -2418,7 +3465,7 @@ the user in — call verify-otp with the returned user_id to obtain tokens.</p>
     \"last_name_ar\": \"mniihfqcoynlazghdtqtq\",
     \"phone\": \"consequatur\",
     \"email\": \"carolyne.luettgen@example.org\",
-    \"birth_date\": \"2006-04-01\",
+    \"birth_date\": \"2006-04-05\",
     \"password\": \"O[2UZ5ij-e\\/dl4m{o,\",
     \"device_name\": \"dqamniihfqcoynlazghdt\"
 }"
@@ -2442,7 +3489,7 @@ let body = {
     "last_name_ar": "mniihfqcoynlazghdtqtq",
     "phone": "consequatur",
     "email": "carolyne.luettgen@example.org",
-    "birth_date": "2006-04-01",
+    "birth_date": "2006-04-05",
     "password": "O[2UZ5ij-e\/dl4m{o,",
     "device_name": "dqamniihfqcoynlazghdt"
 };
@@ -2608,10 +3655,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="birth_date"                data-endpoint="POSTapi-v1-auth-register"
-               value="2006-04-01"
+               value="2006-04-05"
                data-component="body">
     <br>
-<p>يجب أن يكون value تاريخاً صحيحاً. يجب أن يكون value تاريخاً قبل <code>2008-07-09</code>. Example: <code>2006-04-01</code></p>
+<p>يجب أن يكون value تاريخاً صحيحاً. يجب أن يكون value تاريخاً قبل <code>2008-07-13</code>. Example: <code>2006-04-05</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>password</code></b>&nbsp;&nbsp;
@@ -4395,8 +5442,8 @@ You can check the Dev Tools console for debugging information.</code></pre>
                 <h1 id="commercial-register">Commercial Register</h1>
 
     <p>The user's Commercial Register (السجل التجاري) submission. Mirrors the web flow:
-submit the register data plus two scans, an admin reviews it, and only a valid
-(APPROVED and un-expired) register unlocks participation in auctions flagged
+submit the register data plus two scans, an admin reviews it, and only an
+APPROVED register unlocks participation in auctions flagged
 <code>requires_commerce_register</code>. Independent of KYC — a user may hold either, both
 or neither.</p>
 
@@ -4567,9 +5614,9 @@ re-upload. A PENDING-under-review or APPROVED record is locked (403).</p>
     --form "register_number=16/00-1234567 B 19"\
     --form "tax_number=000116001234567"\
     --form "activity_type=تجارة السيارات"\
-    --form "expiry_date=2030-12-31"\
-    --form "register_document=@C:\Users\hp\AppData\Local\Temp\php5C85.tmp" \
-    --form "tax_card_document=@C:\Users\hp\AppData\Local\Temp\php5C86.tmp" </code></pre></div>
+    --form "start_date=2022-01-15"\
+    --form "register_document=@C:\Users\hp\AppData\Local\Temp\php5D3E.tmp" \
+    --form "tax_card_document=@C:\Users\hp\AppData\Local\Temp\php5D3F.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -4588,7 +5635,7 @@ body.append('company_name', 'Sarl Mazayada');
 body.append('register_number', '16/00-1234567 B 19');
 body.append('tax_number', '000116001234567');
 body.append('activity_type', 'تجارة السيارات');
-body.append('expiry_date', '2030-12-31');
+body.append('start_date', '2022-01-15');
 body.append('register_document', document.querySelector('input[name="register_document"]').files[0]);
 body.append('tax_card_document', document.querySelector('input[name="tax_card_document"]').files[0]);
 
@@ -4735,16 +5782,16 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>The registered commercial activity. Example: <code>تجارة السيارات</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
-            <b style="line-height: 2;"><code>expiry_date</code></b>&nbsp;&nbsp;
+            <b style="line-height: 2;"><code>start_date</code></b>&nbsp;&nbsp;
 <small>string</small>&nbsp;
  &nbsp;
  &nbsp;
                 <input type="text" style="display: none"
-                              name="expiry_date"                data-endpoint="POSTapi-v1-commercial-register"
-               value="2030-12-31"
+                              name="start_date"                data-endpoint="POSTapi-v1-commercial-register"
+               value="2022-01-15"
                data-component="body">
     <br>
-<p>The register expiry date (must be in the future). Example: <code>2030-12-31</code></p>
+<p>The register issue (start) date (cannot be in the future). Example: <code>2022-01-15</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>register_document</code></b>&nbsp;&nbsp;
@@ -4756,7 +5803,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>The commercial register scan (PDF/JPG/PNG). Required on first submission. Example: <code>C:\Users\hp\AppData\Local\Temp\php5C85.tmp</code></p>
+<p>The commercial register scan (PDF/JPG/PNG). Required on first submission. Example: <code>C:\Users\hp\AppData\Local\Temp\php5D3E.tmp</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>tax_card_document</code></b>&nbsp;&nbsp;
@@ -4768,7 +5815,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>The tax card scan (PDF/JPG/PNG). Required on first submission. Example: <code>C:\Users\hp\AppData\Local\Temp\php5C86.tmp</code></p>
+<p>The tax card scan (PDF/JPG/PNG). Required on first submission. Example: <code>C:\Users\hp\AppData\Local\Temp\php5D3F.tmp</code></p>
         </div>
         </form>
 
@@ -5235,9 +6282,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
                 <h1 id="documents">Documents</h1>
 
-    <p>Streams generated PDFs (condition book / award / receipt) from the private
-disk. Access is gated by DocumentPolicy@download (public docs to any
-authenticated user; private docs to the owner / auction winner / entity staff).</p>
+    <p>The signed-in user's personal document library — every generated PDF tied to an
+auction they engaged with (condition book / award / receipt / delivery report),
+plus the policy-gated binary download. Streams from the private disk; access is
+gated by DocumentPolicy@download.</p>
 
                                 <h2 id="documents-GETapi-v1-documents--document_id--download">Download a document</h2>
 
@@ -5392,6 +6440,414 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>The ID of the document. Example: <code>0194a412-8132-463b-abf0-f8945f3f09a4</code></p>
             </div>
                     </form>
+
+                    <h2 id="documents-GETapi-v1-documents">List my documents</h2>
+
+<p>
+</p>
+
+<p>The user's documents with the same advanced filters as the web library.
+Every returned document is one the user may download.</p>
+
+<span id="example-requests-GETapi-v1-documents">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "https://mazayada.findosystem.com/api/v1/documents?search=villa&amp;type[]=consequatur&amp;preset=30d&amp;from=2026-01-01&amp;to=2026-12-31&amp;category_id=3&amp;wilaya_id=16&amp;entity_id=consequatur&amp;sort=recent" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/documents"
+);
+
+const params = {
+    "search": "villa",
+    "type[0]": "consequatur",
+    "preset": "30d",
+    "from": "2026-01-01",
+    "to": "2026-12-31",
+    "category_id": "3",
+    "wilaya_id": "16",
+    "entity_id": "consequatur",
+    "sort": "recent",
+};
+Object.keys(params)
+    .forEach(key =&gt; url.searchParams.append(key, params[key]));
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-v1-documents">
+            <blockquote>
+            <p>Example response (401):</p>
+        </blockquote>
+                <details class="annotation">
+            <summary style="cursor: pointer;">
+                <small onclick="textContent = parentElement.parentElement.open ? 'Show headers' : 'Hide headers'">Show headers</small>
+            </summary>
+            <pre><code class="language-http">cache-control: no-cache, private
+content-type: application/json
+access-control-allow-origin: *
+ </code></pre></details>         <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;يلزم تسجيل الدخول.&quot;
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-v1-documents" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-v1-documents"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-v1-documents"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-v1-documents" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-v1-documents">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-v1-documents" data-method="GET"
+      data-path="api/v1/documents"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v1-documents', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-v1-documents"
+                    onclick="tryItOut('GETapi-v1-documents');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-v1-documents"
+                    onclick="cancelTryOut('GETapi-v1-documents');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-v1-documents"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v1/documents</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-v1-documents"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-v1-documents"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="GETapi-v1-documents"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                            <h4 class="fancy-heading-panel"><b>Query Parameters</b></h4>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>search</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="search"                data-endpoint="GETapi-v1-documents"
+               value="villa"
+               data-component="query">
+    <br>
+<p>Match auction title or document name. Example: <code>villa</code></p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>type</code></b>&nbsp;&nbsp;
+<small>string[]</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="type[0]"                data-endpoint="GETapi-v1-documents"
+               data-component="query">
+        <input type="text" style="display: none"
+               name="type[1]"                data-endpoint="GETapi-v1-documents"
+               data-component="query">
+    <br>
+<p>Document types: CONDITION_BOOK, AWARD, PAYMENT_RECEIPT, DELIVERY_REPORT.</p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>preset</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="preset"                data-endpoint="GETapi-v1-documents"
+               value="30d"
+               data-component="query">
+    <br>
+<p>Date preset: today, 7d, 30d, this_month, this_year, all. Example: <code>30d</code></p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>from</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="from"                data-endpoint="GETapi-v1-documents"
+               value="2026-01-01"
+               data-component="query">
+    <br>
+<p>date Custom range start (Y-m-d). Example: <code>2026-01-01</code></p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>to</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="to"                data-endpoint="GETapi-v1-documents"
+               value="2026-12-31"
+               data-component="query">
+    <br>
+<p>date Custom range end (Y-m-d). Example: <code>2026-12-31</code></p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>category_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="category_id"                data-endpoint="GETapi-v1-documents"
+               value="3"
+               data-component="query">
+    <br>
+<p>Filter by auction category. Example: <code>3</code></p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>wilaya_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="wilaya_id"                data-endpoint="GETapi-v1-documents"
+               value="16"
+               data-component="query">
+    <br>
+<p>Filter by auction wilaya. Example: <code>16</code></p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>entity_id</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="entity_id"                data-endpoint="GETapi-v1-documents"
+               value="consequatur"
+               data-component="query">
+    <br>
+<p>Filter by organizing entity. Example: <code>consequatur</code></p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>sort</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="sort"                data-endpoint="GETapi-v1-documents"
+               value="recent"
+               data-component="query">
+    <br>
+<p>One of recent, oldest, auction (default recent). Example: <code>recent</code></p>
+            </div>
+                </form>
+
+                    <h2 id="documents-GETapi-v1-documents-summary">My documents summary</h2>
+
+<p>
+</p>
+
+<p>Per-type counts and total size — the stat tiles for the mobile library.</p>
+
+<span id="example-requests-GETapi-v1-documents-summary">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "https://mazayada.findosystem.com/api/v1/documents/summary" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/documents/summary"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-v1-documents-summary">
+            <blockquote>
+            <p>Example response (401):</p>
+        </blockquote>
+                <details class="annotation">
+            <summary style="cursor: pointer;">
+                <small onclick="textContent = parentElement.parentElement.open ? 'Show headers' : 'Hide headers'">Show headers</small>
+            </summary>
+            <pre><code class="language-http">cache-control: no-cache, private
+content-type: application/json
+access-control-allow-origin: *
+ </code></pre></details>         <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;يلزم تسجيل الدخول.&quot;
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-v1-documents-summary" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-v1-documents-summary"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-v1-documents-summary"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-v1-documents-summary" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-v1-documents-summary">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-v1-documents-summary" data-method="GET"
+      data-path="api/v1/documents/summary"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v1-documents-summary', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-v1-documents-summary"
+                    onclick="tryItOut('GETapi-v1-documents-summary');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-v1-documents-summary"
+                    onclick="cancelTryOut('GETapi-v1-documents-summary');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-v1-documents-summary"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v1/documents/summary</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-v1-documents-summary"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-v1-documents-summary"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="GETapi-v1-documents-summary"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                        </form>
 
                 <h1 id="endpoints">Endpoints</h1>
 
@@ -5591,7 +7047,7 @@ fetch(url, {
             <pre><code class="language-http">cache-control: max-age=3600, public, s-maxage=3600
 content-type: application/json
 access-control-allow-origin: *
-set-cookie: XSRF-TOKEN=eyJpdiI6IjZucmNtM1hvb1NQR01VTUE2dmIyc1E9PSIsInZhbHVlIjoidS81amdsQmVTck1NRktPcGpzK3lKTFhiVCtYTnhPWng5NnlVWnJxeEhpUndjSi8rSEFEUUxkaHZyaWlzN1RIWG5LU1ZiRlZGVEw4azVveDBoNytXaFRFZWYwdFNEdFI1Vk52a0ZkY0F2SFJwbWx5WWNFaWkrZHdpNGFpcU1KZGwiLCJtYWMiOiI1YzAwMjBjMTA3YmI1YTlmMjBiZjAwOTcwNzYxY2IyN2MwMTA2NGQ1ZTAyYTE3ZTUxZDEzYjgxOWUxMDcxOWU1IiwidGFnIjoiIn0%3D; expires=Thu, 09 Jul 2026 07:17:08 GMT; Max-Age=7200; path=/; samesite=lax; mazayada-session=eyJpdiI6InJuQXNkTDUrZ0gvVXltZmRZSUIrV1E9PSIsInZhbHVlIjoibmo3VC9FN2dtenltZXlNUTlYU2EyblVvS3VaYlUxWldaMlp4d3hDR1ZmTXJVdVNZeGFaZGdYRUh5dzFIMTUzNFlKaXJoNXFEaGQrL2V5T2FieGxONThHTDJNb1F2MDVXbWttYlRmYnk5eWFjV3Y0bU9UaGdObFhOdlhQVGNUTlkiLCJtYWMiOiI3MzVlYmFkYzA0NDkyZjg3YzY5MWRmZDdiZjEzNjkwNDM1Mjg2NDZlY2FhM2EwYTdhYzM5MjA2NWZmMjk1MTYxIiwidGFnIjoiIn0%3D; expires=Thu, 09 Jul 2026 07:17:08 GMT; Max-Age=7200; path=/; httponly; samesite=lax
+set-cookie: XSRF-TOKEN=eyJpdiI6IkNMcEU3TzIzS2FyQ1laWFc1RFByOHc9PSIsInZhbHVlIjoiQitQQlJQTE5KMFhyeTFQblNmL1BaUmY3TlMzMmtFOSt2WEd6OGJhZW80MjRxVldtZHlYV3RTKzRiK1VyQmJVYmljbVhWeTdCRGgwaEpMcTBXNEJyMlN5N0tpdWt6STduNE9PNnJJTStkUWdObkF3a3dIOUMwWldQc0t6N21wQW8iLCJtYWMiOiI3MDA1ZWFkZDYyNDJkMmZiMzI5NzRhNjBlYmYzYTgwODBkZjU3N2I1MTUzODMwOWM0MjRkYTM3OGQzNTEyODNlIiwidGFnIjoiIn0%3D; expires=Mon, 13 Jul 2026 19:31:55 GMT; Max-Age=7200; path=/; samesite=lax; mazayada-session=eyJpdiI6ImJ3aEJHSC9ZaUV6WFBHbTFGWDhjOGc9PSIsInZhbHVlIjoiblkxb3dDS3BNZjFEdVMzUmtHZ3RJSndvL0pqRjVXcjUrNC9IaTYvdUJwUHZEWWJ4bk43S1QzK3pOc3oybHhGS1NFaVhXWFdIS20yMFFnc1hGU2oxc2kzZDk2ZjRxaklpbmE4OUdzVWZvb0Z1ejQ5TDB2cVYreFM0UHgzNHo3RjgiLCJtYWMiOiJhOGIyYTdhYTAxNWViNWUyNDBmYjUzZTQyYTVhNTZlNDljNDk5MTQxYTUwZTdhZmU2YjI0ZDk1MTc4NDMzNzhmIiwidGFnIjoiIn0%3D; expires=Mon, 13 Jul 2026 19:31:55 GMT; Max-Age=7200; path=/; httponly; samesite=lax
  </code></pre></details>         <pre>
 
 <code class="language-json" style="max-height: 300px;">[
@@ -6080,7 +7536,7 @@ fetch(url, {
             <pre><code class="language-http">cache-control: max-age=3600, public, s-maxage=3600
 content-type: application/json
 access-control-allow-origin: *
-set-cookie: XSRF-TOKEN=eyJpdiI6ImdtUVdpUzROYzkzRGtzRmZXVG5qNkE9PSIsInZhbHVlIjoiNCtucmlOaFBqQ09yNWdiQThUcGR6bnlGRFprejRtMXp1V1g5bnJ5V09PU2Rla25pTkRvdTdiQVJVVmQ4T2tGOW5xc2RBZy91SllQTWUvcXhwWW9rM0dsOE8zRUJiWU9QVTQvaWI4MENuaFhKZnR3UC9mZ3pmYzRlbnNqcnlxUi8iLCJtYWMiOiI1Y2QxMDY3MjNmZWYwODQzMjFlOWM0MzM2YWU3MGEzN2U0MWQ1YTNkOWQzYTI2MGY0YmI0YWJiOWY5ZjI5MGM4IiwidGFnIjoiIn0%3D; expires=Thu, 09 Jul 2026 07:17:08 GMT; Max-Age=7200; path=/; samesite=lax; mazayada-session=eyJpdiI6ImdhT0p4OXpmNGovZmdaZ1lmRUtrNFE9PSIsInZhbHVlIjoicnIweENPSjhFazZiVVFTaU9MM1ZZUGlDc09PbnRJLzlBMWtHMzQwOTNGWjhMaEdmMnhlcHJSOEF3QVJ4aUxrNjNYYTZlb21EZHRtY1AwQ2hJNEpDNTAwNGlJRkdGTUtsWHZnR0xmaGx3RjZiN21aUUtwMkNwekhkdGJYUEppa0giLCJtYWMiOiJmYTVhMmNiM2ZjMTFiOTFhZjU5Mzg3OTQ3ZDBiMDk3OGFkMzIwNDQ5ZmY5YWRiODI3OGU1OWM4MDcyNzY2OWM4IiwidGFnIjoiIn0%3D; expires=Thu, 09 Jul 2026 07:17:08 GMT; Max-Age=7200; path=/; httponly; samesite=lax
+set-cookie: XSRF-TOKEN=eyJpdiI6InEwRFM0TlRsSDVRamxmNXRLUWZJcWc9PSIsInZhbHVlIjoiWWhVR0VTL2tWZlJQZzVZWmFCNFZsQnhMdUNBWW9BdmwzT082aG5sbHNPdEg2enJZbVZkSEsrMVczcmZxT0wrR01Sc3llOG5TNDFWVFhKNnBZY0ZRTFd1RFdkSDdoU2R0ckZIMXJlSGRPSVdCaGxSNjVldWNBUVJmNEhJczVaVU0iLCJtYWMiOiI5MzMzNjUyNmExZTIxNTllOTkxY2M4YmI1ODNiMDdmYThlYmI2N2ZjMjhmMWRhMzgyZGE2NjcwYTc2MTEyMmE4IiwidGFnIjoiIn0%3D; expires=Mon, 13 Jul 2026 19:31:55 GMT; Max-Age=7200; path=/; samesite=lax; mazayada-session=eyJpdiI6InJUaDFjVGJ6ZXNUS3FLWElKd2MzUHc9PSIsInZhbHVlIjoidGx0alQ3NERtY0cwM0FZa2QwYTBDdzBNR1J6YmRvZDRwdi83eG9zRXJ2bjRkNWovRzg0L0k0ekRyZTJOK2VTcGl6RjNlTS9jdFQzK0VmSTRRS2Y5MTVCR011WStPQ2Vjb3Q3NkVGcS9DNzZaNy9SeWJ6OWw3UkxuUWFuczNOdFMiLCJtYWMiOiJkZDczMzIyOTc1MjE1MGRhOWU3NWVkYjExN2M4MjQyYTFiNWJmOTExMzAwYzdmYzk4NWI3MGEzMTdjZWFiMGIxIiwidGFnIjoiIn0%3D; expires=Mon, 13 Jul 2026 19:31:55 GMT; Max-Age=7200; path=/; httponly; samesite=lax
  </code></pre></details>         <pre>
 
 <code class="language-json" style="max-height: 300px;">[
@@ -6778,7 +8234,7 @@ id-front, id-back, selfie-with-id, photo-biometric.</p>
     --header "Content-Type: multipart/form-data" \
     --header "Accept: application/json" \
     --header "Accept-Language: ar" \
-    --form "file=@C:\Users\hp\AppData\Local\Temp\php5C24.tmp" </code></pre></div>
+    --form "file=@C:\Users\hp\AppData\Local\Temp\php5CFB.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -6912,7 +8368,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>يجب أن يكون value صورة. يجب ألا يزيد حجم value عن 1024 كيلوبايت. Example: <code>C:\Users\hp\AppData\Local\Temp\php5C24.tmp</code></p>
+<p>يجب أن يكون value صورة. يجب ألا يزيد حجم value عن 1024 كيلوبايت. Example: <code>C:\Users\hp\AppData\Local\Temp\php5CFB.tmp</code></p>
         </div>
         </form>
 
@@ -8312,6 +9768,163 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </div>
                     </form>
 
+                    <h2 id="payments-GETapi-v1-auctions--auction_id--final-payment-preview">Final payment preview</h2>
+
+<p>
+</p>
+
+<p>The winner's Decree 97-33 fee breakdown BEFORE paying: itemised fee lines
+(localized labels + dinars), the deposit already credited, the net amount
+still due, and the payment deadline. Read-only — nothing is charged. Lets the
+mobile app show the full cost sheet before it sends the winner to the gateway.</p>
+
+<span id="example-requests-GETapi-v1-auctions--auction_id--final-payment-preview">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "https://mazayada.findosystem.com/api/v1/auctions/a2050443-68af-41f5-8080-20d4b878c6ca/final-payment/preview" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/auctions/a2050443-68af-41f5-8080-20d4b878c6ca/final-payment/preview"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-v1-auctions--auction_id--final-payment-preview">
+            <blockquote>
+            <p>Example response (401):</p>
+        </blockquote>
+                <details class="annotation">
+            <summary style="cursor: pointer;">
+                <small onclick="textContent = parentElement.parentElement.open ? 'Show headers' : 'Hide headers'">Show headers</small>
+            </summary>
+            <pre><code class="language-http">cache-control: no-cache, private
+content-type: application/json
+access-control-allow-origin: *
+ </code></pre></details>         <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;يلزم تسجيل الدخول.&quot;
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-v1-auctions--auction_id--final-payment-preview" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-v1-auctions--auction_id--final-payment-preview"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-v1-auctions--auction_id--final-payment-preview"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-v1-auctions--auction_id--final-payment-preview" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-v1-auctions--auction_id--final-payment-preview">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-v1-auctions--auction_id--final-payment-preview" data-method="GET"
+      data-path="api/v1/auctions/{auction_id}/final-payment/preview"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v1-auctions--auction_id--final-payment-preview', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-v1-auctions--auction_id--final-payment-preview"
+                    onclick="tryItOut('GETapi-v1-auctions--auction_id--final-payment-preview');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-v1-auctions--auction_id--final-payment-preview"
+                    onclick="cancelTryOut('GETapi-v1-auctions--auction_id--final-payment-preview');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-v1-auctions--auction_id--final-payment-preview"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v1/auctions/{auction_id}/final-payment/preview</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-v1-auctions--auction_id--final-payment-preview"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-v1-auctions--auction_id--final-payment-preview"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="GETapi-v1-auctions--auction_id--final-payment-preview"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>auction_id</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="auction_id"                data-endpoint="GETapi-v1-auctions--auction_id--final-payment-preview"
+               value="a2050443-68af-41f5-8080-20d4b878c6ca"
+               data-component="url">
+    <br>
+<p>The ID of the auction. Example: <code>a2050443-68af-41f5-8080-20d4b878c6ca</code></p>
+            </div>
+                    </form>
+
                     <h2 id="payments-POSTapi-v1-auctions--auction_id--final-payment">Start final payment</h2>
 
 <p>
@@ -8620,8 +10233,8 @@ You can check the Dev Tools console for debugging information.</code></pre>
     \"address\": \"fuudtdsufvyvddqamniih\",
     \"postal_code\": \"15627\",
     \"profession\": \"udtdsufvyvddqamniihfq\",
-    \"locale\": \"ar\",
-    \"secret_question\": \"pet_name\",
+    \"locale\": \"fr\",
+    \"secret_question\": \"mother_maiden\",
     \"secret_answer\": \"coynlazghdtqtqxbajwbp\"
 }"
 </code></pre></div>
@@ -8644,8 +10257,8 @@ let body = {
     "address": "fuudtdsufvyvddqamniih",
     "postal_code": "15627",
     "profession": "udtdsufvyvddqamniihfq",
-    "locale": "ar",
-    "secret_question": "pet_name",
+    "locale": "fr",
+    "secret_question": "mother_maiden",
     "secret_answer": "coynlazghdtqtqxbajwbp"
 };
 
@@ -8822,10 +10435,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="locale"                data-endpoint="PUTapi-v1-profile"
-               value="ar"
+               value="fr"
                data-component="body">
     <br>
-<p>Example: <code>ar</code></p>
+<p>Example: <code>fr</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>ar</code></li> <li><code>fr</code></li> <li><code>en</code></li></ul>
         </div>
@@ -8836,10 +10449,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="secret_question"                data-endpoint="PUTapi-v1-profile"
-               value="pet_name"
+               value="mother_maiden"
                data-component="body">
     <br>
-<p>Example: <code>pet_name</code></p>
+<p>Example: <code>mother_maiden</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>mother_maiden</code></li> <li><code>first_school</code></li> <li><code>birth_city</code></li> <li><code>pet_name</code></li> <li><code>fav_teacher</code></li></ul>
         </div>

@@ -9,8 +9,10 @@ use App\Http\Resources\Api\V1\AuctionListResource;
 use App\Http\Resources\Api\V1\AuctionResource;
 use App\Http\Resources\Api\V1\BidResource;
 use App\Http\Resources\Api\V1\QuestionResource;
+use App\Enums\AuctionType;
 use App\Models\Auction;
 use App\Services\AuctionService;
+use App\Support\AuctionFilters;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -33,57 +35,109 @@ class AuctionController extends ApiController
     /**
      * List auctions
      *
-     * Paginated, filterable list of public auctions.
+     * Paginated, filterable list of public auctions. The filter vocabulary is
+     * identical to the web browse page (App\Support\AuctionFilters).
      *
      * @unauthenticated
      *
-     * @queryParam q string Search in the Arabic title. Example: سيارة
+     * @queryParam q string Keyword — matches the title in any locale or the asset location. Example: سيارة
      * @queryParam category string Filter by category id.
      * @queryParam wilaya integer Filter by wilaya id. Example: 16
-     * @queryParam status string One of PUBLISHED, ACTIVE, EXTENDED, CLOSED. Example: ACTIVE
+     * @queryParam commune integer Filter by commune id.
+     * @queryParam status string[] User tokens (upcoming, live, closed) or raw enum values. Example: live
      * @queryParam type string Auction type: SALE or LEASE. Example: SALE
+     * @queryParam asset_class string[] One or more asset classes. Example: VEHICLE
+     * @queryParam condition string[] One or more asset conditions. Example: USED
+     * @queryParam requires_cr boolean Commercial-register requirement (1 = required, 0 = not). Example: 1
+     * @queryParam price_min integer Minimum opening price in dinars. Example: 100000
+     * @queryParam price_max integer Maximum opening price in dinars. Example: 5000000
+     * @queryParam sort string newest (default), price_asc, price_desc, most_bids, ending_soon. Example: ending_soon
      * @queryParam per_page integer Items per page (1-50, default 12). Example: 12
      */
     public function index(Request $request): JsonResponse
     {
         $query = Auction::public()->with(['category', 'wilaya']);
 
-        if ($request->filled('q')) {
-            $query->where('title_ar', 'LIKE', '%'.$request->input('q').'%');
-        }
-        if ($request->filled('category')) {
-            $query->where('category_id', $request->input('category'));
-        }
-        if ($request->filled('wilaya')) {
-            $query->where('wilaya_id', $request->input('wilaya'));
-        }
-        if ($request->filled('status')) {
-            $query->where('status', $request->input('status'));
-        }
-        if ($request->filled('type')) {
-            $query->where('auction_type', $request->input('type'));
-        }
-        if ($request->filled('asset_class')) {
-            $query->where('asset_class', $request->input('asset_class'));
-        }
-        if ($request->filled('commune')) {
-            $query->where('commune_id', $request->input('commune'));
-        }
+        AuctionFilters::apply($query, $request->all());
+        AuctionFilters::sort($query, $request->input('sort'));
 
         $perPage = min(max((int) $request->input('per_page', 12), 1), 50);
-
-        $sort = $request->input('sort');
-        if ($sort === 'opening_price') {
-            $query->orderBy('opening_price', 'desc');
-        } elseif ($sort === 'bid_count') {
-            $query->withCount(['bids as valid_bids_count' => fn ($q) => $q->where('is_valid', true)])->orderBy('valid_bids_count', 'desc');
-        } else {
-            $query->latest('start_time');
-        }
 
         $auctions = $query->paginate($perPage)->withQueryString();
 
         return $this->paginated($auctions, AuctionListResource::class);
+    }
+
+    /**
+     * Search auctions
+     *
+     * Lightweight autocomplete for the browse search box — the enveloped, dinar
+     * mobile counterpart of the web live-search dropdown. Returns up to 8 public
+     * auctions matching the term by title (any locale) or asset location. Requires
+     * at least 2 characters; a shorter term returns an empty list.
+     *
+     * @unauthenticated
+     *
+     * @queryParam q string required The search term (min 2 chars). Example: villa
+     */
+    public function search(Request $request): JsonResponse
+    {
+        $term = trim((string) $request->query('q', ''));
+
+        if (mb_strlen($term) < 2) {
+            return $this->ok(AuctionListResource::collection(collect())->resolve($request));
+        }
+
+        $results = Auction::public()
+            ->with(['category', 'wilaya'])
+            ->where(function ($w) use ($term): void {
+                $w->where('title_ar', 'LIKE', '%'.$term.'%')
+                    ->orWhere('title_fr', 'LIKE', '%'.$term.'%')
+                    ->orWhere('title_en', 'LIKE', '%'.$term.'%')
+                    ->orWhere('asset_location', 'LIKE', '%'.$term.'%');
+            })
+            ->latest('start_time')
+            ->limit(8)
+            ->get();
+
+        return $this->ok(AuctionListResource::collection($results)->resolve($request));
+    }
+
+    /**
+     * Filter options
+     *
+     * The reference data the mobile browse screen needs to build its filter UI:
+     * active categories, wilayas, and the enumerated token sets (status, type,
+     * asset class, condition, sort). Cached-friendly and locale-aware (names come
+     * from the localized accessor). Pass `wilaya` to also get that wilaya's communes.
+     *
+     * @unauthenticated
+     *
+     * @queryParam wilaya integer Optionally include this wilaya's communes. Example: 16
+     */
+    public function filters(Request $request): JsonResponse
+    {
+        $categories = \App\Models\Category::where('is_active', true)->get()
+            ->map(fn ($c) => ['id' => $c->id, 'name' => $c->name])->values();
+
+        $wilayas = \App\Models\Wilaya::all()
+            ->map(fn ($w) => ['id' => $w->id, 'code' => $w->code, 'name' => $w->name])->values();
+
+        $communes = $request->filled('wilaya')
+            ? \App\Models\Commune::where('wilaya_id', $request->input('wilaya'))->orderBy('code')->get()
+                ->map(fn ($c) => ['id' => $c->id, 'name' => $c->name])->values()
+            : collect();
+
+        return $this->ok([
+            'categories' => $categories,
+            'wilayas' => $wilayas,
+            'communes' => $communes,
+            'statuses' => ['upcoming', 'live', 'closed'],
+            'types' => array_map(fn ($t) => $t->value, AuctionType::cases()),
+            'asset_classes' => array_map(fn ($c) => $c->value, \App\Enums\AssetClass::cases()),
+            'conditions' => array_map(fn ($c) => $c->value, \App\Enums\AssetCondition::cases()),
+            'sorts' => ['newest', 'price_asc', 'price_desc', 'most_bids', 'ending_soon'],
+        ]);
     }
 
     /**

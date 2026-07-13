@@ -511,6 +511,31 @@ html[data-theme="dark"] .mdl-btn--ghost:hover { filter: brightness(1.12); }
   color: var(--danger);
 }
 
+/* Collapsible sub-group inside the action menu (<x-ui.action-menu.submenu>). */
+.act-menu__sub { display: block; }
+.act-menu__subtoggle { justify-content: space-between; }
+.act-menu__chevron {
+  inline-size: 16px;
+  block-size: 16px;
+  flex-shrink: 0;
+  transition: transform .15s ease;
+}
+.act-menu__subtoggle[aria-expanded="true"] .act-menu__chevron { transform: rotate(180deg); }
+.act-menu__subtoggle[aria-expanded="true"] {
+  background: color-mix(in oklab, var(--primary) 8%, transparent);
+  color: var(--primary);
+}
+.act-menu__subbody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-block-start: 2px;
+  padding-inline-start: 10px;
+  margin-inline-start: 6px;
+  border-inline-start: 2px solid var(--line);
+}
+.act-menu__subbody[hidden] { display: none; }
+
 /* =============================================================
    Account dropdown — <x-ui.user-menu>.
    Reuses the .act-menu engine (data-act-*) + .act-menu__panel /

@@ -40,6 +40,43 @@ class PaymentController extends ApiController
     }
 
     /**
+     * Final payment preview
+     *
+     * The winner's Decree 97-33 fee breakdown BEFORE paying: itemised fee lines
+     * (localized labels + dinars), the deposit already credited, the net amount
+     * still due, and the payment deadline. Read-only — nothing is charged. Lets the
+     * mobile app show the full cost sheet before it sends the winner to the gateway.
+     */
+    public function finalPaymentPreview(Auction $auction, Request $request, PaymentService $payments): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($auction->winner_user_id !== $user->id) {
+            return $this->fail(__('payments.not_winner'), [], 403);
+        }
+
+        $quote = $payments->finalPaymentQuote($auction, $user);
+        $fees = $quote['fees'];
+
+        return $this->ok([
+            'already_paid' => $payments->confirmedFinalPayment($auction, $user),
+            'lines' => array_map(fn (array $line) => [
+                'key' => $line['key'],
+                'label' => __($line['key']),
+                'amount' => dinars($line['amount']),
+                'formatted' => dzd($line['amount']),
+            ], $fees->lines()),
+            'confirmed_deposit' => dinars($quote['confirmed_deposit']),
+            'amount_due' => dinars($quote['amount_due']),
+            'amount_due_formatted' => dzd($quote['amount_due']),
+            // Vehicles only: customs duty payable immediately on top of buyer total.
+            'customs_immediate_due' => $fees->customsImmediateDue !== null ? dinars($fees->customsImmediateDue) : null,
+            'due_at' => $quote['due_at']->toIso8601String(),
+            'deadline_days' => $quote['deadline_days'],
+        ]);
+    }
+
+    /**
      * Payment callback
      *
      * Gateway return URL. Confirms (or fails) the payment set for the reference

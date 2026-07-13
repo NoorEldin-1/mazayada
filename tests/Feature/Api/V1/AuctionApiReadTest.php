@@ -49,6 +49,75 @@ class AuctionApiReadTest extends ApiTestCase
             ->assertJsonPath('meta.pagination.total', 0);
     }
 
+    public function test_index_status_token_live_matches_active_and_extended(): void
+    {
+        $this->makeAuction(['status' => AuctionStatus::ACTIVE]);
+        $this->makeAuction(['status' => AuctionStatus::EXTENDED]);
+        $this->makeAuction(['status' => AuctionStatus::CLOSED]);
+
+        $this->getJson('/api/v1/auctions?status[]=live')
+            ->assertOk()
+            ->assertJsonPath('meta.pagination.total', 2);
+
+        $this->getJson('/api/v1/auctions?status[]=closed')
+            ->assertOk()
+            ->assertJsonPath('meta.pagination.total', 1);
+    }
+
+    public function test_index_filters_by_price_range_in_dinars(): void
+    {
+        // opening_price is centimes: 500_000c = 5_000 DA, 3_000_000c = 30_000 DA.
+        $cheap = $this->makeAuction(['status' => AuctionStatus::ACTIVE, 'opening_price' => 500_000]);
+        $this->makeAuction(['status' => AuctionStatus::ACTIVE, 'opening_price' => 3_000_000]);
+
+        $this->getJson('/api/v1/auctions?price_min=1000&price_max=10000')
+            ->assertOk()
+            ->assertJsonPath('meta.pagination.total', 1)
+            ->assertJsonPath('data.0.id', $cheap->id);
+    }
+
+    public function test_index_filters_by_commercial_register_requirement(): void
+    {
+        $this->makeAuction(['status' => AuctionStatus::ACTIVE, 'requires_commerce_register' => true]);
+        $this->makeAuction(['status' => AuctionStatus::ACTIVE, 'requires_commerce_register' => false]);
+
+        $this->getJson('/api/v1/auctions?requires_cr=1')
+            ->assertOk()
+            ->assertJsonPath('meta.pagination.total', 1);
+
+        // "0" is a meaningful value, not an empty filter.
+        $this->getJson('/api/v1/auctions?requires_cr=0')
+            ->assertOk()
+            ->assertJsonPath('meta.pagination.total', 1);
+    }
+
+    public function test_search_requires_two_chars_and_matches_title(): void
+    {
+        $this->makeAuction(['status' => AuctionStatus::ACTIVE, 'title_ar' => 'فيلا فاخرة', 'title_en' => 'Luxury villa']);
+
+        // Under 2 chars → empty.
+        $this->getJson('/api/v1/auctions/search?q=v')
+            ->assertOk()
+            ->assertJsonCount(0, 'data');
+
+        $this->getJson('/api/v1/auctions/search?q=villa')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonStructure(['data' => [['id', 'title', 'current_price' => ['amount', 'formatted']]]]);
+    }
+
+    public function test_filters_endpoint_returns_reference_data(): void
+    {
+        $this->makeAuction(['status' => AuctionStatus::ACTIVE]);
+
+        $this->getJson('/api/v1/auctions/filters')
+            ->assertOk()
+            ->assertJsonStructure([
+                'data' => ['categories', 'wilayas', 'communes', 'statuses', 'types', 'asset_classes', 'conditions', 'sorts'],
+            ])
+            ->assertJsonPath('data.statuses', ['upcoming', 'live', 'closed']);
+    }
+
     public function test_show_returns_full_auction_in_dinars(): void
     {
         $auction = $this->makeAuction(['status' => AuctionStatus::ACTIVE, 'opening_price' => 1_000_000]);

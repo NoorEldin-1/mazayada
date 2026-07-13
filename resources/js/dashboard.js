@@ -199,6 +199,20 @@ window.addEventListener('themechange', renderCharts);
     }
 
     document.addEventListener('click', (e) => {
+        // A collapsible sub-group toggle — expand/collapse in place, keep the
+        // panel open, and reposition since its height changed. Handled BEFORE the
+        // menuitem auto-close so the panel doesn't snap shut.
+        const subToggle = e.target.closest('[data-act-subtoggle]');
+        if (subToggle) {
+            e.preventDefault();
+            const sub = subToggle.closest('[data-act-sub]');
+            const body = sub && sub.querySelector('[data-act-sub-body]');
+            const expanded = subToggle.getAttribute('aria-expanded') === 'true';
+            subToggle.setAttribute('aria-expanded', String(!expanded));
+            if (body) body.hidden = expanded;
+            if (openState) position(openState.trigger, openState.panel);
+            return;
+        }
         const trigger = e.target.closest('[data-act-trigger]');
         if (trigger) {
             e.preventDefault();

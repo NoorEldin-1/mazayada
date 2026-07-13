@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\UserRole;
 use App\Models\Appeal;
 use App\Models\Auction;
+use App\Models\AuctionReport;
 use App\Models\Delivery;
 use App\Models\InspectionQuestion;
 use App\Models\Payment;
@@ -177,6 +178,21 @@ class NotificationService
         }
         $params = ['status' => $appeal->status->publicLabel()];
         $appeal->user->notify(new AuctionEventNotification('appeal_updated', $params, route('citizen.appeals')));
+    }
+
+    /**
+     * Admin referred an auction report → notify the organising entity's account
+     * so it appears in their reports module. Mirrors appealForwarded().
+     */
+    public function auctionReportReferred(AuctionReport $report): void
+    {
+        $report->loadMissing('auction.entity.account');
+        $account = $report->auction?->entity?->account;
+        if (! $account) {
+            return; // entity has no institutional login provisioned yet
+        }
+        $params = ['auction' => $report->auction?->localizedTitle() ?? ''];
+        $account->notify(new AuctionEventNotification('auction_report_referred', $params, route('admin.auction-reports.index')));
     }
 
     /**

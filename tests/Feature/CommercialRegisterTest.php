@@ -148,7 +148,7 @@ class CommercialRegisterTest extends TestCase
 
     // ===== hasCommerceRegister() semantics =====
 
-    public function test_only_an_approved_non_expired_register_grants_access(): void
+    public function test_only_an_approved_register_grants_access(): void
     {
         $none = $this->makeCitizen();
         $this->assertFalse($none->hasCommerceRegister());
@@ -157,19 +157,9 @@ class CommercialRegisterTest extends TestCase
         $this->makeRegister($pendingUser, ['status' => CommercialRegisterStatus::PENDING]);
         $this->assertFalse($pendingUser->fresh()->hasCommerceRegister());
 
-        $expiredUser = $this->makeCitizen();
-        $this->makeRegister($expiredUser, [
-            'status' => CommercialRegisterStatus::APPROVED,
-            'expiry_date' => now()->subDay(),
-        ]);
-        $this->assertFalse($expiredUser->fresh()->hasCommerceRegister());
-
-        $validUser = $this->makeCitizen();
-        $this->makeRegister($validUser, [
-            'status' => CommercialRegisterStatus::APPROVED,
-            'expiry_date' => now()->addYear(),
-        ]);
-        $this->assertTrue($validUser->fresh()->hasCommerceRegister());
+        $approvedUser = $this->makeCitizen();
+        $this->makeRegister($approvedUser, ['status' => CommercialRegisterStatus::APPROVED]);
+        $this->assertTrue($approvedUser->fresh()->hasCommerceRegister());
     }
 
     // ===== Participation gate =====
@@ -187,7 +177,7 @@ class CommercialRegisterTest extends TestCase
     {
         $auction = $this->makeAuction(['requires_commerce_register' => true, 'book_price' => 0, 'deposit_amount' => 100_000]);
         $user = $this->makeCitizen();
-        $this->makeRegister($user, ['status' => CommercialRegisterStatus::APPROVED, 'expiry_date' => now()->addYear()]);
+        $this->makeRegister($user, ['status' => CommercialRegisterStatus::APPROVED]);
 
         $result = app(PaymentService::class)->initiateRegistration($auction, $user->fresh());
 
@@ -212,7 +202,7 @@ class CommercialRegisterTest extends TestCase
             'register_number' => '16/00-1234567 A 09',
             'tax_number' => '000116001234567',
             'activity_type' => 'تجارة بالجملة',
-            'expiry_date' => now()->addYear()->format('Y-m-d'),
+            'start_date' => now()->subYear()->format('Y-m-d'),
             'register_document' => UploadedFile::fake()->create('register.pdf', 200, 'application/pdf'),
             'tax_card_document' => UploadedFile::fake()->image('tax-card.jpg'),
         ];
@@ -226,7 +216,7 @@ class CommercialRegisterTest extends TestCase
             'register_number' => '16/00-0000001 A 09',
             'tax_number' => '000116000000001',
             'activity_type' => 'تجارة',
-            'expiry_date' => now()->addYear(),
+            'start_date' => now()->subYear(),
             'register_document_path' => 'commercial-registers/'.$user->id.'/register.pdf',
             'tax_card_document_path' => 'commercial-registers/'.$user->id.'/tax.jpg',
             'status' => CommercialRegisterStatus::PENDING,

@@ -124,6 +124,7 @@ return [
         'AWARD' => 'وثيقة الترسية',
         'PAYMENT_RECEIPT' => 'إيصال دفع',
         'DELIVERY_REPORT' => 'محضر التسليم',
+        'AUCTION_REPORT' => 'تقرير المزاد',
     ],
 
     'notification_channel' => [

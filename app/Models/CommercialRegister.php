@@ -18,7 +18,7 @@ class CommercialRegister extends Model
 
     protected $fillable = [
         'user_id',
-        'company_name', 'register_number', 'tax_number', 'activity_type', 'expiry_date',
+        'company_name', 'register_number', 'tax_number', 'activity_type', 'start_date',
         'register_document_path', 'tax_card_document_path',
         'status', 'rejection_reason', 'submitted_at', 'reviewed_at', 'reviewed_by',
     ];
@@ -27,7 +27,7 @@ class CommercialRegister extends Model
     {
         return [
             'status' => CommercialRegisterStatus::class,
-            'expiry_date' => 'date',
+            'start_date' => 'date',
             'submitted_at' => 'datetime',
             'reviewed_at' => 'datetime',
         ];
@@ -57,14 +57,9 @@ class CommercialRegister extends Model
         return $this->status === CommercialRegisterStatus::APPROVED;
     }
 
-    public function isExpired(): bool
-    {
-        return $this->expiry_date !== null && $this->expiry_date->isPast();
-    }
-
-    /** Approved AND not past its expiry date — the state that unlocks bidding. */
+    /** An admin-approved register — the state that unlocks bidding. */
     public function isValid(): bool
     {
-        return $this->isApproved() && ! $this->isExpired();
+        return $this->isApproved();
     }
 }

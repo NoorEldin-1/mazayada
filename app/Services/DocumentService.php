@@ -93,6 +93,176 @@ class DocumentService
     }
 
     /**
+     * Full auction report (تقرير المزاد) — a signed, verifiable snapshot of every
+     * detail of the auction AS OF NOW, laid out across labelled tables. Unlike the
+     * award/receipt this is not a per-user document: it is an administrative record
+     * the platform issues (and may re-issue any number of times) and later refers
+     * to the organising entity. The meta is bound into the HMAC, so the headline
+     * figures printed on the PDF are tamper-evident on /verify.
+     */
+    public function generateAuctionReport(Auction $auction, int $sequenceNo): Document
+    {
+        $auction->loadMissing([
+            'entity', 'category', 'wilaya', 'commune', 'winner',
+            'createdByUser', 'delivery',
+        ]);
+
+        // Hammer price for the fee table: the settled/final price once known,
+        // otherwise the current highest valid bid (a live snapshot).
+        $hammerPrice = (int) ($auction->final_price ?? $auction->currentPrice());
+        $fees = app(FeeCalculator::class)->forAward($auction, $hammerPrice);
+
+        // Bidding: top valid bids by amount (the ones that shaped the result),
+        // each with its privacy-preserving alias — never the real bidder name.
+        $bids = $auction->bids()
+            ->where('is_valid', true)
+            ->orderByDesc('amount')
+            ->limit(15)
+            ->get();
+
+        $payments = $auction->payments()
+            ->with('user')
+            ->latest()
+            ->get();
+
+        // Every OTHER document issued for this auction (exclude past reports so the
+        // list stays about the auction's own paperwork, not prior snapshots).
+        $documents = $auction->documents()
+            ->where('type', '!=', DocumentType::AUCTION_REPORT->value)
+            ->latest()
+            ->get();
+
+        $appeals = $auction->appeals()->get();
+
+        $meta = [
+            'sequence_no' => $sequenceNo,
+            'status' => $auction->status->value,
+            'hammer_price' => $hammerPrice,
+            'final_price' => $auction->final_price !== null ? (int) $auction->final_price : null,
+            'bid_count' => $auction->bidCount(),
+            'participant_count' => $auction->participants()->count(),
+        ];
+
+        return $this->make(
+            type: DocumentType::AUCTION_REPORT,
+            auction: $auction,
+            userId: null,
+            isPublic: false,
+            title: __('auction_reports.doc_title', [
+                'seq' => $sequenceNo,
+                'auction' => $auction->localizedTitle(),
+            ]),
+            view: 'documents.auction-report',
+            data: [
+                'auction' => $auction,
+                'fees' => $fees,
+                'bids' => $bids,
+                'payments' => $payments,
+                'documents' => $documents,
+                'appeals' => $appeals,
+                'sequenceNo' => $sequenceNo,
+            ],
+            meta: $meta,
+        );
+    }
+
+    /**
+     * Re-render an already-issued document's PDF binary IN PLACE, keeping its id,
+     * signature, meta, verify URL and issue date untouched — only the visual
+     * rendering is refreshed from the current Blade templates. Used to repair
+     * documents generated before a template fix (e.g. the RTL money reversal in
+     * mpdf): the QR/signature attest the content (id + meta), not the exact bytes,
+     * so re-rendering never invalidates verification.
+     *
+     * Returns true on success, false when the type is unsupported or a required
+     * related record (payment / delivery / auction) is missing.
+     */
+    public function rerender(Document $document): bool
+    {
+        [$view, $data] = $this->reconstruct($document);
+
+        if ($view === null) {
+            return false;
+        }
+
+        $html = view($view, array_merge($data, [
+            'docId' => $document->id,
+            'docType' => $document->type,
+            'title' => $document->title,
+            'qrImage' => $this->qrDataUri((string) $document->qr_payload),
+            // Reuse the exact stored verify URL so the QR keeps resolving as before.
+            'verifyUrl' => $document->qr_payload,
+            'signatureFingerprint' => $this->fingerprint((string) $document->signature),
+            // Preserve the ORIGINAL issue date — this is a re-render, not a re-issue.
+            'issuedAt' => $document->created_at,
+            'logo' => $this->logoDataUri(),
+            'entityName' => $document->auction?->entity?->name,
+        ]))->render();
+
+        $binary = $this->renderPdf($html);
+        Storage::disk($document->diskName())->put($document->file_path, $binary);
+
+        // Only the file size may change; leave id/signature/meta/timestamps alone.
+        $document->forceFill(['file_size' => strlen($binary)])->saveQuietly();
+
+        return true;
+    }
+
+    /**
+     * Rebuild the [view, data] pair for an existing document from its stored
+     * type, relations and frozen meta. Returns [null, []] for types that can't be
+     * faithfully re-rendered from stored state (AUCTION_REPORT is a live snapshot;
+     * re-render it via the admin module instead).
+     *
+     * @return array{0: ?string, 1: array<string, mixed>}
+     */
+    private function reconstruct(Document $document): array
+    {
+        return match ($document->type) {
+            DocumentType::CONDITION_BOOK => (function () use ($document) {
+                $auction = $document->auction;
+                if (! $auction) {
+                    return [null, []];
+                }
+                $auction->loadMissing(['entity', 'category', 'wilaya']);
+
+                return ['documents.condition-book', ['auction' => $auction]];
+            })(),
+
+            DocumentType::AWARD => (function () use ($document) {
+                $auction = $document->auction;
+                if (! $auction) {
+                    return [null, []];
+                }
+                $auction->loadMissing(['entity', 'category', 'wilaya', 'winner']);
+
+                return ['documents.award', [
+                    'auction' => $auction,
+                    'winner' => $auction->winner,
+                    // Rebuild from the frozen figures, never recompute.
+                    'fees' => FeeBreakdown::fromArray((array) ($document->meta['fees'] ?? [])),
+                ]];
+            })(),
+
+            DocumentType::PAYMENT_RECEIPT => (function () use ($document) {
+                $payment = Payment::with(['auction.entity', 'user'])
+                    ->find($document->meta['payment_id'] ?? null);
+
+                return $payment ? ['documents.receipt', ['payment' => $payment]] : [null, []];
+            })(),
+
+            DocumentType::DELIVERY_REPORT => (function () use ($document) {
+                $delivery = Delivery::with(['auction.entity', 'user'])
+                    ->find($document->meta['delivery_id'] ?? null);
+
+                return $delivery ? ['documents.delivery-report', ['delivery' => $delivery]] : [null, []];
+            })(),
+
+            default => [null, []],
+        };
+    }
+
+    /**
      * Shared pipeline: pre-generate the UUID + signature, embed a QR pointing to
      * the verify URL, render the Blade to a PDF, store it privately, and persist
      * the Document row.

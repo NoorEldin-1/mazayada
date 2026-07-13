@@ -27,13 +27,13 @@ tags:
     description: "\nPlacing bids. Requires a verified (KYC-complete) account and a paid\nregistration on the auction. Rate-limited per user per auction."
   -
     name: 'Commercial Register'
-    description: "\nThe user's Commercial Register (السجل التجاري) submission. Mirrors the web flow:\nsubmit the register data plus two scans, an admin reviews it, and only a valid\n(APPROVED and un-expired) register unlocks participation in auctions flagged\n`requires_commerce_register`. Independent of KYC — a user may hold either, both\nor neither."
+    description: "\nThe user's Commercial Register (السجل التجاري) submission. Mirrors the web flow:\nsubmit the register data plus two scans, an admin reviews it, and only an\nAPPROVED register unlocks participation in auctions flagged\n`requires_commerce_register`. Independent of KYC — a user may hold either, both\nor neither."
   -
     name: Dashboard
     description: "\nThe citizen's home summary and their participation history."
   -
     name: Documents
-    description: "\nStreams generated PDFs (condition book / award / receipt) from the private\ndisk. Access is gated by DocumentPolicy@download (public docs to any\nauthenticated user; private docs to the owner / auction winner / entity staff)."
+    description: "\nThe signed-in user's personal document library — every generated PDF tied to an\nauction they engaged with (condition book / award / receipt / delivery report),\nplus the policy-gated binary download. Streams from the private disk; access is\ngated by DocumentPolicy@download."
   -
     name: Endpoints
     description: ''
@@ -340,17 +340,17 @@ paths:
     get:
       summary: 'List auctions'
       operationId: listAuctions
-      description: 'Paginated, filterable list of public auctions.'
+      description: "Paginated, filterable list of public auctions. The filter vocabulary is\nidentical to the web browse page (App\\Support\\AuctionFilters)."
       parameters:
         -
           in: query
           name: q
-          description: 'Search in the Arabic title.'
+          description: 'Keyword — matches the title in any locale or the asset location.'
           example: سيارة
           required: false
           schema:
             type: string
-            description: 'Search in the Arabic title.'
+            description: 'Keyword — matches the title in any locale or the asset location.'
             example: سيارة
         -
           in: query
@@ -374,14 +374,26 @@ paths:
             example: 16
         -
           in: query
-          name: status
-          description: 'One of PUBLISHED, ACTIVE, EXTENDED, CLOSED.'
-          example: ACTIVE
+          name: commune
+          description: 'Filter by commune id.'
+          example: 17
           required: false
           schema:
-            type: string
-            description: 'One of PUBLISHED, ACTIVE, EXTENDED, CLOSED.'
-            example: ACTIVE
+            type: integer
+            description: 'Filter by commune id.'
+            example: 17
+        -
+          in: query
+          name: status
+          description: 'User tokens (upcoming, live, closed) or raw enum values.'
+          example: null
+          required: false
+          schema:
+            type: array
+            description: 'User tokens (upcoming, live, closed) or raw enum values.'
+            example: null
+            items:
+              type: string
         -
           in: query
           name: type
@@ -392,6 +404,70 @@ paths:
             type: string
             description: 'Auction type: SALE or LEASE.'
             example: SALE
+        -
+          in: query
+          name: asset_class
+          description: 'One or more asset classes.'
+          example: null
+          required: false
+          schema:
+            type: array
+            description: 'One or more asset classes.'
+            example: null
+            items:
+              type: string
+        -
+          in: query
+          name: condition
+          description: 'One or more asset conditions.'
+          example: null
+          required: false
+          schema:
+            type: array
+            description: 'One or more asset conditions.'
+            example: null
+            items:
+              type: string
+        -
+          in: query
+          name: requires_cr
+          description: 'Commercial-register requirement (1 = required, 0 = not).'
+          example: true
+          required: false
+          schema:
+            type: boolean
+            description: 'Commercial-register requirement (1 = required, 0 = not).'
+            example: true
+        -
+          in: query
+          name: price_min
+          description: 'Minimum opening price in dinars.'
+          example: 100000
+          required: false
+          schema:
+            type: integer
+            description: 'Minimum opening price in dinars.'
+            example: 100000
+        -
+          in: query
+          name: price_max
+          description: 'Maximum opening price in dinars.'
+          example: 5000000
+          required: false
+          schema:
+            type: integer
+            description: 'Maximum opening price in dinars.'
+            example: 5000000
+        -
+          in: query
+          name: sort
+          description: 'newest (default), price_asc, price_desc, most_bids, ending_soon.'
+          example: ending_soon
+          required: false
+          schema:
+            type: string
+            description: 'newest (default), price_asc, price_desc, most_bids, ending_soon.'
+            example: ending_soon
         -
           in: query
           name: per_page
@@ -455,6 +531,1070 @@ paths:
                           count:
                             type: integer
                             example: 0
+      tags:
+        - Auctions
+      security: []
+  /api/v1/auctions/search:
+    get:
+      summary: 'Search auctions'
+      operationId: searchAuctions
+      description: "Lightweight autocomplete for the browse search box — the enveloped, dinar\nmobile counterpart of the web live-search dropdown. Returns up to 8 public\nauctions matching the term by title (any locale) or asset location. Requires\nat least 2 characters; a shorter term returns an empty list."
+      parameters:
+        -
+          in: query
+          name: q
+          description: 'The search term (min 2 chars).'
+          example: villa
+          required: true
+          schema:
+            type: string
+            description: 'The search term (min 2 chars).'
+            example: villa
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data: []
+                  message: null
+                  meta: {  }
+                properties:
+                  data:
+                    type: array
+                    example: []
+                  message:
+                    type: string
+                    example: null
+                    nullable: true
+                  meta:
+                    type: object
+                    properties: {  }
+      tags:
+        - Auctions
+      security: []
+  /api/v1/auctions/filters:
+    get:
+      summary: 'Filter options'
+      operationId: filterOptions
+      description: "The reference data the mobile browse screen needs to build its filter UI:\nactive categories, wilayas, and the enumerated token sets (status, type,\nasset class, condition, sort). Cached-friendly and locale-aware (names come\nfrom the localized accessor). Pass `wilaya` to also get that wilaya's communes."
+      parameters:
+        -
+          in: query
+          name: wilaya
+          description: "Optionally include this wilaya's communes."
+          example: 16
+          required: false
+          schema:
+            type: integer
+            description: "Optionally include this wilaya's communes."
+            example: 16
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    categories:
+                      -
+                        id: 1
+                        name: مركبات
+                      -
+                        id: 2
+                        name: عقارات
+                      -
+                        id: 3
+                        name: 'معدات صناعية'
+                      -
+                        id: 4
+                        name: إلكترونيات
+                      -
+                        id: 5
+                        name: خردة
+                      -
+                        id: 6
+                        name: 'منتجات زراعية'
+                      -
+                        id: 7
+                        name: 'أثاث مكتبي'
+                      -
+                        id: 8
+                        name: أخرى
+                      -
+                        id: 9
+                        name: ِسيشسيشسي
+                    wilayas:
+                      -
+                        id: 1
+                        code: '01'
+                        name: أدرار
+                      -
+                        id: 2
+                        code: '02'
+                        name: الشلف
+                      -
+                        id: 3
+                        code: '03'
+                        name: الأغواط
+                      -
+                        id: 4
+                        code: '04'
+                        name: 'أم البواقي'
+                      -
+                        id: 5
+                        code: '05'
+                        name: باتنة
+                      -
+                        id: 6
+                        code: '06'
+                        name: بجاية
+                      -
+                        id: 7
+                        code: '07'
+                        name: بسكرة
+                      -
+                        id: 8
+                        code: '08'
+                        name: بشار
+                      -
+                        id: 9
+                        code: '09'
+                        name: البليدة
+                      -
+                        id: 10
+                        code: '10'
+                        name: البويرة
+                      -
+                        id: 11
+                        code: '11'
+                        name: تمنراست
+                      -
+                        id: 12
+                        code: '12'
+                        name: تبسة
+                      -
+                        id: 13
+                        code: '13'
+                        name: تلمسان
+                      -
+                        id: 14
+                        code: '14'
+                        name: تيارت
+                      -
+                        id: 15
+                        code: '15'
+                        name: 'تيزي وزو'
+                      -
+                        id: 16
+                        code: '16'
+                        name: الجزائر
+                      -
+                        id: 17
+                        code: '17'
+                        name: الجلفة
+                      -
+                        id: 18
+                        code: '18'
+                        name: جيجل
+                      -
+                        id: 19
+                        code: '19'
+                        name: سطيف
+                      -
+                        id: 20
+                        code: '20'
+                        name: سعيدة
+                      -
+                        id: 21
+                        code: '21'
+                        name: سكيكدة
+                      -
+                        id: 22
+                        code: '22'
+                        name: 'سيدي بلعباس'
+                      -
+                        id: 23
+                        code: '23'
+                        name: عنابة
+                      -
+                        id: 24
+                        code: '24'
+                        name: قالمة
+                      -
+                        id: 25
+                        code: '25'
+                        name: قسنطينة
+                      -
+                        id: 26
+                        code: '26'
+                        name: المدية
+                      -
+                        id: 27
+                        code: '27'
+                        name: مستغانم
+                      -
+                        id: 28
+                        code: '28'
+                        name: المسيلة
+                      -
+                        id: 29
+                        code: '29'
+                        name: معسكر
+                      -
+                        id: 30
+                        code: '30'
+                        name: ورقلة
+                      -
+                        id: 31
+                        code: '31'
+                        name: وهران
+                      -
+                        id: 32
+                        code: '32'
+                        name: البيض
+                      -
+                        id: 33
+                        code: '33'
+                        name: إليزي
+                      -
+                        id: 34
+                        code: '34'
+                        name: 'برج بوعريريج'
+                      -
+                        id: 35
+                        code: '35'
+                        name: بومرداس
+                      -
+                        id: 36
+                        code: '36'
+                        name: الطارف
+                      -
+                        id: 37
+                        code: '37'
+                        name: تندوف
+                      -
+                        id: 38
+                        code: '38'
+                        name: تيسمسيلت
+                      -
+                        id: 39
+                        code: '39'
+                        name: الوادي
+                      -
+                        id: 40
+                        code: '40'
+                        name: خنشلة
+                      -
+                        id: 41
+                        code: '41'
+                        name: 'سوق أهراس'
+                      -
+                        id: 42
+                        code: '42'
+                        name: تيبازة
+                      -
+                        id: 43
+                        code: '43'
+                        name: ميلة
+                      -
+                        id: 44
+                        code: '44'
+                        name: 'عين الدفلى'
+                      -
+                        id: 45
+                        code: '45'
+                        name: النعامة
+                      -
+                        id: 46
+                        code: '46'
+                        name: 'عين تموشنت'
+                      -
+                        id: 47
+                        code: '47'
+                        name: غرداية
+                      -
+                        id: 48
+                        code: '48'
+                        name: غليزان
+                      -
+                        id: 49
+                        code: '49'
+                        name: تيميمون
+                      -
+                        id: 50
+                        code: '50'
+                        name: 'برج باجي مختار'
+                      -
+                        id: 51
+                        code: '51'
+                        name: 'أولاد جلال'
+                      -
+                        id: 52
+                        code: '52'
+                        name: 'بني عباس'
+                      -
+                        id: 53
+                        code: '53'
+                        name: 'عين صالح'
+                      -
+                        id: 54
+                        code: '54'
+                        name: 'عين قزام'
+                      -
+                        id: 55
+                        code: '55'
+                        name: توقرت
+                      -
+                        id: 56
+                        code: '56'
+                        name: جانت
+                      -
+                        id: 57
+                        code: '57'
+                        name: المغير
+                      -
+                        id: 58
+                        code: '58'
+                        name: المنيعة
+                    communes:
+                      -
+                        id: 522
+                        name: 'عين بنيان'
+                      -
+                        id: 523
+                        name: 'عين طاية'
+                      -
+                        id: 524
+                        name: 'الجزائر الوسطى'
+                      -
+                        id: 525
+                        name: 'باب الوادي'
+                      -
+                        id: 526
+                        name: 'باب الزوار'
+                      -
+                        id: 527
+                        name: 'بابا حسن'
+                      -
+                        id: 528
+                        name: 'باش جراح'
+                      -
+                        id: 529
+                        name: براقي
+                      -
+                        id: 530
+                        name: 'ابن عكنون'
+                      -
+                        id: 531
+                        name: 'بني مسوس'
+                      -
+                        id: 532
+                        name: 'بئر مراد رايس'
+                      -
+                        id: 533
+                        name: 'بئر توتة'
+                      -
+                        id: 534
+                        name: 'بئر خادم'
+                      -
+                        id: 535
+                        name: 'بولوغين بن زيري'
+                      -
+                        id: 536
+                        name: 'برج البحري'
+                      -
+                        id: 537
+                        name: 'برج الكيفان'
+                      -
+                        id: 538
+                        name: بوروبة
+                      -
+                        id: 539
+                        name: بوزريعة
+                      -
+                        id: 540
+                        name: القصبة
+                      -
+                        id: 541
+                        name: الشراقة
+                      -
+                        id: 542
+                        name: 'الدار البيضاء'
+                      -
+                        id: 543
+                        name: 'دالي ابراهيم'
+                      -
+                        id: 544
+                        name: 'جسر قسنطينة'
+                      -
+                        id: 545
+                        name: الدويرة
+                      -
+                        id: 546
+                        name: الدرارية
+                      -
+                        id: 547
+                        name: العاشور
+                      -
+                        id: 548
+                        name: الابيار
+                      -
+                        id: 549
+                        name: الحراش
+                      -
+                        id: 550
+                        name: المدنية
+                      -
+                        id: 551
+                        name: المغارية
+                      -
+                        id: 552
+                        name: المرسى
+                      -
+                        id: 553
+                        name: المرادية
+                      -
+                        id: 554
+                        name: الحمامات
+                      -
+                        id: 555
+                        name: هراوة
+                      -
+                        id: 556
+                        name: 'حسين داي'
+                      -
+                        id: 557
+                        name: حيدرة
+                      -
+                        id: 558
+                        name: الخرايسية
+                      -
+                        id: 559
+                        name: القبة
+                      -
+                        id: 560
+                        name: الكاليتوس
+                      -
+                        id: 561
+                        name: المعالمة
+                      -
+                        id: 562
+                        name: 'محمد بلوزداد'
+                      -
+                        id: 563
+                        name: المحمدية
+                      -
+                        id: 564
+                        name: 'وادي قريش'
+                      -
+                        id: 565
+                        name: 'وادي السمار'
+                      -
+                        id: 566
+                        name: 'اولاد شبل'
+                      -
+                        id: 567
+                        name: 'اولاد فايت'
+                      -
+                        id: 568
+                        name: الرحمانية
+                      -
+                        id: 569
+                        name: 'الرايس حميدو'
+                      -
+                        id: 570
+                        name: رغاية
+                      -
+                        id: 571
+                        name: الرويبة
+                      -
+                        id: 572
+                        name: السحاولة
+                      -
+                        id: 573
+                        name: 'سيدي امحمد'
+                      -
+                        id: 574
+                        name: 'سيدي موسى'
+                      -
+                        id: 575
+                        name: سويدانية
+                      -
+                        id: 576
+                        name: سطاوالي
+                      -
+                        id: 577
+                        name: 'تسالة المرجة'
+                      -
+                        id: 578
+                        name: زرالدة
+                    statuses:
+                      - upcoming
+                      - live
+                      - closed
+                    types:
+                      - SALE
+                      - LEASE
+                    asset_classes:
+                      - MOVABLE
+                      - REAL_ESTATE
+                      - CUSTOMS
+                    conditions:
+                      - NEW
+                      - GOOD
+                      - FAIR
+                      - POOR
+                      - SCRAP
+                    sorts:
+                      - newest
+                      - price_asc
+                      - price_desc
+                      - most_bids
+                      - ending_soon
+                  message: null
+                  meta: {  }
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      categories:
+                        type: array
+                        example:
+                          -
+                            id: 1
+                            name: مركبات
+                          -
+                            id: 2
+                            name: عقارات
+                          -
+                            id: 3
+                            name: 'معدات صناعية'
+                          -
+                            id: 4
+                            name: إلكترونيات
+                          -
+                            id: 5
+                            name: خردة
+                          -
+                            id: 6
+                            name: 'منتجات زراعية'
+                          -
+                            id: 7
+                            name: 'أثاث مكتبي'
+                          -
+                            id: 8
+                            name: أخرى
+                          -
+                            id: 9
+                            name: ِسيشسيشسي
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                              example: 1
+                            name:
+                              type: string
+                              example: مركبات
+                      wilayas:
+                        type: array
+                        example:
+                          -
+                            id: 1
+                            code: '01'
+                            name: أدرار
+                          -
+                            id: 2
+                            code: '02'
+                            name: الشلف
+                          -
+                            id: 3
+                            code: '03'
+                            name: الأغواط
+                          -
+                            id: 4
+                            code: '04'
+                            name: 'أم البواقي'
+                          -
+                            id: 5
+                            code: '05'
+                            name: باتنة
+                          -
+                            id: 6
+                            code: '06'
+                            name: بجاية
+                          -
+                            id: 7
+                            code: '07'
+                            name: بسكرة
+                          -
+                            id: 8
+                            code: '08'
+                            name: بشار
+                          -
+                            id: 9
+                            code: '09'
+                            name: البليدة
+                          -
+                            id: 10
+                            code: '10'
+                            name: البويرة
+                          -
+                            id: 11
+                            code: '11'
+                            name: تمنراست
+                          -
+                            id: 12
+                            code: '12'
+                            name: تبسة
+                          -
+                            id: 13
+                            code: '13'
+                            name: تلمسان
+                          -
+                            id: 14
+                            code: '14'
+                            name: تيارت
+                          -
+                            id: 15
+                            code: '15'
+                            name: 'تيزي وزو'
+                          -
+                            id: 16
+                            code: '16'
+                            name: الجزائر
+                          -
+                            id: 17
+                            code: '17'
+                            name: الجلفة
+                          -
+                            id: 18
+                            code: '18'
+                            name: جيجل
+                          -
+                            id: 19
+                            code: '19'
+                            name: سطيف
+                          -
+                            id: 20
+                            code: '20'
+                            name: سعيدة
+                          -
+                            id: 21
+                            code: '21'
+                            name: سكيكدة
+                          -
+                            id: 22
+                            code: '22'
+                            name: 'سيدي بلعباس'
+                          -
+                            id: 23
+                            code: '23'
+                            name: عنابة
+                          -
+                            id: 24
+                            code: '24'
+                            name: قالمة
+                          -
+                            id: 25
+                            code: '25'
+                            name: قسنطينة
+                          -
+                            id: 26
+                            code: '26'
+                            name: المدية
+                          -
+                            id: 27
+                            code: '27'
+                            name: مستغانم
+                          -
+                            id: 28
+                            code: '28'
+                            name: المسيلة
+                          -
+                            id: 29
+                            code: '29'
+                            name: معسكر
+                          -
+                            id: 30
+                            code: '30'
+                            name: ورقلة
+                          -
+                            id: 31
+                            code: '31'
+                            name: وهران
+                          -
+                            id: 32
+                            code: '32'
+                            name: البيض
+                          -
+                            id: 33
+                            code: '33'
+                            name: إليزي
+                          -
+                            id: 34
+                            code: '34'
+                            name: 'برج بوعريريج'
+                          -
+                            id: 35
+                            code: '35'
+                            name: بومرداس
+                          -
+                            id: 36
+                            code: '36'
+                            name: الطارف
+                          -
+                            id: 37
+                            code: '37'
+                            name: تندوف
+                          -
+                            id: 38
+                            code: '38'
+                            name: تيسمسيلت
+                          -
+                            id: 39
+                            code: '39'
+                            name: الوادي
+                          -
+                            id: 40
+                            code: '40'
+                            name: خنشلة
+                          -
+                            id: 41
+                            code: '41'
+                            name: 'سوق أهراس'
+                          -
+                            id: 42
+                            code: '42'
+                            name: تيبازة
+                          -
+                            id: 43
+                            code: '43'
+                            name: ميلة
+                          -
+                            id: 44
+                            code: '44'
+                            name: 'عين الدفلى'
+                          -
+                            id: 45
+                            code: '45'
+                            name: النعامة
+                          -
+                            id: 46
+                            code: '46'
+                            name: 'عين تموشنت'
+                          -
+                            id: 47
+                            code: '47'
+                            name: غرداية
+                          -
+                            id: 48
+                            code: '48'
+                            name: غليزان
+                          -
+                            id: 49
+                            code: '49'
+                            name: تيميمون
+                          -
+                            id: 50
+                            code: '50'
+                            name: 'برج باجي مختار'
+                          -
+                            id: 51
+                            code: '51'
+                            name: 'أولاد جلال'
+                          -
+                            id: 52
+                            code: '52'
+                            name: 'بني عباس'
+                          -
+                            id: 53
+                            code: '53'
+                            name: 'عين صالح'
+                          -
+                            id: 54
+                            code: '54'
+                            name: 'عين قزام'
+                          -
+                            id: 55
+                            code: '55'
+                            name: توقرت
+                          -
+                            id: 56
+                            code: '56'
+                            name: جانت
+                          -
+                            id: 57
+                            code: '57'
+                            name: المغير
+                          -
+                            id: 58
+                            code: '58'
+                            name: المنيعة
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                              example: 1
+                            code:
+                              type: string
+                              example: '01'
+                            name:
+                              type: string
+                              example: أدرار
+                      communes:
+                        type: array
+                        example:
+                          -
+                            id: 522
+                            name: 'عين بنيان'
+                          -
+                            id: 523
+                            name: 'عين طاية'
+                          -
+                            id: 524
+                            name: 'الجزائر الوسطى'
+                          -
+                            id: 525
+                            name: 'باب الوادي'
+                          -
+                            id: 526
+                            name: 'باب الزوار'
+                          -
+                            id: 527
+                            name: 'بابا حسن'
+                          -
+                            id: 528
+                            name: 'باش جراح'
+                          -
+                            id: 529
+                            name: براقي
+                          -
+                            id: 530
+                            name: 'ابن عكنون'
+                          -
+                            id: 531
+                            name: 'بني مسوس'
+                          -
+                            id: 532
+                            name: 'بئر مراد رايس'
+                          -
+                            id: 533
+                            name: 'بئر توتة'
+                          -
+                            id: 534
+                            name: 'بئر خادم'
+                          -
+                            id: 535
+                            name: 'بولوغين بن زيري'
+                          -
+                            id: 536
+                            name: 'برج البحري'
+                          -
+                            id: 537
+                            name: 'برج الكيفان'
+                          -
+                            id: 538
+                            name: بوروبة
+                          -
+                            id: 539
+                            name: بوزريعة
+                          -
+                            id: 540
+                            name: القصبة
+                          -
+                            id: 541
+                            name: الشراقة
+                          -
+                            id: 542
+                            name: 'الدار البيضاء'
+                          -
+                            id: 543
+                            name: 'دالي ابراهيم'
+                          -
+                            id: 544
+                            name: 'جسر قسنطينة'
+                          -
+                            id: 545
+                            name: الدويرة
+                          -
+                            id: 546
+                            name: الدرارية
+                          -
+                            id: 547
+                            name: العاشور
+                          -
+                            id: 548
+                            name: الابيار
+                          -
+                            id: 549
+                            name: الحراش
+                          -
+                            id: 550
+                            name: المدنية
+                          -
+                            id: 551
+                            name: المغارية
+                          -
+                            id: 552
+                            name: المرسى
+                          -
+                            id: 553
+                            name: المرادية
+                          -
+                            id: 554
+                            name: الحمامات
+                          -
+                            id: 555
+                            name: هراوة
+                          -
+                            id: 556
+                            name: 'حسين داي'
+                          -
+                            id: 557
+                            name: حيدرة
+                          -
+                            id: 558
+                            name: الخرايسية
+                          -
+                            id: 559
+                            name: القبة
+                          -
+                            id: 560
+                            name: الكاليتوس
+                          -
+                            id: 561
+                            name: المعالمة
+                          -
+                            id: 562
+                            name: 'محمد بلوزداد'
+                          -
+                            id: 563
+                            name: المحمدية
+                          -
+                            id: 564
+                            name: 'وادي قريش'
+                          -
+                            id: 565
+                            name: 'وادي السمار'
+                          -
+                            id: 566
+                            name: 'اولاد شبل'
+                          -
+                            id: 567
+                            name: 'اولاد فايت'
+                          -
+                            id: 568
+                            name: الرحمانية
+                          -
+                            id: 569
+                            name: 'الرايس حميدو'
+                          -
+                            id: 570
+                            name: رغاية
+                          -
+                            id: 571
+                            name: الرويبة
+                          -
+                            id: 572
+                            name: السحاولة
+                          -
+                            id: 573
+                            name: 'سيدي امحمد'
+                          -
+                            id: 574
+                            name: 'سيدي موسى'
+                          -
+                            id: 575
+                            name: سويدانية
+                          -
+                            id: 576
+                            name: سطاوالي
+                          -
+                            id: 577
+                            name: 'تسالة المرجة'
+                          -
+                            id: 578
+                            name: زرالدة
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                              example: 522
+                            name:
+                              type: string
+                              example: 'عين بنيان'
+                      statuses:
+                        type: array
+                        example:
+                          - upcoming
+                          - live
+                          - closed
+                        items:
+                          type: string
+                      types:
+                        type: array
+                        example:
+                          - SALE
+                          - LEASE
+                        items:
+                          type: string
+                      asset_classes:
+                        type: array
+                        example:
+                          - MOVABLE
+                          - REAL_ESTATE
+                          - CUSTOMS
+                        items:
+                          type: string
+                      conditions:
+                        type: array
+                        example:
+                          - NEW
+                          - GOOD
+                          - FAIR
+                          - POOR
+                          - SCRAP
+                        items:
+                          type: string
+                      sorts:
+                        type: array
+                        example:
+                          - newest
+                          - price_asc
+                          - price_desc
+                          - most_bids
+                          - ending_soon
+                        items:
+                          type: string
+                  message:
+                    type: string
+                    example: null
+                    nullable: true
+                  meta:
+                    type: object
+                    properties: {  }
       tags:
         - Auctions
       security: []
@@ -562,9 +1702,14 @@ paths:
                     condition_book:
                       id: f5cea43f-df52-4942-89bf-716077671467
                       type: CONDITION_BOOK
+                      type_label: 'كراسة الشروط'
                       title: 'كراسة شروط — new one'
                       is_public: false
+                      file_size: 56144
+                      file_size_human: '54.8 KB'
+                      issued_at: '2026-06-14T08:05:04+01:00'
                       download_url: 'http://mazayada.findosystem.com/api/v1/documents/f5cea43f-df52-4942-89bf-716077671467/download'
+                      verify_url: 'http://mazayada.findosystem.com/verify?doc=f5cea43f-df52-4942-89bf-716077671467&sig=8a080d731cbc88a58981e64e0cb855eeafb200d24fa8e9caecddfdec8c02bd8c'
                     award_document: null
                   message: null
                   meta:
@@ -820,15 +1965,30 @@ paths:
                           type:
                             type: string
                             example: CONDITION_BOOK
+                          type_label:
+                            type: string
+                            example: 'كراسة الشروط'
                           title:
                             type: string
                             example: 'كراسة شروط — new one'
                           is_public:
                             type: boolean
                             example: false
+                          file_size:
+                            type: integer
+                            example: 56144
+                          file_size_human:
+                            type: string
+                            example: '54.8 KB'
+                          issued_at:
+                            type: string
+                            example: '2026-06-14T08:05:04+01:00'
                           download_url:
                             type: string
                             example: 'http://mazayada.findosystem.com/api/v1/documents/f5cea43f-df52-4942-89bf-716077671467/download'
+                          verify_url:
+                            type: string
+                            example: 'http://mazayada.findosystem.com/verify?doc=f5cea43f-df52-4942-89bf-716077671467&sig=8a080d731cbc88a58981e64e0cb855eeafb200d24fa8e9caecddfdec8c02bd8c'
                       award_document:
                         type: string
                         example: null
@@ -1183,8 +2343,8 @@ paths:
                   example: carolyne.luettgen@example.org
                 birth_date:
                   type: string
-                  description: 'يجب أن يكون value تاريخاً صحيحاً. يجب أن يكون value تاريخاً قبل <code>2008-07-09</code>.'
-                  example: '2006-04-01'
+                  description: 'يجب أن يكون value تاريخاً صحيحاً. يجب أن يكون value تاريخاً قبل <code>2008-07-13</code>.'
+                  example: '2006-04-05'
                 password:
                   type: string
                   description: ''
@@ -1642,10 +2802,10 @@ paths:
                   type: string
                   description: 'The registered commercial activity.'
                   example: 'تجارة السيارات'
-                expiry_date:
+                start_date:
                   type: string
-                  description: 'The register expiry date (must be in the future).'
-                  example: '2030-12-31'
+                  description: 'The register issue (start) date (cannot be in the future).'
+                  example: '2022-01-15'
                 register_document:
                   type: string
                   format: binary
@@ -1659,7 +2819,7 @@ paths:
                 - register_number
                 - tax_number
                 - activity_type
-                - expiry_date
+                - start_date
       security: []
   '/api/v1/commercial-register/document/{type}':
     get:
@@ -1805,6 +2965,158 @@ paths:
         required: true
         schema:
           type: string
+  /api/v1/documents:
+    get:
+      summary: 'List my documents'
+      operationId: listMyDocuments
+      description: "The user's documents with the same advanced filters as the web library.\nEvery returned document is one the user may download."
+      parameters:
+        -
+          in: query
+          name: search
+          description: 'Match auction title or document name.'
+          example: villa
+          required: false
+          schema:
+            type: string
+            description: 'Match auction title or document name.'
+            example: villa
+        -
+          in: query
+          name: type
+          description: 'Document types: CONDITION_BOOK, AWARD, PAYMENT_RECEIPT, DELIVERY_REPORT.'
+          example:
+            - consequatur
+          required: false
+          schema:
+            type: array
+            description: 'Document types: CONDITION_BOOK, AWARD, PAYMENT_RECEIPT, DELIVERY_REPORT.'
+            example:
+              - consequatur
+            items:
+              type: string
+        -
+          in: query
+          name: preset
+          description: 'Date preset: today, 7d, 30d, this_month, this_year, all.'
+          example: 30d
+          required: false
+          schema:
+            type: string
+            description: 'Date preset: today, 7d, 30d, this_month, this_year, all.'
+            example: 30d
+        -
+          in: query
+          name: from
+          description: 'date Custom range start (Y-m-d).'
+          example: '2026-01-01'
+          required: false
+          schema:
+            type: string
+            description: 'date Custom range start (Y-m-d).'
+            example: '2026-01-01'
+        -
+          in: query
+          name: to
+          description: 'date Custom range end (Y-m-d).'
+          example: '2026-12-31'
+          required: false
+          schema:
+            type: string
+            description: 'date Custom range end (Y-m-d).'
+            example: '2026-12-31'
+        -
+          in: query
+          name: category_id
+          description: 'Filter by auction category.'
+          example: 3
+          required: false
+          schema:
+            type: integer
+            description: 'Filter by auction category.'
+            example: 3
+        -
+          in: query
+          name: wilaya_id
+          description: 'Filter by auction wilaya.'
+          example: 16
+          required: false
+          schema:
+            type: integer
+            description: 'Filter by auction wilaya.'
+            example: 16
+        -
+          in: query
+          name: entity_id
+          description: 'Filter by organizing entity.'
+          example: consequatur
+          required: false
+          schema:
+            type: string
+            description: 'Filter by organizing entity.'
+            example: consequatur
+        -
+          in: query
+          name: sort
+          description: 'One of recent, oldest, auction (default recent).'
+          example: recent
+          required: false
+          schema:
+            type: string
+            description: 'One of recent, oldest, auction (default recent).'
+            example: recent
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - Documents
+      security: []
+  /api/v1/documents/summary:
+    get:
+      summary: 'My documents summary'
+      operationId: myDocumentsSummary
+      description: 'Per-type counts and total size — the stat tiles for the mobile library.'
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - Documents
+      security: []
   /api/broadcasting/auth:
     get:
       summary: 'Authenticate the request for channel access.'
@@ -2786,6 +4098,44 @@ paths:
         required: true
         schema:
           type: string
+  '/api/v1/auctions/{auction_id}/final-payment/preview':
+    get:
+      summary: 'Final payment preview'
+      operationId: finalPaymentPreview
+      description: "The winner's Decree 97-33 fee breakdown BEFORE paying: itemised fee lines\n(localized labels + dinars), the deposit already credited, the net amount\nstill due, and the payment deadline. Read-only — nothing is charged. Lets the\nmobile app show the full cost sheet before it sends the winner to the gateway."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - Payments
+      security: []
+    parameters:
+      -
+        in: path
+        name: auction_id
+        description: 'The ID of the auction.'
+        example: a2050443-68af-41f5-8080-20d4b878c6ca
+        required: true
+        schema:
+          type: string
   '/api/v1/auctions/{auction_id}/final-payment':
     post:
       summary: 'Start final payment'
@@ -2894,7 +4244,7 @@ paths:
                 locale:
                   type: string
                   description: ''
-                  example: ar
+                  example: fr
                   enum:
                     - ar
                     - fr
@@ -2902,7 +4252,7 @@ paths:
                 secret_question:
                   type: string
                   description: ''
-                  example: pet_name
+                  example: mother_maiden
                   enum:
                     - mother_maiden
                     - first_school

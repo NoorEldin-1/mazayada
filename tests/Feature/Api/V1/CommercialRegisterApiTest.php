@@ -98,17 +98,17 @@ class CommercialRegisterApiTest extends ApiTestCase
         $this->assertSame(CommercialRegisterStatus::PENDING, $user->fresh()->commercialRegister->status);
     }
 
-    public function test_store_validates_future_expiry(): void
+    public function test_store_rejects_a_future_start_date(): void
     {
         $user = $this->makeCitizen();
         Sanctum::actingAs($user, ['access']);
 
         $payload = $this->validPayload();
-        $payload['expiry_date'] = now()->subDay()->format('Y-m-d');
+        $payload['start_date'] = now()->addDay()->format('Y-m-d');
 
         $this->postJson('/api/v1/commercial-register', $payload)
             ->assertStatus(422)
-            ->assertJsonValidationErrors('expiry_date');
+            ->assertJsonValidationErrors('start_date');
     }
 
     public function test_document_returns_404_when_missing(): void
@@ -143,7 +143,7 @@ class CommercialRegisterApiTest extends ApiTestCase
             'register_number' => '16/00-1234567 A 09',
             'tax_number' => '000116001234567',
             'activity_type' => 'تجارة بالجملة',
-            'expiry_date' => now()->addYear()->format('Y-m-d'),
+            'start_date' => now()->subYear()->format('Y-m-d'),
             'register_document' => UploadedFile::fake()->create('register.pdf', 200, 'application/pdf'),
             'tax_card_document' => UploadedFile::fake()->image('tax-card.jpg'),
         ];
@@ -157,7 +157,7 @@ class CommercialRegisterApiTest extends ApiTestCase
             'register_number' => '16/00-0000001 A 09',
             'tax_number' => '000116000000001',
             'activity_type' => 'تجارة',
-            'expiry_date' => now()->addYear(),
+            'start_date' => now()->subYear(),
             'register_document_path' => 'commercial-registers/'.$user->id.'/register.pdf',
             'tax_card_document_path' => 'commercial-registers/'.$user->id.'/tax.jpg',
             'status' => CommercialRegisterStatus::PENDING,

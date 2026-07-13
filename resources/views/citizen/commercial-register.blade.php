@@ -32,9 +32,6 @@
     <div>
         <strong>{{ __('commercial-register.banner_approved_title') }}</strong>
         <div style="margin-top:2px">{{ __('commercial-register.banner_approved_text') }}</div>
-        @if($register->isExpired())
-            <div style="margin-top:4px" class="text-danger">{{ __('commercial-register.banner_expired_text') }}</div>
-        @endif
     </div>
 </div>
 @elseif($isRejected)
@@ -95,8 +92,8 @@
             </div>
         </div>
         <div class="field" style="max-width:260px">
-            <label>{{ __('commercial-register.f_expiry_date') }} <span class="req">*</span></label>
-            <input class="input" type="date" name="expiry_date" value="{{ old('expiry_date', $register?->expiry_date?->format('Y-m-d')) }}" dir="ltr" {{ $ro }} required>
+            <label>{{ __('commercial-register.f_start_date') }} <span class="req">*</span></label>
+            <input class="input" type="date" name="start_date" value="{{ old('start_date', $register?->start_date?->format('Y-m-d')) }}" dir="ltr" {{ $ro }} required>
         </div>
     </x-ui.card>
 

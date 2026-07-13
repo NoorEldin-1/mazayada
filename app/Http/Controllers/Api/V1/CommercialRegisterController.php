@@ -16,8 +16,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * @group Commercial Register
  *
  * The user's Commercial Register (السجل التجاري) submission. Mirrors the web flow:
- * submit the register data plus two scans, an admin reviews it, and only a valid
- * (APPROVED and un-expired) register unlocks participation in auctions flagged
+ * submit the register data plus two scans, an admin reviews it, and only an
+ * APPROVED register unlocks participation in auctions flagged
  * `requires_commerce_register`. Independent of KYC — a user may hold either, both
  * or neither.
  */
@@ -46,13 +46,12 @@ class CommercialRegisterController extends ApiController
             'register_number' => $register?->register_number,
             'tax_number' => $register?->tax_number,
             'activity_type' => $register?->activity_type,
-            'expiry_date' => $register?->expiry_date?->toDateString(),
+            'start_date' => $register?->start_date?->toDateString(),
             'rejection_reason' => $register?->rejection_reason,
             'submitted_at' => $register?->submitted_at?->toIso8601String(),
             'reviewed_at' => $register?->reviewed_at?->toIso8601String(),
             'can_submit' => $register === null || $register->canSubmit(),
             'is_valid' => $register?->isValid() ?? false,
-            'is_expired' => $register?->isExpired() ?? false,
             'documents' => [
                 'register' => (bool) $register?->register_document_path,
                 'tax-card' => (bool) $register?->tax_card_document_path,
@@ -72,7 +71,7 @@ class CommercialRegisterController extends ApiController
      * @bodyParam register_number string required The commercial register number. Example: 16/00-1234567 B 19
      * @bodyParam tax_number string required The tax identification number. Example: 000116001234567
      * @bodyParam activity_type string required The registered commercial activity. Example: تجارة السيارات
-     * @bodyParam expiry_date string required The register expiry date (must be in the future). Example: 2030-12-31
+     * @bodyParam start_date string required The register issue (start) date (cannot be in the future). Example: 2022-01-15
      * @bodyParam register_document file The commercial register scan (PDF/JPG/PNG). Required on first submission.
      * @bodyParam tax_card_document file The tax card scan (PDF/JPG/PNG). Required on first submission.
      */
@@ -80,7 +79,7 @@ class CommercialRegisterController extends ApiController
     {
         $user = $request->user();
         $data = $request->safe()->only([
-            'company_name', 'register_number', 'tax_number', 'activity_type', 'expiry_date',
+            'company_name', 'register_number', 'tax_number', 'activity_type', 'start_date',
         ]);
 
         // Newly uploaded scans replace the old ones; otherwise the stored path is

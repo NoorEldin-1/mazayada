@@ -12,6 +12,7 @@ enum DocumentType: string
     case AWARD = 'AWARD';                       // وثيقة الترسية (award document)
     case PAYMENT_RECEIPT = 'PAYMENT_RECEIPT';  // إيصال الدفع
     case DELIVERY_REPORT = 'DELIVERY_REPORT';  // محضر التسليم
+    case AUCTION_REPORT = 'AUCTION_REPORT';    // تقرير المزاد (full details snapshot)
 
     public function label(): string
     {

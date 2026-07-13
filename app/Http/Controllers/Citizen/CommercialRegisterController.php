@@ -31,7 +31,7 @@ class CommercialRegisterController extends Controller
     {
         $user = $request->user();
         $data = $request->safe()->only([
-            'company_name', 'register_number', 'tax_number', 'activity_type', 'expiry_date',
+            'company_name', 'register_number', 'tax_number', 'activity_type', 'start_date',
         ]);
 
         // Newly uploaded scans replace the old ones; otherwise the stored path is

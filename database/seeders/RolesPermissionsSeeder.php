@@ -86,6 +86,13 @@ class RolesPermissionsSeeder extends Seeder
         'reports.view',
         'reports.export',
 
+        // Auction reports (تقارير المزادات) — full per-auction detail snapshots.
+        // Admin issues + refers; entity accounts only view reports referred to them.
+        'auction-reports.viewAny',
+        'auction-reports.view',
+        'auction-reports.generate',
+        'auction-reports.refer',
+
         // Appeals
         'appeals.viewAny',
         'appeals.respond', // platform admin: forward / confirm / reject-at-intake
@@ -109,6 +116,7 @@ class RolesPermissionsSeeder extends Seeder
             'appeals.viewAny', 'appeals.respond',
             'system.auditlogs.view',
             'reports.view', 'reports.export',
+            'auction-reports.viewAny', 'auction-reports.view', 'auction-reports.generate', 'auction-reports.refer',
         ],
 
         UserRole::CONTENT_ADMIN->value => [
@@ -117,6 +125,7 @@ class RolesPermissionsSeeder extends Seeder
             'documents.upload', 'documents.download', 'documents.generate',
             'inspections.answer',
             'categories.manage',
+            'auction-reports.viewAny', 'auction-reports.view', 'auction-reports.generate', 'auction-reports.refer',
         ],
 
         UserRole::APPRAISER->value => [
@@ -131,6 +140,7 @@ class RolesPermissionsSeeder extends Seeder
             'inspections.answer', 'deliveries.manage',
             'appeals.viewAny',
             'reports.view', 'reports.export',
+            'auction-reports.viewAny', 'auction-reports.view', 'auction-reports.generate', 'auction-reports.refer',
         ],
 
         UserRole::COMMITTEE_MEMBER->value => [
@@ -138,6 +148,7 @@ class RolesPermissionsSeeder extends Seeder
             'bids.viewAny',
             'documents.download',
             'appeals.viewAny',
+            'auction-reports.viewAny', 'auction-reports.view',
         ],
 
         // Read-only entity account (institutional login + its staff). Strictly
@@ -155,6 +166,9 @@ class RolesPermissionsSeeder extends Seeder
             // Financial reports scoped to the entity's own auctions (view + export
             // are read-only, so they don't breach the read-only account rule).
             'reports.view', 'reports.export',
+            // Auction reports: view only, and only those the platform referred to
+            // this entity (enforced by the controller + AuctionReportPolicy).
+            'auction-reports.viewAny', 'auction-reports.view',
         ],
 
         UserRole::CITIZEN->value => [

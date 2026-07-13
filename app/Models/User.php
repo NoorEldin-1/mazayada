@@ -266,7 +266,7 @@ class User extends Authenticatable implements HasLocalePreference
     /**
      * Holds a valid Commercial Register (السجل التجاري) — required to bid on
      * auctions flagged requires_commerce_register (spec §2.3). "Valid" means an
-     * admin-APPROVED submission that has not passed its expiry date. The legacy
+     * admin-APPROVED submission. The legacy
      * users.commerce_register_no column is no longer consulted (kept only so old
      * data is not lost); the CommercialRegister module is the source of truth.
      */

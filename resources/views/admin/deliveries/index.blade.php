@@ -30,7 +30,7 @@
                 </td>
                 <td>{{ $delivery?->scheduled_at?->format('Y-m-d H:i') ?? '—' }}</td>
                 <td>
-                    @php $isDelivered = $delivery && $delivery->status->value === 'DELIVERED'; @endphp
+                    @php($isDelivered = $delivery && $delivery->status->value === 'DELIVERED')
                     @if($isDelivered && ! $delivery->report_document_id)
                         {{-- Delivered with no report on file → no available action. --}}
                         <span class="text-muted">—</span>

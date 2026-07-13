@@ -141,6 +141,36 @@ class PaymentService
      *
      * @return array{redirect_url: string, ref: string}
      */
+    /**
+     * Read-only quote for the winner's final payment (§4 step 7): the Decree 97-33
+     * fee breakdown, the deposit already paid (credited to the winner), the net
+     * amount still due, and the payment deadline. Shared by initiateFinalPayment
+     * and the API preview endpoint so the figure the client shows always matches
+     * the figure the gateway is charged.
+     *
+     * @return array{fees: \App\Support\FeeBreakdown, confirmed_deposit: int, amount_due: int, due_at: \Illuminate\Support\Carbon, deadline_days: int}
+     */
+    public function finalPaymentQuote(Auction $auction, User $user): array
+    {
+        $fees = $this->fees->forAward($auction, (int) $auction->final_price);
+
+        $confirmedDeposit = (int) $auction->payments()
+            ->where('user_id', $user->id)
+            ->where('payment_type', PaymentType::DEPOSIT)
+            ->where('status', PaymentStatus::CONFIRMED)
+            ->sum('amount');
+
+        $deadlineDays = $auction->finalPaymentDeadlineDays();
+
+        return [
+            'fees' => $fees,
+            'confirmed_deposit' => $confirmedDeposit,
+            'amount_due' => max(0, $fees->buyerTotal - $confirmedDeposit),
+            'due_at' => ($auction->closed_at ?? now())->copy()->addDays($deadlineDays),
+            'deadline_days' => $deadlineDays,
+        ];
+    }
+
     public function initiateFinalPayment(Auction $auction, User $user): array
     {
         if ($auction->winner_user_id !== $user->id) {
@@ -151,16 +181,10 @@ class PaymentService
             throw new RuntimeException(__('payments.final_already_paid'));
         }
 
-        $fees = $this->fees->forAward($auction, (int) $auction->final_price);
-        $confirmedDeposit = (int) $auction->payments()
-            ->where('user_id', $user->id)
-            ->where('payment_type', PaymentType::DEPOSIT)
-            ->where('status', PaymentStatus::CONFIRMED)
-            ->sum('amount');
-
-        $amount = max(0, $fees->buyerTotal - $confirmedDeposit);
-        $deadlineDays = $auction->finalPaymentDeadlineDays();
-        $dueAt = ($auction->closed_at ?? now())->copy()->addDays($deadlineDays);
+        $quote = $this->finalPaymentQuote($auction, $user);
+        $fees = $quote['fees'];
+        $amount = $quote['amount_due'];
+        $dueAt = $quote['due_at'];
 
         $driver = $this->driverName();
 

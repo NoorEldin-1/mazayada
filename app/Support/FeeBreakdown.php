@@ -51,6 +51,29 @@ final readonly class FeeBreakdown
         return $lines;
     }
 
+    /**
+     * Rebuild a breakdown from its persisted array (Document meta['fees']). The
+     * inverse of toArray(); used to re-render an already-issued award PDF from its
+     * frozen figures without recomputing (which could drift from the issued doc).
+     *
+     * @param  array<string, int|null>  $data
+     */
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            hammerPrice: (int) ($data['hammer_price'] ?? 0),
+            appraisalFee: (int) ($data['appraisal_fee'] ?? 0),
+            hammerFee: (int) ($data['hammer_fee'] ?? 0),
+            proportionalSeller: (int) ($data['proportional_seller'] ?? 0),
+            proportionalBuyer: (int) ($data['proportional_buyer'] ?? 0),
+            workSessionFee: (int) ($data['work_session_fee'] ?? 0),
+            tvaBase: (int) ($data['tva_base'] ?? 0),
+            tva: (int) ($data['tva'] ?? 0),
+            buyerTotal: (int) ($data['buyer_total'] ?? 0),
+            customsImmediateDue: isset($data['customs_immediate_due']) ? (int) $data['customs_immediate_due'] : null,
+        );
+    }
+
     /** @return array<string, int|null> */
     public function toArray(): array
     {

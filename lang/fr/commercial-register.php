@@ -14,7 +14,7 @@ return [
     'f_register_number' => 'Numéro du registre de commerce',
     'f_tax_number' => 'Numéro fiscal (carte fiscale)',
     'f_activity_type' => 'Type d’activité commerciale',
-    'f_expiry_date' => 'Date d’expiration du registre de commerce',
+    'f_start_date' => 'Date de début du registre de commerce',
     'f_register_document' => 'Copie du registre de commerce',
     'f_tax_card_document' => 'Copie de la carte fiscale',
 
@@ -30,13 +30,12 @@ return [
     'banner_pending_text' => 'Votre demande a été envoyée le :date et est en cours d’examen par l’administration.',
     'banner_approved_title' => 'Votre registre de commerce est approuvé',
     'banner_approved_text' => 'Votre registre de commerce est approuvé et vous pouvez participer aux enchères qui l’exigent.',
-    'banner_expired_text' => 'Attention : votre registre de commerce a expiré — veuillez le mettre à jour pour continuer à participer.',
     'banner_rejected_title' => 'Registre de commerce rejeté',
     'banner_rejected_reason' => 'Motif du rejet :',
     'banner_rejected_hint' => 'Veuillez corriger les données ou téléverser à nouveau les documents, puis renvoyer la demande.',
 
     // ===== Validation / flash =====
-    'expiry_must_be_future' => 'La date d’expiration du registre de commerce doit être dans le futur.',
+    'start_must_not_be_future' => 'La date de début du registre de commerce ne peut pas être dans le futur.',
     'submitted_success' => 'Votre demande de registre de commerce a été envoyée avec succès et est en cours d’examen.',
 
     // ===== Notification copy (in-app, stored in the user's language) =====

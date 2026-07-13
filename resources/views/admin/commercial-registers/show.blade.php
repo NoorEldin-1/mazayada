@@ -17,7 +17,7 @@
         'commercial-register.f_register_number' => $register->register_number,
         'commercial-register.f_tax_number' => $register->tax_number,
         'commercial-register.f_activity_type' => $register->activity_type,
-        'commercial-register.f_expiry_date' => $register->expiry_date?->format('Y-m-d'),
+        'commercial-register.f_start_date' => $register->start_date?->format('Y-m-d'),
     ];
     $isImage = fn (?string $path) => $path && Str::endsWith(Str::lower($path), ['.jpg', '.jpeg', '.png']);
 @endphp

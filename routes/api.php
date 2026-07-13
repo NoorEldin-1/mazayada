@@ -83,6 +83,9 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     // --- Auctions (public, read-only) -----------------------------------
     Route::prefix('auctions')->name('auctions.')->group(function (): void {
         Route::get('/', [AuctionController::class, 'index'])->name('index');
+        // Static paths BEFORE the {auction} wildcard so they aren't captured by it.
+        Route::get('/search', [AuctionController::class, 'search'])->name('search');
+        Route::get('/filters', [AuctionController::class, 'filters'])->name('filters');
         Route::get('/{auction}', [AuctionController::class, 'show'])->name('show');
         Route::get('/{auction}/bids', [AuctionController::class, 'latestBids'])->name('bids');
         Route::get('/{auction}/price', [AuctionController::class, 'price'])->name('price');
@@ -102,9 +105,18 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         // Poll the result of a checkout after the gateway web view returns.
         Route::get('/payments/{ref}/status', [PaymentController::class, 'status'])->name('payments.status');
 
+        // Read-only fee breakdown for the winner before starting the final payment.
+        Route::get('/auctions/{auction}/final-payment/preview', [PaymentController::class, 'finalPaymentPreview'])
+            ->name('auctions.final-payment.preview');
+
         // Dashboard + participation history.
         Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
         Route::get('/my-auctions', [DashboardController::class, 'myAuctions'])->name('my-auctions');
+
+        // Document library (الوثائق) — the user's searchable, filterable archive.
+        // The download endpoint stays defined above (its own inline middleware).
+        Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
+        Route::get('/documents/summary', [DocumentController::class, 'summary'])->name('documents.summary');
 
         // Profile.
         Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');

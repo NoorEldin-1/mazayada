@@ -12,6 +12,7 @@ use App\Http\Controllers\Citizen\KycController;
 use App\Http\Controllers\Citizen\CommercialRegisterController;
 use App\Http\Controllers\Citizen\AppealController;
 use App\Http\Controllers\Citizen\ReportController;
+use App\Http\Controllers\Citizen\DocumentLibraryController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminAuctionController;
 use App\Http\Controllers\Admin\AdminUserController;
@@ -25,6 +26,7 @@ use App\Http\Controllers\Admin\AdminEntityStaffController;
 use App\Http\Controllers\Admin\AdminInspectionController;
 use App\Http\Controllers\Admin\AdminDeliveryController;
 use App\Http\Controllers\Admin\AdminReportController;
+use App\Http\Controllers\Admin\AuctionReportController;
 use App\Http\Controllers\Api\GeoController;
 
 // Public
@@ -91,6 +93,9 @@ Route::middleware('auth')->prefix('dashboard')->name('citizen.')->group(function
     // Appeals are now filed from the auction page; this stays as the tracking list.
     Route::get('/appeals', [AppealController::class, 'index'])->name('appeals');
     Route::get('/my-auctions', [CitizenController::class, 'myAuctions'])->name('my-auctions');
+    // Personal document library (الوثائق) — searchable archive of the user's
+    // auction paperwork (condition books, award / receipt / delivery documents).
+    Route::get('/documents', [DocumentLibraryController::class, 'index'])->name('documents');
     // Personal financial report — the citizen's own payments, filtered + analysed.
     Route::get('/reports', [ReportController::class, 'index'])->name('reports');
     Route::get('/reports/export/csv', [ReportController::class, 'exportCsv'])->name('reports.export.csv');
@@ -227,6 +232,14 @@ Route::middleware(['auth', 'admin.2fa', 'role:'.implode(',', \App\Enums\UserRole
     Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/export/csv', [AdminReportController::class, 'exportCsv'])->name('reports.export.csv');
     Route::get('/reports/export/pdf', [AdminReportController::class, 'exportPdf'])->name('reports.export.pdf');
+
+    // Auction reports (تقارير المزادات) — full per-auction detail snapshots.
+    // Module list for admin (all) + entity (referred only); issue/view/refer.
+    Route::get('/auction-reports', [AuctionReportController::class, 'index'])->name('auction-reports.index');
+    Route::post('/auctions/{auction}/reports', [AuctionReportController::class, 'generate'])->name('auctions.reports.generate');
+    Route::get('/auctions/{auction}/reports/latest', [AuctionReportController::class, 'latest'])->name('auctions.reports.latest');
+    Route::get('/auction-reports/{report}/view', [AuctionReportController::class, 'view'])->name('auction-reports.view');
+    Route::post('/auction-reports/{report}/refer', [AuctionReportController::class, 'refer'])->name('auction-reports.refer');
 });
 
 // API (public)

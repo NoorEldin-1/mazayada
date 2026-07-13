@@ -14,7 +14,7 @@ return [
     'f_register_number' => 'Commercial register number',
     'f_tax_number' => 'Tax number (tax card)',
     'f_activity_type' => 'Type of commercial activity',
-    'f_expiry_date' => 'Commercial register expiry date',
+    'f_start_date' => 'Commercial register start date',
     'f_register_document' => 'Commercial register scan',
     'f_tax_card_document' => 'Tax card scan',
 
@@ -30,13 +30,12 @@ return [
     'banner_pending_text' => 'Your request was submitted on :date and is under review by the administration.',
     'banner_approved_title' => 'Your commercial register is approved',
     'banner_approved_text' => 'Your commercial register is approved and you can participate in auctions that require one.',
-    'banner_expired_text' => 'Note: your commercial register has expired — please update it to keep participating.',
     'banner_rejected_title' => 'Commercial register rejected',
     'banner_rejected_reason' => 'Reason for rejection:',
     'banner_rejected_hint' => 'Please correct the data or re-upload the documents, then submit the request again.',
 
     // ===== Validation / flash =====
-    'expiry_must_be_future' => 'The commercial register expiry date must be in the future.',
+    'start_must_not_be_future' => 'The commercial register start date cannot be in the future.',
     'submitted_success' => 'Your commercial register request was submitted successfully and is now under review.',
 
     // ===== Notification copy (in-app, stored in the user's language) =====

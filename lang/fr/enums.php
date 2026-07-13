@@ -124,6 +124,7 @@ return [
         'AWARD' => 'Procès-verbal d’adjudication',
         'PAYMENT_RECEIPT' => 'Reçu de paiement',
         'DELIVERY_REPORT' => 'Procès-verbal de livraison',
+        'AUCTION_REPORT' => 'Rapport de la vente',
     ],
 
     'notification_channel' => [

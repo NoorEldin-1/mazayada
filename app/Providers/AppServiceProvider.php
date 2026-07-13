@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Enums\CommercialRegisterStatus;
 use App\Enums\KycStatus;
+use App\Models\AuctionReport;
 use App\Models\CommercialRegister;
 use App\Models\User;
 use App\Services\Payments\PaymentDriver;
@@ -59,6 +60,13 @@ class AppServiceProvider extends ServiceProvider
             // Same treatment for the Commercial Register queue badge.
             $view->with('commercialRegisterPendingCount', $user?->can('commercial-register.review')
                 ? CommercialRegister::where('status', CommercialRegisterStatus::PENDING)->count()
+                : 0);
+
+            // Auction-reports badge: for platform admins, the number of issued
+            // reports still awaiting referral to their organising entity — an
+            // actionable nudge. whereHas('auction') respects EntityScope.
+            $view->with('auctionReportPendingCount', ($user?->entity_id === null && $user?->can('auction-reports.refer'))
+                ? AuctionReport::whereHas('auction')->whereNull('referred_to_entity_at')->count()
                 : 0);
         });
     }

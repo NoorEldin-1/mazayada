@@ -5,6 +5,7 @@ return [
     'account_user' => 'User',
     'nav_dashboard' => 'Dashboard',
     'nav_my_auctions' => 'My Auctions',
+    'nav_documents' => 'My Documents',
     'nav_reports' => 'My Financial Reports',
     'nav_identity' => 'Identity Verification',
     'nav_commercial_register' => 'Commercial Register',

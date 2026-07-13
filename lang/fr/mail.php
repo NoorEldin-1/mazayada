@@ -131,5 +131,9 @@ return [
             'subject' => 'Décision de l’organisme sur un recours — Mazayada',
             'line' => 'L’organisme a rendu sa décision (:decision) sur un recours relatif à l’enchère « :auction », en attente de votre confirmation.',
         ],
+        'auction_report_referred' => [
+            'subject' => 'Rapport de vente transmis — Mazayada',
+            'line' => 'Un rapport concernant l’enchère « :auction » vous a été transmis ; il est disponible dans la rubrique des rapports de ventes.',
+        ],
     ],
 ];

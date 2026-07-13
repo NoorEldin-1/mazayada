@@ -102,6 +102,29 @@ if (! function_exists('setting')) {
     }
 }
 
+if (! function_exists('human_filesize')) {
+    /**
+     * Human-readable file size from a byte count (e.g. 1536 => "1.5 KB").
+     * Used by the document library to show each generated PDF's size. The unit
+     * label is a plain ASCII token (KB/MB) — coherent in both RTL and LTR.
+     */
+    function human_filesize(int|null $bytes, int $precision = 1): string
+    {
+        $bytes = max(0, (int) $bytes);
+
+        if ($bytes < 1024) {
+            return $bytes.' B';
+        }
+
+        $units = ['KB', 'MB', 'GB', 'TB'];
+        $power = min((int) floor(log($bytes, 1024)), count($units));
+        $value = $bytes / (1024 ** $power);
+        $display = rtrim(rtrim(number_format($value, $precision, '.', ''), '0'), '.');
+
+        return $display.' '.$units[$power - 1];
+    }
+}
+
 if (! function_exists('mask_nin')) {
     /**
      * Partially mask a National Identity Number for display on generated
