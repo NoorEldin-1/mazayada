@@ -161,6 +161,9 @@
             @csrf
             <x-ui.btn variant="primary">{{ __('admin.users.unblacklist_action') }}</x-ui.btn>
         </form>
+    @elseif($user->isStaff())
+        {{-- Staff accounts (admins / entity staff) are never blacklistable. --}}
+        <p class="text-sm text-muted">{{ __('admin.users.staff_not_blacklistable') }}</p>
     @else
         <form method="POST" action="{{ route('admin.users.blacklist', $user) }}"
               data-confirm="{{ __('admin.users.confirm_blacklist_prompt') }}" data-confirm-variant="danger" data-confirm-label="{{ __('admin.users.confirm_blacklist') }}">

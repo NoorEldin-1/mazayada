@@ -214,6 +214,7 @@ return [
         'confirm_unblacklist_prompt' => 'Êtes-vous sûr de vouloir retirer cet utilisateur de la liste noire ?',
         'blacklist_reason_label' => 'Motif du blocage',
         'blacklist_reason_placeholder' => 'Motif du blocage...',
+        'staff_not_blacklistable' => 'Les comptes administrateurs ou personnels d’entité ne peuvent pas être mis sur liste noire.',
         'confirm_blacklist' => 'Confirmer le blocage',
         'confirm_blacklist_prompt' => 'Êtes-vous sûr de vouloir mettre cet utilisateur sur liste noire ?',
         'no_users' => 'Aucun utilisateur',

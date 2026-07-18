@@ -214,6 +214,7 @@ return [
         'confirm_unblacklist_prompt' => 'هل أنت متأكد من رفع الحظر عن هذا المستخدم؟',
         'blacklist_reason_label' => 'سبب الحظر',
         'blacklist_reason_placeholder' => 'سبب الحظر...',
+        'staff_not_blacklistable' => 'لا يمكن إدراج حسابات المشرفين أو موظفي الجهات في القائمة السوداء.',
         'confirm_blacklist' => 'تأكيد الحظر',
         'confirm_blacklist_prompt' => 'هل أنت متأكد من إدراج هذا المستخدم في القائمة السوداء؟',
         'no_users' => 'لا يوجد مستخدمون',

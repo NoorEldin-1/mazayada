@@ -214,6 +214,7 @@ return [
         'confirm_unblacklist_prompt' => 'Are you sure you want to remove this user from the blacklist?',
         'blacklist_reason_label' => 'Reason for blacklisting',
         'blacklist_reason_placeholder' => 'Reason for blacklisting...',
+        'staff_not_blacklistable' => 'Administrator or entity-staff accounts cannot be blacklisted.',
         'confirm_blacklist' => 'Confirm blacklist',
         'confirm_blacklist_prompt' => 'Are you sure you want to blacklist this user?',
         'no_users' => 'No users',
