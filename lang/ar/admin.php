@@ -313,6 +313,7 @@ return [
         'cr_rejected' => 'تم رفض السجل التجاري.',
         'user_blacklisted' => 'تم إدراج المستخدم في القائمة السوداء.',
         'user_unblacklisted' => 'تم رفع الحظر عن المستخدم.',
+        'cannot_blacklist_staff' => 'لا يمكن إدراج حسابات المشرفين أو موظفي الجهات في القائمة السوداء.',
         'auction_extended' => 'تم تمديد المزاد.',
         'auction_extend_only_active' => 'لا يمكن التمديد إلا لمزاد نشط.',
         'auction_cancelled' => 'تم إلغاء المزاد.',

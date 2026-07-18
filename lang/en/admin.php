@@ -313,6 +313,7 @@ return [
         'cr_rejected' => 'Commercial register rejected.',
         'user_blacklisted' => 'The user has been blacklisted.',
         'user_unblacklisted' => 'The user has been removed from the blacklist.',
+        'cannot_blacklist_staff' => 'Administrator or entity-staff accounts cannot be blacklisted.',
         'auction_extended' => 'Auction extended.',
         'auction_extend_only_active' => 'Only an active auction can be extended.',
         'auction_cancelled' => 'Auction cancelled.',

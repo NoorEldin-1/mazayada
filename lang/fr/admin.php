@@ -313,6 +313,7 @@ return [
         'cr_rejected' => 'Registre de commerce rejeté.',
         'user_blacklisted' => 'L’utilisateur a été mis sur liste noire.',
         'user_unblacklisted' => 'L’utilisateur a été retiré de la liste noire.',
+        'cannot_blacklist_staff' => 'Les comptes administrateurs ou personnels d’entité ne peuvent pas être mis sur liste noire.',
         'auction_extended' => 'Enchère prolongée.',
         'auction_extend_only_active' => 'Seule une enchère active peut être prolongée.',
         'auction_cancelled' => 'Enchère annulée.',

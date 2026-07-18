@@ -43,6 +43,13 @@ class AdminUserController extends Controller
     {
         $this->authorize('users.blacklist');
 
+        // Staff accounts (admins / entity staff) are never blacklistable — doing
+        // so could lock the platform's own operators out. Blacklisting is a
+        // citizen-facing moderation tool only (spec §8.4).
+        if ($user->isStaff()) {
+            return back()->with('error', __('admin.flash.cannot_blacklist_staff'));
+        }
+
         $request->validate([
             'reason' => ['required', 'string', 'max:500'],
         ]);

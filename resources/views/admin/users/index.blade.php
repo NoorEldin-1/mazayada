@@ -5,6 +5,13 @@
 
 @section('content')
 
+@if(session('success'))
+    <div class="mb-5 rounded-xl bg-ok/10 text-ok px-4 py-3 text-sm">{{ session('success') }}</div>
+@endif
+@if(session('error'))
+    <div class="mb-5 rounded-xl bg-danger/10 text-danger px-4 py-3 text-sm">{{ session('error') }}</div>
+@endif
+
 <div class="flex justify-end mb-5">
     <x-ui.btn variant="danger-ghost" size="sm" :href="route('admin.users.blacklisted')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
@@ -46,7 +53,9 @@
                 <td>
                     <x-ui.action-menu>
                         <x-ui.action-menu.item :href="route('admin.users.show', $user)">{{ __('common.view') }}</x-ui.action-menu.item>
-                        @if(!$user->is_blacklisted)
+                        @if($user->isStaff())
+                            {{-- Staff accounts (admins / entity staff) are never blacklistable. --}}
+                        @elseif(!$user->is_blacklisted)
                             <x-ui.action-menu.item data-modal-target="#blacklist-{{ $user->id }}" variant="danger">{{ __('admin.users.blacklist_action') }}</x-ui.action-menu.item>
                         @else
                             <x-ui.action-menu.item :action="route('admin.users.unblacklist', $user)"
@@ -57,7 +66,7 @@
                         <div class="text-muted" style="font-size:0.8rem;margin-top:0.35rem">{{ $user->blacklist_reason }}</div>
                     @endif
 
-                    @if(!$user->is_blacklisted)
+                    @if(!$user->is_blacklisted && !$user->isStaff())
                         <x-ui.modal id="blacklist-{{ $user->id }}" :title="__('admin.users.blacklist_action')">
                             <form method="POST" action="{{ route('admin.users.blacklist', $user) }}">
                                 @csrf
