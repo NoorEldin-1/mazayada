@@ -1,29 +1,39 @@
+# WebSocket proxy → Laravel Reverb (live auctions, spec §6): sends
+# wss://<domain>/app/{key} to the internal Reverb instead of index.php.
+#
+# THIS BLOCK IS TRANSCRIBED FROM A CONFIGURATION VERIFIED ON THE LIVE SERVER
+# (404 before, 101 after). Every detail below is load-bearing — three of them
+# were each, on their own, enough to silently break the handshake and leave the
+# auction page with no live updates at all:
+#
+#  • http://, not ws:// — LiteSpeed Enterprise 6.2 (this host runs it in
+#    Apache-config mode, so its WebAdmin lists zero virtual hosts and the
+#    Web Socket Proxy screen there cannot be used) 404s a ws:// proxy target,
+#    and performs the upgrade itself when the target is http://.
+#  • Port 8081, not Reverb's default 8080 — another tenant on this shared
+#    server already listens on 8080 with its own app registry, which is what
+#    answered "No matching application for ID [170884]". REVERB_PORT and
+#    REVERB_SERVER_PORT in .env must stay 8081 to match.
+#  • ONE condition, on Upgrade only. Adding the usual companion
+#    `RewriteCond %{HTTP:Connection} upgrade` makes the rule stop matching —
+#    LiteSpeed does not expose that hop-by-hop header to mod_rewrite.
+#
+# It lives at the top of the file, ahead of the front-controller block, because
+# it has to win before Laravel's `RewriteRule ^ index.php` claims the URL.
+# Keep it COMMITTED: deploys run `git reset --hard`, which erases any fix that
+# only exists on the server.
+<IfModule LiteSpeed>
+RewriteEngine On
+RewriteCond %{HTTP:Upgrade} =websocket [NC]
+RewriteRule ^app/(.*)$ http://127.0.0.1:8081/app/$1 [P,L]
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
     </IfModule>
 
     RewriteEngine On
-
-    # WebSocket proxy → Laravel Reverb (live auctions, spec §6).
-    # Proxies wss://<domain>/app/{key} to the internal Reverb on 127.0.0.1:8081.
-    # MUST precede the front-controller rule below so /app/{key} reaches Reverb,
-    # not index.php. Kept in the COMMITTED .htaccess (CyberPanel's "Rewrite Rules"
-    # editor writes to this same file) so `git reset --hard` on deploy can never
-    # wipe it again.
-    #
-    # Two production facts this rule is pinned to — verified on the live server,
-    # do not "tidy" either of them away:
-    #  • The target scheme is http://, NOT ws://. LiteSpeed Enterprise (this host
-    #    runs 6.2 in Apache-config mode) answers 404 for a ws:// proxy target and
-    #    upgrades the connection itself when proxying over http://.
-    #  • Port 8081, not the Reverb default 8080: another tenant on this shared
-    #    server already owns 8080, and publishing there returned "No matching
-    #    application for ID". Keep REVERB_PORT / REVERB_SERVER_PORT in .env at
-    #    8081 to match.
-    RewriteCond %{HTTP:Upgrade} websocket [NC]
-    RewriteCond %{HTTP:Connection} upgrade [NC]
-    RewriteRule ^/?app/(.*)$ "http://127.0.0.1:8081/app/$1" [P,L]
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
