@@ -162,7 +162,7 @@ deploy "$@"
 #       [Service]
 #       User=mazayada.findosystem.com
 #       WorkingDirectory=/home/mazayada.findosystem.com/laravel
-#       ExecStart=/usr/bin/php artisan reverb:start --host=127.0.0.1 --port=8080
+#       ExecStart=/usr/bin/php artisan reverb:start --host=127.0.0.1 --port=8081
 #       Restart=always
 #       RestartSec=3
 #       [Install]
@@ -173,16 +173,25 @@ deploy "$@"
 #    Allow the deploy step to restart it without a password (visudo):
 #       mazayada.findosystem.com ALL=(root) NOPASSWD: /usr/bin/systemctl restart mazayada-reverb
 #
-#    Reverb listens on 127.0.0.1:8080 (internal only). The browser reaches it
-#    over wss://mazayada.findosystem.com/app/... via the OpenLiteSpeed Web
-#    Socket Proxy (CyberPanel → Websites → vHost Conf): proxy URI /app to
-#    127.0.0.1:8080. Set the production .env to REVERB_HOST=mazayada.findosystem.com,
-#    REVERB_SCHEME=https, REVERB_PORT=443 (the committed JS reads these from the
-#    server, not from build-time env). No new firewall port — all over 443.
+#    PORT 8081, NOT the Reverb default 8080 — another tenant on this shared
+#    server already listens on 8080 with its own Reverb app registry, so
+#    publishing there fails with "No matching application for ID [...]".
+#    Production .env: REVERB_HOST=127.0.0.1, REVERB_PORT=8081,
+#    REVERB_SERVER_PORT=8081 (internal publish) + REVERB_CLIENT_HOST=<domain>,
+#    REVERB_CLIENT_PORT=443, REVERB_CLIENT_SCHEME=https (browser/app side; the
+#    committed JS reads these from the server, not from build-time env).
 #
-#    Fallback without systemd (foreground daemon as the site user):
+#    The browser reaches Reverb over wss://<domain>/app/... through the rewrite
+#    proxy in public/.htaccess — NOT through a CyberPanel/vHost setting. This
+#    host runs LiteSpeed ENTERPRISE 6.2 in Apache-config mode, so WebAdmin lists
+#    zero virtual hosts and its "Web Socket Proxy" screen cannot be used at all.
+#    See the comment on that rule before changing it. No new firewall port —
+#    everything rides 443.
+#
+#    Fallback without systemd (no root needed; survives logout, NOT a reboot —
+#    pair it with an @reboot crontab line):
 #       pkill -f 'reverb:start' || true
-#       nohup php artisan reverb:start --host=127.0.0.1 --port=8080 > storage/logs/reverb.log 2>&1 &
+#       nohup php artisan reverb:start --host=127.0.0.1 --port=8081 > storage/logs/reverb.log 2>&1 &
 #
 #  • SCHEDULER (cron) — the daily KYC auto-suspension
 #    (`kyc:suspend-stale`), the per-minute auction commands

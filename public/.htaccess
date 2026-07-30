@@ -6,14 +6,24 @@
     RewriteEngine On
 
     # WebSocket proxy → Laravel Reverb (live auctions, spec §6).
-    # Proxies wss://<domain>/app/{key} to the internal Reverb on 127.0.0.1:8080.
+    # Proxies wss://<domain>/app/{key} to the internal Reverb on 127.0.0.1:8081.
     # MUST precede the front-controller rule below so /app/{key} reaches Reverb,
     # not index.php. Kept in the COMMITTED .htaccess (CyberPanel's "Rewrite Rules"
     # editor writes to this same file) so `git reset --hard` on deploy can never
     # wipe it again.
+    #
+    # Two production facts this rule is pinned to — verified on the live server,
+    # do not "tidy" either of them away:
+    #  • The target scheme is http://, NOT ws://. LiteSpeed Enterprise (this host
+    #    runs 6.2 in Apache-config mode) answers 404 for a ws:// proxy target and
+    #    upgrades the connection itself when proxying over http://.
+    #  • Port 8081, not the Reverb default 8080: another tenant on this shared
+    #    server already owns 8080, and publishing there returned "No matching
+    #    application for ID". Keep REVERB_PORT / REVERB_SERVER_PORT in .env at
+    #    8081 to match.
     RewriteCond %{HTTP:Upgrade} websocket [NC]
     RewriteCond %{HTTP:Connection} upgrade [NC]
-    RewriteRule ^/?app/(.*)$ "ws://127.0.0.1:8080/app/$1" [P,L]
+    RewriteRule ^/?app/(.*)$ "http://127.0.0.1:8081/app/$1" [P,L]
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
