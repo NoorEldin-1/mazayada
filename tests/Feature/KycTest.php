@@ -9,6 +9,8 @@ use App\Models\Commune;
 use App\Models\User;
 use App\Models\UserBiometric;
 use App\Models\Wilaya;
+use App\Notifications\Channels\InAppChannel;
+use App\Notifications\Channels\PushChannel;
 use App\Notifications\KycStatusNotification;
 use Database\Seeders\RolesPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -221,8 +223,32 @@ class KycTest extends TestCase
         $this->assertSame($admin->id, $fresh->biometrics->kyc_verified_by);
         $this->assertNotNull($fresh->biometrics->kyc_verified_at);
 
-        Notification::assertSentTo($user, KycStatusNotification::class, fn ($n) => $n->type === 'approved');
-        $this->assertDatabaseHas('notifications', ['user_id' => $user->id]);
+        // The in-app row + push are channels ON the notification (not a separate
+        // hand-written insert), so with Notification::fake() we assert the
+        // notification's own contract rather than a DB row.
+        Notification::assertSentTo($user, KycStatusNotification::class, function ($n) use ($user) {
+            $this->assertContains(InAppChannel::class, $n->via($user));
+            $this->assertContains(PushChannel::class, $n->via($user));
+            $this->assertSame('kyc_approved', $n->toInApp($user)['event']);
+
+            return $n->type === 'approved';
+        });
+    }
+
+    public function test_approval_persists_an_in_app_notification_row(): void
+    {
+        // Same flow WITHOUT faking notifications, so InAppChannel actually runs
+        // and the citizen ends up with a readable row (GET /api/v1/notifications).
+        $admin = $this->createAdmin();
+        $user = $this->createCitizen(['kyc_status' => KycStatus::UNDER_REVIEW, 'kyc_submitted_at' => now()], seed: 33);
+        $this->giveAllDocuments($user);
+
+        $this->actingAs($admin)->post(route('admin.kyc.approve', $user));
+
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $user->id,
+            'event' => 'kyc_approved',
+        ]);
     }
 
     public function test_admin_reject_stores_reason_and_allows_resubmission(): void

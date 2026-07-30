@@ -224,7 +224,7 @@ class AuthController extends ApiController
      */
     public function me(Request $request): JsonResponse
     {
-        return $this->ok(['user' => new UserResource($request->user()->load('entity', 'commercialRegister'))]);
+        return $this->ok(['user' => new UserResource($request->user()->load('entity', 'commercialRegister', 'commune'))]);
     }
 
     /**
@@ -340,7 +340,8 @@ class AuthController extends ApiController
     private function authPayload(User $user, ?string $deviceName): array
     {
         return [
-            'user' => new UserResource($user),
+            // `commune` backs the derived wilaya_id in the KYC prefill fields.
+            'user' => new UserResource($user->loadMissing('commune')),
             'tokens' => $this->tokens->issuePair($user, $deviceName),
         ];
     }

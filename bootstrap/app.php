@@ -8,6 +8,7 @@ use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\ApiKycVerified;
 use App\Http\Middleware\KycVerified;
 use App\Http\Middleware\NoCacheHeaders;
+use App\Http\Middleware\ResolveOptionalToken;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
@@ -58,6 +59,7 @@ return Application::configure(basePath: dirname(__DIR__))
             // Mobile API aliases.
             'api.kyc'        => ApiKycVerified::class,
             'active.account' => EnsureActiveAccount::class,
+            'token.optional' => ResolveOptionalToken::class,
             'abilities'      => CheckAbilities::class,
             'ability'        => CheckForAnyAbility::class,
         ]);

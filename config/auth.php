@@ -42,6 +42,18 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // NOTE: the `sanctum` guard is deliberately NOT declared here. Sanctum
+        // registers it itself (SanctumServiceProvider) with `provider => null`,
+        // and `auth('sanctum')` / `auth:sanctum` work fine that way.
+        //
+        // Giving it `provider => users` looks harmless but breaks role checks:
+        // spatie/laravel-permission resolves a model's guard from the auth guards
+        // whose provider maps to that model, and Laravel's Authenticate middleware
+        // calls shouldUse('sanctum') on every token request — so Spatie would start
+        // looking up roles under guard `sanctum`, where none of them are assigned
+        // ("There is no role named SUPER_ADMIN for guard sanctum"). Leaving the
+        // provider unset keeps `web` the only guard Spatie considers.
     ],
 
     /*

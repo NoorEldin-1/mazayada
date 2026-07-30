@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\PaymentStatus;
 use App\Enums\PaymentType;
+use App\Exceptions\PaymentException;
 use App\Models\Auction;
 use App\Models\AuctionParticipant;
 use App\Models\AuditLog;
@@ -13,7 +14,6 @@ use App\Services\Payments\PaymentDriver;
 use App\Services\Payments\PaymentGatewayInterface;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use RuntimeException;
 
 /**
  * Orchestrates the money flows of the auction lifecycle (spec §4 steps 3, 7, 8):
@@ -34,45 +34,48 @@ class PaymentService
      * Begin registration checkout. Registration now charges ONLY the
      * participation deposit (رسوم المشاركة = a % of the opening price). The
      * condition book is purchased separately BEFOREHAND (a prerequisite) and the
-     * legacy entry fee was removed. Throws on any eligibility violation.
+     * legacy entry fee was removed. Throws PaymentException (message + machine
+     * `errorCode`) on any eligibility violation.
      *
+     * @param  string  $channel  'web' (session return page) or 'api' (mobile web view)
      * @return array{redirect_url: string, ref: string}
      */
-    public function initiateRegistration(Auction $auction, User $user): array
+    public function initiateRegistration(Auction $auction, User $user, string $channel = 'web'): array
     {
         if (! $user->canBid()) {
-            throw new RuntimeException(__('payments.not_eligible'));
+            throw PaymentException::notEligible();
         }
 
         // The condition book must be PURCHASED before registering — it replaces
         // the old free acknowledgement. A free book (no price) satisfies this.
         if (! $auction->hasBookAccess($user)) {
-            throw new RuntimeException(__('payments.must_purchase_book'));
+            throw PaymentException::mustPurchaseBook();
         }
 
         // §2.3 — professional customs goods require a valid Commerce Register.
         if ($auction->requires_commerce_register && ! $user->hasCommerceRegister()) {
-            throw new RuntimeException(__('payments.commerce_register_required'));
+            throw PaymentException::commerceRegisterRequired();
         }
 
         $participant = $auction->participants()->where('user_id', $user->id)->first();
         if ($participant && $participant->isFullyRegistered()) {
-            throw new RuntimeException(__('payments.already_registered'));
+            throw PaymentException::alreadyRegistered();
         }
 
         if ((int) $auction->deposit_amount <= 0) {
-            throw new RuntimeException(__('payments.nothing_due'));
+            throw PaymentException::nothingDue();
         }
 
         $driver = $this->driverName();
 
-        return DB::transaction(function () use ($auction, $user, $driver) {
+        return DB::transaction(function () use ($auction, $user, $driver, $channel) {
             $payment = $this->pending($auction, $user, PaymentType::DEPOSIT, (int) $auction->deposit_amount, $driver, [
                 'purpose' => 'registration',
             ]);
 
             $result = $this->gateway->charge($payment, [
                 'description' => __('payments.registration_description', ['auction' => $auction->localizedTitle()]),
+                ...$this->returnUrls($payment, $channel),
             ]);
 
             $payment->update(['gateway_ref' => $result->ref, 'gateway_payload' => $result->raw]);
@@ -91,37 +94,39 @@ class PaymentService
      * KYC-verified user — buying the book does NOT require participating, but it
      * IS a prerequisite for registering. Returns a gateway redirect URL.
      *
+     * @param  string  $channel  'web' (session return page) or 'api' (mobile web view)
      * @return array{redirect_url: string, ref: string}
      */
-    public function initiateBookPurchase(Auction $auction, User $user): array
+    public function initiateBookPurchase(Auction $auction, User $user, string $channel = 'web'): array
     {
         if (! $user->canBid()) {
-            throw new RuntimeException(__('payments.not_eligible'));
+            throw PaymentException::notEligible();
         }
 
         if ((int) $auction->book_price <= 0) {
-            throw new RuntimeException(__('payments.book_free'));
+            throw PaymentException::bookFree();
         }
 
         // §2.3 — a Commercial Register-gated auction blocks paying ANY fee (the
         // book is a prerequisite fee), not just the registration deposit.
         if ($auction->requires_commerce_register && ! $user->hasCommerceRegister()) {
-            throw new RuntimeException(__('payments.commerce_register_required'));
+            throw PaymentException::commerceRegisterRequired();
         }
 
         if ($auction->hasBookAccess($user)) {
-            throw new RuntimeException(__('payments.already_bought_book'));
+            throw PaymentException::alreadyBoughtBook();
         }
 
         $driver = $this->driverName();
 
-        return DB::transaction(function () use ($auction, $user, $driver) {
+        return DB::transaction(function () use ($auction, $user, $driver, $channel) {
             $payment = $this->pending($auction, $user, PaymentType::BOOK_PURCHASE, (int) $auction->book_price, $driver, [
                 'purpose' => 'book_purchase',
             ]);
 
             $result = $this->gateway->charge($payment, [
                 'description' => __('payments.book_purchase_description', ['auction' => $auction->localizedTitle()]),
+                ...$this->returnUrls($payment, $channel),
             ]);
 
             $payment->update(['gateway_ref' => $result->ref, 'gateway_payload' => $result->raw]);
@@ -171,14 +176,14 @@ class PaymentService
         ];
     }
 
-    public function initiateFinalPayment(Auction $auction, User $user): array
+    public function initiateFinalPayment(Auction $auction, User $user, string $channel = 'web'): array
     {
         if ($auction->winner_user_id !== $user->id) {
-            throw new RuntimeException(__('payments.not_winner'));
+            throw PaymentException::notWinner();
         }
 
         if ($this->confirmedFinalPayment($auction, $user)) {
-            throw new RuntimeException(__('payments.final_already_paid'));
+            throw PaymentException::finalAlreadyPaid();
         }
 
         $quote = $this->finalPaymentQuote($auction, $user);
@@ -188,7 +193,7 @@ class PaymentService
 
         $driver = $this->driverName();
 
-        return DB::transaction(function () use ($auction, $user, $amount, $dueAt, $fees, $driver) {
+        return DB::transaction(function () use ($auction, $user, $amount, $dueAt, $fees, $driver, $channel) {
             $payment = $this->pending($auction, $user, PaymentType::FINAL_PAYMENT, $amount, $driver, [
                 'purpose' => 'final_payment',
                 'customs_immediate_due' => $fees->customsImmediateDue,
@@ -197,6 +202,7 @@ class PaymentService
 
             $result = $this->gateway->charge($payment, [
                 'description' => __('payments.final_description', ['auction' => $auction->localizedTitle()]),
+                ...$this->returnUrls($payment, $channel),
             ]);
 
             $payment->update(['gateway_ref' => $result->ref, 'gateway_payload' => $result->raw]);
@@ -391,5 +397,30 @@ class PaymentService
     private function driverName(): string
     {
         return PaymentDriver::current();
+    }
+
+    /**
+     * Where the gateway sends the payer back once the hosted checkout finishes.
+     *
+     * The WEB return page lives behind the `auth` middleware (a session), which a
+     * mobile web view does not have — it would land on the login redirect and the
+     * app could never detect completion. The 'api' channel therefore returns the
+     * public, session-less `/api/v1/payments/callback`, which the Flutter client
+     * intercepts by URL prefix (and which is itself idempotent and re-verifies
+     * against the gateway, so the browser-supplied query string is never trusted).
+     *
+     * `ref` carries OUR payment id: the gateway does not echo its own reference on
+     * the redirect, and handleCallback() resolves either form.
+     *
+     * @return array{success_url: string, failure_url: string}
+     */
+    private function returnUrls(Payment $payment, string $channel): array
+    {
+        $route = $channel === 'api' ? 'api.v1.payments.callback' : 'payments.callback';
+
+        return [
+            'success_url' => route($route, ['ref' => $payment->id, 'decision' => 'success']),
+            'failure_url' => route($route, ['ref' => $payment->id, 'decision' => 'fail']),
+        ];
     }
 }

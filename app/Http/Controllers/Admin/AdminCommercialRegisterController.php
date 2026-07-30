@@ -6,7 +6,6 @@ use App\Enums\CommercialRegisterStatus;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\CommercialRegister;
-use App\Models\UserNotification;
 use App\Notifications\CommercialRegisterStatusNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -107,8 +106,9 @@ class AdminCommercialRegisterController extends Controller
     }
 
     /**
-     * Email + in-app notify the user of a decision. The in-app row is stored in
-     * the user's preferred language; mail failures are logged, never fatal.
+     * Notify the user of a decision over every channel (email, in-app row, push).
+     * CommercialRegisterStatusNotification owns the copy and renders it in the
+     * user's preferred language; delivery failures are logged, never fatal.
      */
     private function notifyDecision(CommercialRegister $register, string $type, ?string $reason = null): void
     {
@@ -117,18 +117,10 @@ class AdminCommercialRegisterController extends Controller
             return;
         }
 
-        $locale = $user->preferredLocale();
-        UserNotification::record(
-            $user->id,
-            __("commercial-register.notif_{$type}_title", [], $locale),
-            __("commercial-register.notif_{$type}_body", ['reason' => $reason ?? ''], $locale),
-            route('citizen.commercial-register'),
-        );
-
         try {
             $user->notify(new CommercialRegisterStatusNotification($type, $reason));
         } catch (\Throwable $e) {
-            Log::error('Commercial register decision email failed', [
+            Log::error('Commercial register decision notification failed', [
                 'user_id' => $user->id, 'type' => $type, 'error' => $e->getMessage(),
             ]);
         }

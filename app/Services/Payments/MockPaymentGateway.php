@@ -19,8 +19,10 @@ class MockPaymentGateway implements PaymentGatewayInterface
     {
         $ref = 'MOCK-'.Str::upper(Str::random(12));
 
-        // Redirect the user to our own callback, simulating the PSP return.
-        $redirect = route('payments.callback', [
+        // Redirect the user to our own callback, simulating the PSP return. The
+        // caller's success_url (web page vs. session-less API callback) wins when
+        // present; it carries the payment id, which handleCallback also resolves.
+        $redirect = $context['success_url'] ?? route('payments.callback', [
             'ref' => $ref,
             'decision' => 'success',
         ]);

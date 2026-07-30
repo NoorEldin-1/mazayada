@@ -8,6 +8,8 @@ use App\Enums\KycStatus;
 use App\Enums\UserRole;
 use App\Models\CommercialRegister;
 use App\Models\User;
+use App\Notifications\Channels\InAppChannel;
+use App\Notifications\Channels\PushChannel;
 use App\Notifications\CommercialRegisterStatusNotification;
 use App\Services\PaymentService;
 use Database\Seeders\RolesPermissionsSeeder;
@@ -115,8 +117,32 @@ class CommercialRegisterTest extends TestCase
         $this->assertNotNull($fresh->reviewed_at);
         $this->assertSame($admin->id, $fresh->reviewed_by);
 
-        Notification::assertSentTo($user, CommercialRegisterStatusNotification::class, fn ($n) => $n->type === 'approved');
-        $this->assertDatabaseHas('notifications', ['user_id' => $user->id]);
+        // The in-app row + push are channels ON the notification (not a separate
+        // hand-written insert), so with Notification::fake() we assert the
+        // notification's own contract rather than a DB row.
+        Notification::assertSentTo($user, CommercialRegisterStatusNotification::class, function ($n) use ($user) {
+            $this->assertContains(InAppChannel::class, $n->via($user));
+            $this->assertContains(PushChannel::class, $n->via($user));
+            $this->assertSame('commercial_register_approved', $n->toInApp($user)['event']);
+
+            return $n->type === 'approved';
+        });
+    }
+
+    public function test_approval_persists_an_in_app_notification_row(): void
+    {
+        // Same flow WITHOUT faking notifications, so InAppChannel actually runs
+        // and the citizen ends up with a readable row (GET /api/v1/notifications).
+        $admin = $this->makeAdmin();
+        $user = $this->makeCitizen();
+        $register = $this->makeRegister($user, ['status' => CommercialRegisterStatus::PENDING]);
+
+        $this->actingAs($admin)->post(route('admin.commercial-registers.approve', $register));
+
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $user->id,
+            'event' => 'commercial_register_approved',
+        ]);
     }
 
     public function test_admin_reject_stores_reason_and_allows_resubmission(): void

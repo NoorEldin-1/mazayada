@@ -32,6 +32,9 @@ tags:
     name: Dashboard
     description: "\nThe citizen's home summary and their participation history."
   -
+    name: Devices
+    description: "\nPush-notification device registry. The app registers its provider token here so\nthe platform can reach it, and unregisters on sign-out."
+  -
     name: Documents
     description: "\nThe signed-in user's personal document library — every generated PDF tied to an\nauction they engaged with (condition book / award / receipt / delivery report),\nplus the policy-gated binary download. Streams from the private disk; access is\ngated by DocumentPolicy@download."
   -
@@ -288,7 +291,7 @@ paths:
     post:
       summary: 'Buy the condition book'
       operationId: buyTheConditionBook
-      description: "Creates the pending book-purchase payment and returns the gateway redirect\nURL. Buying the book unlocks its download and is a prerequisite for\nregistering. Open `redirect_url` in a web view, then re-fetch the auction."
+      description: "Creates the pending book-purchase payment and returns the gateway redirect\nURL. Buying the book unlocks its download and is a prerequisite for\nregistering. Open `redirect_url` in a web view, then re-fetch the auction.\n\nA 422 carries a stable `code` — branch on it rather than on the (translated)\nmessage: `book_free` and `already_bought_book` both mean \"go straight to\nregistration\"; `commerce_register_required` and `not_eligible` mean \"send the\nuser to the Commercial Register / KYC screen first\"."
       parameters:
         -
           in: header
@@ -297,7 +300,23 @@ paths:
           example: ar
           schema:
             type: string
-      responses: {  }
+      responses:
+        422:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'لقد اشتريت كراسة الشروط بالفعل.'
+                  code: already_bought_book
+                properties:
+                  message:
+                    type: string
+                    example: 'لقد اشتريت كراسة الشروط بالفعل.'
+                  code:
+                    type: string
+                    example: already_bought_book
       tags:
         - 'Auction registration'
       security: []
@@ -314,7 +333,7 @@ paths:
     post:
       summary: 'Start registration'
       operationId: startRegistration
-      description: "Creates the pending deposit payment and returns the gateway redirect URL.\nThe condition book must already be purchased. Open `redirect_url` in a web\nview; once the gateway returns, poll `GET payments/{ref}/status` (or\nre-fetch the auction) to confirm."
+      description: "Creates the pending deposit payment and returns the gateway redirect URL.\nThe condition book must already be purchased. Open `redirect_url` in a web\nview; once the gateway returns, poll `GET payments/{ref}/status` (or\nre-fetch the auction) to confirm.\n\nA 422 carries a stable `code`: `must_purchase_book` (go back a step),\n`already_registered` (proceed to bidding), `commerce_register_required`,\n`not_eligible`, `nothing_due`."
       parameters:
         -
           in: header
@@ -323,7 +342,23 @@ paths:
           example: ar
           schema:
             type: string
-      responses: {  }
+      responses:
+        422:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يجب شراء كراسة الشروط أولاً قبل التسجيل في المزايدة.'
+                  code: must_purchase_book
+                properties:
+                  message:
+                    type: string
+                    example: 'يجب شراء كراسة الشروط أولاً قبل التسجيل في المزايدة.'
+                  code:
+                    type: string
+                    example: must_purchase_book
       tags:
         - 'Auction registration'
       security: []
@@ -2343,8 +2378,8 @@ paths:
                   example: carolyne.luettgen@example.org
                 birth_date:
                   type: string
-                  description: 'يجب أن يكون value تاريخاً صحيحاً. يجب أن يكون value تاريخاً قبل <code>2008-07-13</code>.'
-                  example: '2006-04-05'
+                  description: 'يجب أن يكون value تاريخاً صحيحاً. يجب أن يكون value تاريخاً قبل <code>2008-07-30</code>.'
+                  example: '2006-04-22'
                 password:
                   type: string
                   description: ''
@@ -2892,17 +2927,17 @@ paths:
     get:
       summary: 'My auctions'
       operationId: myAuctions
-      description: "The user's participations grouped by tab (active | won | lost | upcoming)."
+      description: "The user's participations grouped by tab, each row carrying the viewer's own\nstate on that auction (highest bid, whether they lead it, deposit/book\nflags, final-payment status) — everything the screen needs without a\nfollow-up request per row.\n\nTabs are VIEWS over one set, not a partition: an auction can appear in more\nthan one (a won auction is also closed), and a participation whose auction\nwas later cancelled appears only under `all`. `all` is the exhaustive tab —\nuse it if you need every participation accounted for. Draft auctions are\nnever visible to citizens, so they cannot appear at all."
       parameters:
         -
           in: query
           name: tab
-          description: 'One of active, won, lost, upcoming (default active).'
+          description: 'One of all, active, won, lost, upcoming (default active).'
           example: active
           required: false
           schema:
             type: string
-            description: 'One of active, won, lost, upcoming (default active).'
+            description: 'One of all, active, won, lost, upcoming (default active).'
             example: active
         -
           in: header
@@ -2926,6 +2961,125 @@ paths:
                     example: 'يلزم تسجيل الدخول.'
       tags:
         - Dashboard
+      security: []
+  /api/v1/devices:
+    post:
+      summary: 'Register this device'
+      operationId: registerThisDevice
+      description: "Claims a push token for the authenticated user. Idempotent — call it on\nevery launch and after every token refresh. If the token was previously\nregistered to a different account (a shared device, or a reinstall), it is\nre-pointed, so the previous owner stops receiving this device's push."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        204:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {  }
+                properties: {  }
+      tags:
+        - Devices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: 'The provider (FCM) registration token.'
+                  example: fMEP0b2sTk...
+                platform:
+                  type: string
+                  description: 'ios or android.'
+                  example: android
+                locale:
+                  type: string
+                  description: 'The app UI language (ar|fr|en).'
+                  example: ar
+                  nullable: true
+                app_version:
+                  type: string
+                  description: 'The client build, for diagnostics.'
+                  example: 1.4.2
+                  nullable: true
+              required:
+                - token
+                - platform
+      security: []
+    delete:
+      summary: 'Unregister this device'
+      operationId: unregisterThisDevice
+      description: "Removes the token so this device stops receiving push. Call it on sign-out.\nOnly the owner's own registration is removed — passing someone else's token\nis a no-op. Idempotent: an unknown token also returns 204."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        204:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {  }
+                properties: {  }
+      tags:
+        - Devices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: 'The token to remove.'
+                  example: fMEP0b2sTk...
+              required:
+                - token
+      security: []
+  /api/v1/devices/status:
+    get:
+      summary: 'Push status'
+      operationId: pushStatus
+      description: "Whether the platform can actually deliver push right now, and how many\ndevices this user has registered. Lets the app tell \"notifications are off\non this device\" apart from \"the server has no push provider configured\"."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - Devices
       security: []
   '/api/v1/documents/{document_id}/download':
     get:
@@ -3093,6 +3247,35 @@ paths:
       summary: 'My documents summary'
       operationId: myDocumentsSummary
       description: 'Per-type counts and total size — the stat tiles for the mobile library.'
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - Documents
+      security: []
+  /api/v1/documents/filters:
+    get:
+      summary: 'Document filter options'
+      operationId: documentFilterOptions
+      description: "The dropdown values for the library filters, narrowed to the auctions THIS\nuser actually has documents for — unlike the public `/auctions/filters`,\nwhich lists every category/wilaya on the platform and has no entities at\nall. Empty arrays mean the user has no documents yet."
       parameters:
         -
           in: header
@@ -3627,7 +3810,7 @@ paths:
     get:
       summary: 'Report summary'
       operationId: reportSummary
-      description: "Aggregated KPIs, dimensions, and monthly series for the authenticated user's payments."
+      description: "Aggregated KPIs, dimensions, and monthly series for the authenticated user's payments.\n\nEvery monetary figure is `{ amount, formatted }` in DINARS — the same unit\nas `/reports/transactions` and the rest of the API. (`series.data` stays a\nflat integer array of dinars so it can be plotted directly.)"
       parameters:
         -
           in: header
@@ -3679,6 +3862,39 @@ paths:
                     example: 'يلزم تسجيل الدخول.'
       tags:
         - 'Financial Reports'
+  '/api/v1/reports/export/{format}':
+    get:
+      summary: 'Export transactions'
+      operationId: exportTransactions
+      description: "Downloads the filtered transactions as a file, using the same filters as\n`/reports/summary` and `/reports/transactions`. `csv` streams (chunked, so a\nlong history is safe); `pdf` renders the full report through mpdf with the\nArabic shaping/RTL of the web export.\n\nThe response is a BINARY download (`text/csv` or `application/pdf`), not the\nJSON envelope — request it with a bytes/stream response type and save it,\ndon't try to decode it. Send the bearer token as usual."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: 'The file body (Content-Disposition: attachment).'
+      tags:
+        - 'Financial Reports'
+      security: []
+    parameters:
+      -
+        in: path
+        name: format
+        description: 'csv or pdf.'
+        example: csv
+        required: true
+        schema:
+          type: string
   /api/v1/kyc:
     get:
       summary: 'KYC status'
@@ -3824,7 +4040,7 @@ paths:
                 id_type:
                   type: string
                   description: ''
-                  example: LICENSE
+                  example: ID_CARD
                   enum:
                     - ID_CARD
                     - PASSPORT
@@ -3999,17 +4215,17 @@ paths:
     get:
       summary: 'Payment callback'
       operationId: paymentCallback
-      description: "Gateway return URL. Confirms (or fails) the payment set for the reference\nand reports the resulting status. Idempotent — safe to call more than once."
+      description: "Gateway return URL for the MOBILE checkout. Confirms (or fails) the payment\nset for the reference and reports the resulting status. Idempotent — safe to\ncall more than once, and session-less, so it works inside a web view (the\nweb `payments.callback` sits behind `auth` and would redirect to the login\npage instead).\n\nThe client does not have to let this URL load: detecting the\n`/api/v1/payments/callback` prefix is enough to close the web view and poll\n`GET payments/{ref}/status`. The authoritative confirmation is the gateway's\nsigned server-to-server webhook either way."
       parameters:
         -
           in: query
           name: ref
-          description: 'The gateway reference.'
+          description: 'The gateway reference OR our payment id.'
           example: MOCK-ABC123
           required: true
           schema:
             type: string
-            description: 'The gateway reference.'
+            description: 'The gateway reference OR our payment id.'
             example: MOCK-ABC123
         -
           in: query
@@ -4064,7 +4280,7 @@ paths:
     get:
       summary: 'Payment status'
       operationId: paymentStatus
-      description: "Returns the status of every payment row sharing a gateway reference for the\nauthenticated user. Use this to poll after the gateway web view returns."
+      description: "Returns the status of every payment row sharing a reference for the\nauthenticated user. Use this to poll after the gateway web view returns.\n\n`{ref}` accepts EITHER the gateway reference returned by\n`POST auctions/{auction}/register|buy-book|final-payment` OR our own payment\nid — the id is what the gateway echoes back on the return URL, so the client\ncan poll with whichever value it holds."
       parameters:
         -
           in: header
@@ -4140,7 +4356,7 @@ paths:
     post:
       summary: 'Start final payment'
       operationId: startFinalPayment
-      description: "Begins the winner's final payment (§4 step 7) and returns the gateway\nredirect URL."
+      description: "Begins the winner's final payment (§4 step 7) and returns the gateway\nredirect URL.\n\nA 422 carries a stable `code`: `not_winner` or `final_already_paid`."
       parameters:
         -
           in: header
@@ -4149,7 +4365,23 @@ paths:
           example: ar
           schema:
             type: string
-      responses: {  }
+      responses:
+        422:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'تم إتمام الدفع النهائي مسبقاً.'
+                  code: final_already_paid
+                properties:
+                  message:
+                    type: string
+                    example: 'تم إتمام الدفع النهائي مسبقاً.'
+                  code:
+                    type: string
+                    example: final_already_paid
       tags:
         - Payments
       security: []
@@ -4166,7 +4398,7 @@ paths:
     get:
       summary: 'Get profile'
       operationId: getProfile
-      description: ''
+      description: "The user's own profile, including the identity fields the KYC form asks for\n(father/mother names, birth details, RIP/NIF/NIS) so a resubmission can be\nprefilled instead of retyped."
       parameters:
         -
           in: header
@@ -4252,7 +4484,7 @@ paths:
                 secret_question:
                   type: string
                   description: ''
-                  example: mother_maiden
+                  example: fav_teacher
                   enum:
                     - mother_maiden
                     - first_school
@@ -4270,7 +4502,7 @@ paths:
     get:
       summary: Ping
       operationId: ping
-      description: "Returns a simple liveness payload wrapped in the standard envelope. Useful\nfor smoke-testing the API plumbing and the active locale."
+      description: "Liveness payload plus the settings the client needs to bootstrap itself:\nthe active locale and the PUBLIC realtime (Reverb) connection parameters.\n\nFetch this at startup and configure the websocket from `realtime` rather\nthan hardcoding a host per build — the production socket endpoint differs\nfrom the dev one, and it can change without an app release.\n\n`realtime` is null when broadcasting is not configured; fall back to\npolling `GET auctions/{auction}/price` and `.../bids` in that case.\n\nSECURITY: only the public app key is published here. The Reverb app SECRET\nis server-side only and is never exposed. Subscribing to a private channel\nstill requires POST /api/broadcasting/auth with the bearer token."
       parameters:
         -
           in: header
@@ -4291,6 +4523,13 @@ paths:
                     status: ok
                     version: v1
                     locale: ar
+                    realtime:
+                      driver: reverb
+                      key: mazayada
+                      host: mazayada.findosystem.com
+                      port: 443
+                      scheme: https
+                      auth_endpoint: 'https://mazayada.findosystem.com/api/broadcasting/auth'
                   message: 'الواجهة البرمجية تعمل.'
                   meta: {  }
                 properties:
@@ -4306,9 +4545,97 @@ paths:
                       locale:
                         type: string
                         example: ar
+                      realtime:
+                        type: object
+                        properties:
+                          driver:
+                            type: string
+                            example: reverb
+                          key:
+                            type: string
+                            example: mazayada
+                          host:
+                            type: string
+                            example: mazayada.findosystem.com
+                          port:
+                            type: integer
+                            example: 443
+                          scheme:
+                            type: string
+                            example: https
+                          auth_endpoint:
+                            type: string
+                            example: 'https://mazayada.findosystem.com/api/broadcasting/auth'
                   message:
                     type: string
                     example: 'الواجهة البرمجية تعمل.'
+                  meta:
+                    type: object
+                    properties: {  }
+      tags:
+        - System
+      security: []
+  /api/v1/verify:
+    get:
+      summary: 'Verify a document'
+      operationId: verifyADocument
+      description: "The JSON twin of the web `/verify` page, so the app's QR scanner can render\nthe result natively instead of opening a browser. The QR printed on every\ndocument encodes the web URL; take its `doc` and `sig` query parameters and\ncall this endpoint with them.\n\nDeliberately public and deliberately minimal: it answers \"was this paper\nissued by the platform and is it unaltered?\" and returns only what a holder\ncan already read off the sheet (type, auction title, issue date, amount) plus\na short signature fingerprint to compare. Never any personal data, and never\nthe document file — downloading still requires an authorised session.\n\nAn invalid or unknown pair returns HTTP 200 with `valid: false` (not a 404):\nfailing to verify IS the answer, and an error status would be indistinguishable\nfrom a network problem."
+      parameters:
+        -
+          in: query
+          name: doc
+          description: 'The document id from the QR code.'
+          example: 9b1f...
+          required: true
+          schema:
+            type: string
+            description: 'The document id from the QR code.'
+            example: 9b1f...
+        -
+          in: query
+          name: sig
+          description: 'The signature from the QR code.'
+          example: 4f3c...
+          required: true
+          schema:
+            type: string
+            description: 'The signature from the QR code.'
+            example: 4f3c...
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    valid: false
+                    document: null
+                  message: null
+                  meta: {  }
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      valid:
+                        type: boolean
+                        example: false
+                      document:
+                        type: string
+                        example: null
+                        nullable: true
+                  message:
+                    type: string
+                    example: null
+                    nullable: true
                   meta:
                     type: object
                     properties: {  }

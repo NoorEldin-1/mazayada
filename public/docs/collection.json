@@ -10,7 +10,7 @@
     ],
     "info": {
         "name": "Mazayada API Documentation",
-        "_postman_id": "065a5a27-d5ee-44a2-be4e-4e11a1893449",
+        "_postman_id": "8909a42e-c2a2-46fc-9943-5ffbaaf2c64c",
         "description": "Mazayada mobile API (v1). Token-authenticated JSON API for the Flutter client covering auctions and the citizen dashboard. All responses use a unified envelope ({data, message, meta} on success; {message, errors} on error). Money is returned in dinars; send Accept-Language (ar|fr|en) to localize responses.",
         "schema": "https:\/\/schema.getpostman.com\/json\/collection\/v2.1.0\/collection.json"
     },
@@ -268,12 +268,19 @@
                             }
                         ],
                         "body": null,
-                        "description": "Creates the pending book-purchase payment and returns the gateway redirect\nURL. Buying the book unlocks its download and is a prerequisite for\nregistering. Open `redirect_url` in a web view, then re-fetch the auction.",
+                        "description": "Creates the pending book-purchase payment and returns the gateway redirect\nURL. Buying the book unlocks its download and is a prerequisite for\nregistering. Open `redirect_url` in a web view, then re-fetch the auction.\n\nA 422 carries a stable `code` \u2014 branch on it rather than on the (translated)\nmessage: `book_free` and `already_bought_book` both mean \"go straight to\nregistration\"; `commerce_register_required` and `not_eligible` mean \"send the\nuser to the Commercial Register \/ KYC screen first\".",
                         "auth": {
                             "type": "noauth"
                         }
                     },
-                    "response": []
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 422,
+                            "body": "{\"message\":\"\u0644\u0642\u062f \u0627\u0634\u062a\u0631\u064a\u062a \u0643\u0631\u0627\u0633\u0629 \u0627\u0644\u0634\u0631\u0648\u0637 \u0628\u0627\u0644\u0641\u0639\u0644.\",\"code\":\"already_bought_book\"}",
+                            "name": ""
+                        }
+                    ]
                 },
                 {
                     "name": "Start registration",
@@ -308,12 +315,19 @@
                             }
                         ],
                         "body": null,
-                        "description": "Creates the pending deposit payment and returns the gateway redirect URL.\nThe condition book must already be purchased. Open `redirect_url` in a web\nview; once the gateway returns, poll `GET payments\/{ref}\/status` (or\nre-fetch the auction) to confirm.",
+                        "description": "Creates the pending deposit payment and returns the gateway redirect URL.\nThe condition book must already be purchased. Open `redirect_url` in a web\nview; once the gateway returns, poll `GET payments\/{ref}\/status` (or\nre-fetch the auction) to confirm.\n\nA 422 carries a stable `code`: `must_purchase_book` (go back a step),\n`already_registered` (proceed to bidding), `commerce_register_required`,\n`not_eligible`, `nothing_due`.",
                         "auth": {
                             "type": "noauth"
                         }
                     },
-                    "response": []
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 422,
+                            "body": "{\"message\":\"\u064a\u062c\u0628 \u0634\u0631\u0627\u0621 \u0643\u0631\u0627\u0633\u0629 \u0627\u0644\u0634\u0631\u0648\u0637 \u0623\u0648\u0644\u0627\u064b \u0642\u0628\u0644 \u0627\u0644\u062a\u0633\u062c\u064a\u0644 \u0641\u064a \u0627\u0644\u0645\u0632\u0627\u064a\u062f\u0629.\",\"code\":\"must_purchase_book\"}",
+                            "name": ""
+                        }
+                    ]
                 }
             ]
         },
@@ -849,7 +863,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"nin\":\"consequatur\",\"first_name_ar\":\"mqeopfuudtdsufvyvddqa\",\"last_name_ar\":\"mniihfqcoynlazghdtqtq\",\"phone\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"birth_date\":\"2006-04-05\",\"password\":\"O[2UZ5ij-e\\\/dl4m{o,\",\"device_name\":\"dqamniihfqcoynlazghdt\"}"
+                            "raw": "{\"nin\":\"consequatur\",\"first_name_ar\":\"mqeopfuudtdsufvyvddqa\",\"last_name_ar\":\"mniihfqcoynlazghdtqtq\",\"phone\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"birth_date\":\"2006-04-22\",\"password\":\"O[2UZ5ij-e\\\/dl4m{o,\",\"device_name\":\"dqamniihfqcoynlazghdt\"}"
                         },
                         "description": "Create a CITIZEN account and email a 6-digit verification code. Does NOT log\nthe user in \u2014 call verify-otp with the returned user_id to obtain tokens.",
                         "auth": {
@@ -1530,7 +1544,7 @@
                                 {
                                     "key": "tab",
                                     "value": "active",
-                                    "description": "One of active, won, lost, upcoming (default active).",
+                                    "description": "One of all, active, won, lost, upcoming (default active).",
                                     "disabled": false
                                 }
                             ],
@@ -1552,7 +1566,149 @@
                             }
                         ],
                         "body": null,
-                        "description": "The user's participations grouped by tab (active | won | lost | upcoming).",
+                        "description": "The user's participations grouped by tab, each row carrying the viewer's own\nstate on that auction (highest bid, whether they lead it, deposit\/book\nflags, final-payment status) \u2014 everything the screen needs without a\nfollow-up request per row.\n\nTabs are VIEWS over one set, not a partition: an auction can appear in more\nthan one (a won auction is also closed), and a participation whose auction\nwas later cancelled appears only under `all`. `all` is the exhaustive tab \u2014\nuse it if you need every participation accounted for. Draft auctions are\nnever visible to citizens, so they cannot appear at all.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Devices",
+            "description": "\nPush-notification device registry. The app registers its provider token here so\nthe platform can reach it, and unregisters on sign-out.",
+            "item": [
+                {
+                    "name": "Register this device",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/devices",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/devices"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"token\":\"fMEP0b2sTk...\",\"platform\":\"android\",\"locale\":\"ar\",\"app_version\":\"1.4.2\"}"
+                        },
+                        "description": "Claims a push token for the authenticated user. Idempotent \u2014 call it on\nevery launch and after every token refresh. If the token was previously\nregistered to a different account (a shared device, or a reinstall), it is\nre-pointed, so the previous owner stops receiving this device's push.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 204,
+                            "body": "{}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Unregister this device",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/devices",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/devices"
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"token\":\"fMEP0b2sTk...\"}"
+                        },
+                        "description": "Removes the token so this device stops receiving push. Call it on sign-out.\nOnly the owner's own registration is removed \u2014 passing someone else's token\nis a no-op. Idempotent: an unknown token also returns 204.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 204,
+                            "body": "{}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Push status",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/devices\/status",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/devices\/status"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Whether the platform can actually deliver push right now, and how many\ndevices this user has registered. Lets the app tell \"notifications are off\non this device\" apart from \"the server has no push provider configured\".",
                         "auth": {
                             "type": "noauth"
                         }
@@ -1803,6 +1959,58 @@
                             "name": ""
                         }
                     ]
+                },
+                {
+                    "name": "Document filter options",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/documents\/filters",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/documents\/filters"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "The dropdown values for the library filters, narrowed to the auctions THIS\nuser actually has documents for \u2014 unlike the public `\/auctions\/filters`,\nwhich lists every category\/wilaya on the platform and has no entities at\nall. Empty arrays mean the user has no documents yet.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
                 }
             ]
         },
@@ -1909,7 +2117,7 @@
                                 },
                                 {
                                     "key": "set-cookie",
-                                    "value": "XSRF-TOKEN=eyJpdiI6IkNMcEU3TzIzS2FyQ1laWFc1RFByOHc9PSIsInZhbHVlIjoiQitQQlJQTE5KMFhyeTFQblNmL1BaUmY3TlMzMmtFOSt2WEd6OGJhZW80MjRxVldtZHlYV3RTKzRiK1VyQmJVYmljbVhWeTdCRGgwaEpMcTBXNEJyMlN5N0tpdWt6STduNE9PNnJJTStkUWdObkF3a3dIOUMwWldQc0t6N21wQW8iLCJtYWMiOiI3MDA1ZWFkZDYyNDJkMmZiMzI5NzRhNjBlYmYzYTgwODBkZjU3N2I1MTUzODMwOWM0MjRkYTM3OGQzNTEyODNlIiwidGFnIjoiIn0%3D; expires=Mon, 13 Jul 2026 19:31:55 GMT; Max-Age=7200; path=\/; samesite=lax; mazayada-session=eyJpdiI6ImJ3aEJHSC9ZaUV6WFBHbTFGWDhjOGc9PSIsInZhbHVlIjoiblkxb3dDS3BNZjFEdVMzUmtHZ3RJSndvL0pqRjVXcjUrNC9IaTYvdUJwUHZEWWJ4bk43S1QzK3pOc3oybHhGS1NFaVhXWFdIS20yMFFnc1hGU2oxc2kzZDk2ZjRxaklpbmE4OUdzVWZvb0Z1ejQ5TDB2cVYreFM0UHgzNHo3RjgiLCJtYWMiOiJhOGIyYTdhYTAxNWViNWUyNDBmYjUzZTQyYTVhNTZlNDljNDk5MTQxYTUwZTdhZmU2YjI0ZDk1MTc4NDMzNzhmIiwidGFnIjoiIn0%3D; expires=Mon, 13 Jul 2026 19:31:55 GMT; Max-Age=7200; path=\/; httponly; samesite=lax"
+                                    "value": "XSRF-TOKEN=eyJpdiI6IklTMU80VlZudlVuNXlkQmptcXUvQ2c9PSIsInZhbHVlIjoiQVFlbGxLMnBhZmlMTzl1NloxeXR4dFdiaW1FYWdnT2dtQTJrM3ZnMGphTnlGZnE2Y2VZem9QS29yK0RqTjk5ODZ4QW1WYlJSNTlXczVJR0VPcHBVWGZLTXFuQkpGdUNXRWIwVXdmZ0ZvRmhnMi9IUVNFeHRNQVU4bS9ob0ptSWoiLCJtYWMiOiIwM2VkMDdiZWFlMjU2NjZkZjAyOWMxMWZiYjg5MmYwZjBkZDUwZWFjMjI3YjRmOWYzMjIwYmNkZTc4N2JiZjkzIiwidGFnIjoiIn0%3D; expires=Thu, 30 Jul 2026 11:06:23 GMT; Max-Age=7200; path=\/; samesite=lax; mazayada-session=eyJpdiI6IlhTSzlaWmVjallIcUNhQk1sUTN5YlE9PSIsInZhbHVlIjoiZm9TRjYxNDVSak9nUmxCNTgrM3VqOXlEYUdISld4d2VkL094ZjJtcHF0L0p4Nlg2Rnd1WDByWXk2U0YyaTdPbUVhbXk2YWltQWZ6UVBUOUhFai95QzUrcGdUazNlWjVjbjBDR2Ruc2V4VlNQTUFrMFR2dGZXaU95RCsvL0wwdWoiLCJtYWMiOiIwOGY2YzBhMDQ4ZjkxOTE4NzZlMTEzNTM5MTVhNWRlN2VlYzE5NmI0NjM5MjI2MTk5NWViMzk0OTFjZmY1M2ZiIiwidGFnIjoiIn0%3D; expires=Thu, 30 Jul 2026 11:06:23 GMT; Max-Age=7200; path=\/; httponly; samesite=lax"
                                 }
                             ],
                             "code": 200,
@@ -1973,7 +2181,7 @@
                                 },
                                 {
                                     "key": "set-cookie",
-                                    "value": "XSRF-TOKEN=eyJpdiI6InEwRFM0TlRsSDVRamxmNXRLUWZJcWc9PSIsInZhbHVlIjoiWWhVR0VTL2tWZlJQZzVZWmFCNFZsQnhMdUNBWW9BdmwzT082aG5sbHNPdEg2enJZbVZkSEsrMVczcmZxT0wrR01Sc3llOG5TNDFWVFhKNnBZY0ZRTFd1RFdkSDdoU2R0ckZIMXJlSGRPSVdCaGxSNjVldWNBUVJmNEhJczVaVU0iLCJtYWMiOiI5MzMzNjUyNmExZTIxNTllOTkxY2M4YmI1ODNiMDdmYThlYmI2N2ZjMjhmMWRhMzgyZGE2NjcwYTc2MTEyMmE4IiwidGFnIjoiIn0%3D; expires=Mon, 13 Jul 2026 19:31:55 GMT; Max-Age=7200; path=\/; samesite=lax; mazayada-session=eyJpdiI6InJUaDFjVGJ6ZXNUS3FLWElKd2MzUHc9PSIsInZhbHVlIjoidGx0alQ3NERtY0cwM0FZa2QwYTBDdzBNR1J6YmRvZDRwdi83eG9zRXJ2bjRkNWovRzg0L0k0ekRyZTJOK2VTcGl6RjNlTS9jdFQzK0VmSTRRS2Y5MTVCR011WStPQ2Vjb3Q3NkVGcS9DNzZaNy9SeWJ6OWw3UkxuUWFuczNOdFMiLCJtYWMiOiJkZDczMzIyOTc1MjE1MGRhOWU3NWVkYjExN2M4MjQyYTFiNWJmOTExMzAwYzdmYzk4NWI3MGEzMTdjZWFiMGIxIiwidGFnIjoiIn0%3D; expires=Mon, 13 Jul 2026 19:31:55 GMT; Max-Age=7200; path=\/; httponly; samesite=lax"
+                                    "value": "XSRF-TOKEN=eyJpdiI6ImRaSlIyQnBuMS9wMUgvdE12dDZiY1E9PSIsInZhbHVlIjoidCtGRHZaZjVrL1JLNVBpNE5TbkN2akkyUjlseUVTMWxsYXVwRCtWc1RHaHlrYzkrdDAxK2ZCSmJ1M3luZXJTSFRGZGVWdThyQnBuMlZjMng2YytuZmN3M2diVU9mVVJkMGNvZHEvdjRZSVBxeVQ3OEJjMHE5MXpQUEJHbXJtd3giLCJtYWMiOiI5NjRjMjk3YjUyMTc4ZTM3NDdiNDc4YmE0NDAwMzRhMDM5NjRkZGNlYzEzYTIwZTdhMmQyYjc3YjNkMzI2OGRlIiwidGFnIjoiIn0%3D; expires=Thu, 30 Jul 2026 11:06:23 GMT; Max-Age=7200; path=\/; samesite=lax; mazayada-session=eyJpdiI6InFiaFY2YS9EZ3hkRmVzQ1lWZklXeFE9PSIsInZhbHVlIjoiTElMV2NJbFpGcW1sb01YeVlVU1Q3SEdWR0dKY0MwZi9Cb1RtUDhJaUVEZy9OUUxkQXFZdmZIeTI1ZklXRGZBQ0dTa2dFQmFrdW8yV3dGS0J3NVBkbEtLZEptMkliQ1pLc0xWMys0OVdnK0RnUlM2U3EvMWNHTWdqby96U1RNRlciLCJtYWMiOiJlNzE0NzQ3ZWIxNDNjNGRmZjM0YTJkYTgzMjllMTkyZjE5YTE1ZjVmZDg2NjVjYzA1ZDI1MjA4ODlhZDkzMTNlIiwidGFnIjoiIn0%3D; expires=Thu, 30 Jul 2026 11:06:23 GMT; Max-Age=7200; path=\/; httponly; samesite=lax"
                                 }
                             ],
                             "code": 200,
@@ -2013,7 +2221,7 @@
                             }
                         ],
                         "body": null,
-                        "description": "Aggregated KPIs, dimensions, and monthly series for the authenticated user's payments."
+                        "description": "Aggregated KPIs, dimensions, and monthly series for the authenticated user's payments.\n\nEvery monetary figure is `{ amount, formatted }` in DINARS \u2014 the same unit\nas `\/reports\/transactions` and the rest of the API. (`series.data` stays a\nflat integer array of dinars so it can be plotted directly.)"
                     },
                     "response": [
                         {
@@ -2082,6 +2290,53 @@
                             ],
                             "code": 401,
                             "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Export transactions",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/reports\/export\/:format",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/reports\/export\/:format",
+                            "variable": [
+                                {
+                                    "id": "format",
+                                    "key": "format",
+                                    "value": "csv",
+                                    "description": "csv or pdf."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Downloads the filtered transactions as a file, using the same filters as\n`\/reports\/summary` and `\/reports\/transactions`. `csv` streams (chunked, so a\nlong history is safe); `pdf` renders the full report through mpdf with the\nArabic shaping\/RTL of the web export.\n\nThe response is a BINARY download (`text\/csv` or `application\/pdf`), not the\nJSON envelope \u2014 request it with a bytes\/stream response type and save it,\ndon't try to decode it. Send the bearer token as usual.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "The file body (Content-Disposition: attachment).",
                             "name": ""
                         }
                     ]
@@ -2219,7 +2474,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"first_name_fr\":\"vmqeopfuudtdsufvyvddq\",\"last_name_fr\":\"amniihfqcoynlazghdtqt\",\"father_name\":\"qxbajwbpilpmufinllwlo\",\"mother_name\":\"auydlsmsjuryvojcybzvr\",\"mother_surname\":\"byickznkygloigmkwxphl\",\"address\":\"vazjrcnfbaqywuxhgjjmz\",\"wilaya_id\":17,\"commune_id\":17,\"postal_code\":\"15627\",\"profession\":\"udtdsufvyvddqamniihfq\",\"expected_income\":8,\"id_type\":\"LICENSE\",\"id_number\":\"oynlazghdtqtqxbajwbpi\"}"
+                            "raw": "{\"first_name_fr\":\"vmqeopfuudtdsufvyvddq\",\"last_name_fr\":\"amniihfqcoynlazghdtqt\",\"father_name\":\"qxbajwbpilpmufinllwlo\",\"mother_name\":\"auydlsmsjuryvojcybzvr\",\"mother_surname\":\"byickznkygloigmkwxphl\",\"address\":\"vazjrcnfbaqywuxhgjjmz\",\"wilaya_id\":17,\"commune_id\":17,\"postal_code\":\"15627\",\"profession\":\"udtdsufvyvddqamniihfq\",\"expected_income\":8,\"id_type\":\"ID_CARD\",\"id_number\":\"oynlazghdtqtqxbajwbpi\"}"
                         },
                         "description": "Validates the profile, requires all three identity documents, and moves the\naccount to UNDER_REVIEW.",
                         "auth": {
@@ -2486,7 +2741,7 @@
                                 {
                                     "key": "ref",
                                     "value": "MOCK-ABC123",
-                                    "description": "The gateway reference.",
+                                    "description": "The gateway reference OR our payment id.",
                                     "disabled": false
                                 },
                                 {
@@ -2514,7 +2769,7 @@
                             }
                         ],
                         "body": null,
-                        "description": "Gateway return URL. Confirms (or fails) the payment set for the reference\nand reports the resulting status. Idempotent \u2014 safe to call more than once.",
+                        "description": "Gateway return URL for the MOBILE checkout. Confirms (or fails) the payment\nset for the reference and reports the resulting status. Idempotent \u2014 safe to\ncall more than once, and session-less, so it works inside a web view (the\nweb `payments.callback` sits behind `auth` and would redirect to the login\npage instead).\n\nThe client does not have to let this URL load: detecting the\n`\/api\/v1\/payments\/callback` prefix is enough to close the web view and poll\n`GET payments\/{ref}\/status`. The authoritative confirmation is the gateway's\nsigned server-to-server webhook either way.",
                         "auth": {
                             "type": "noauth"
                         }
@@ -2574,7 +2829,7 @@
                             }
                         ],
                         "body": null,
-                        "description": "Returns the status of every payment row sharing a gateway reference for the\nauthenticated user. Use this to poll after the gateway web view returns.",
+                        "description": "Returns the status of every payment row sharing a reference for the\nauthenticated user. Use this to poll after the gateway web view returns.\n\n`{ref}` accepts EITHER the gateway reference returned by\n`POST auctions\/{auction}\/register|buy-book|final-payment` OR our own payment\nid \u2014 the id is what the gateway echoes back on the return URL, so the client\ncan poll with whichever value it holds.",
                         "auth": {
                             "type": "noauth"
                         }
@@ -2694,12 +2949,19 @@
                             }
                         ],
                         "body": null,
-                        "description": "Begins the winner's final payment (\u00a74 step 7) and returns the gateway\nredirect URL.",
+                        "description": "Begins the winner's final payment (\u00a74 step 7) and returns the gateway\nredirect URL.\n\nA 422 carries a stable `code`: `not_winner` or `final_already_paid`.",
                         "auth": {
                             "type": "noauth"
                         }
                     },
-                    "response": []
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 422,
+                            "body": "{\"message\":\"\u062a\u0645 \u0625\u062a\u0645\u0627\u0645 \u0627\u0644\u062f\u0641\u0639 \u0627\u0644\u0646\u0647\u0627\u0626\u064a \u0645\u0633\u0628\u0642\u0627\u064b.\",\"code\":\"final_already_paid\"}",
+                            "name": ""
+                        }
+                    ]
                 }
             ]
         },
@@ -2732,7 +2994,7 @@
                             }
                         ],
                         "body": null,
-                        "description": "",
+                        "description": "The user's own profile, including the identity fields the KYC form asks for\n(father\/mother names, birth details, RIP\/NIF\/NIS) so a resubmission can be\nprefilled instead of retyped.",
                         "auth": {
                             "type": "noauth"
                         }
@@ -2785,7 +3047,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"phone\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"address\":\"fuudtdsufvyvddqamniih\",\"postal_code\":\"15627\",\"profession\":\"udtdsufvyvddqamniihfq\",\"locale\":\"fr\",\"secret_question\":\"mother_maiden\",\"secret_answer\":\"coynlazghdtqtqxbajwbp\"}"
+                            "raw": "{\"phone\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"address\":\"fuudtdsufvyvddqamniih\",\"postal_code\":\"15627\",\"profession\":\"udtdsufvyvddqamniihfq\",\"locale\":\"fr\",\"secret_question\":\"fav_teacher\",\"secret_answer\":\"coynlazghdtqtqxbajwbp\"}"
                         },
                         "description": "Updates contact details, address and the security question. Identity fields\n(NIN, names) are not editable here.",
                         "auth": {
@@ -2825,7 +3087,7 @@
                             }
                         ],
                         "body": null,
-                        "description": "Returns a simple liveness payload wrapped in the standard envelope. Useful\nfor smoke-testing the API plumbing and the active locale.",
+                        "description": "Liveness payload plus the settings the client needs to bootstrap itself:\nthe active locale and the PUBLIC realtime (Reverb) connection parameters.\n\nFetch this at startup and configure the websocket from `realtime` rather\nthan hardcoding a host per build \u2014 the production socket endpoint differs\nfrom the dev one, and it can change without an app release.\n\n`realtime` is null when broadcasting is not configured; fall back to\npolling `GET auctions\/{auction}\/price` and `...\/bids` in that case.\n\nSECURITY: only the public app key is published here. The Reverb app SECRET\nis server-side only and is never exposed. Subscribing to a private channel\nstill requires POST \/api\/broadcasting\/auth with the bearer token.",
                         "auth": {
                             "type": "noauth"
                         }
@@ -2834,7 +3096,59 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":{\"status\":\"ok\",\"version\":\"v1\",\"locale\":\"ar\"},\"message\":\"\u0627\u0644\u0648\u0627\u062c\u0647\u0629 \u0627\u0644\u0628\u0631\u0645\u062c\u064a\u0629 \u062a\u0639\u0645\u0644.\",\"meta\":{}}",
+                            "body": "{\"data\":{\"status\":\"ok\",\"version\":\"v1\",\"locale\":\"ar\",\"realtime\":{\"driver\":\"reverb\",\"key\":\"mazayada\",\"host\":\"mazayada.findosystem.com\",\"port\":443,\"scheme\":\"https\",\"auth_endpoint\":\"https:\/\/mazayada.findosystem.com\/api\/broadcasting\/auth\"}},\"message\":\"\u0627\u0644\u0648\u0627\u062c\u0647\u0629 \u0627\u0644\u0628\u0631\u0645\u062c\u064a\u0629 \u062a\u0639\u0645\u0644.\",\"meta\":{}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Verify a document",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/verify",
+                            "query": [
+                                {
+                                    "key": "doc",
+                                    "value": "9b1f...",
+                                    "description": "The document id from the QR code.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "sig",
+                                    "value": "4f3c...",
+                                    "description": "The signature from the QR code.",
+                                    "disabled": false
+                                }
+                            ],
+                            "raw": "{{baseUrl}}\/api\/v1\/verify?doc=9b1f...&sig=4f3c..."
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "The JSON twin of the web `\/verify` page, so the app's QR scanner can render\nthe result natively instead of opening a browser. The QR printed on every\ndocument encodes the web URL; take its `doc` and `sig` query parameters and\ncall this endpoint with them.\n\nDeliberately public and deliberately minimal: it answers \"was this paper\nissued by the platform and is it unaltered?\" and returns only what a holder\ncan already read off the sheet (type, auction title, issue date, amount) plus\na short signature fingerprint to compare. Never any personal data, and never\nthe document file \u2014 downloading still requires an authorised session.\n\nAn invalid or unknown pair returns HTTP 200 with `valid: false` (not a 404):\nfailing to verify IS the answer, and an error status would be indistinguishable\nfrom a network problem.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"data\":{\"valid\":false,\"document\":null},\"message\":null,\"meta\":{}}",
                             "name": ""
                         }
                     ]

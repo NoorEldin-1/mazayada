@@ -17,10 +17,15 @@ class ProfileController extends ApiController
 {
     /**
      * Get profile
+     *
+     * The user's own profile, including the identity fields the KYC form asks for
+     * (father/mother names, birth details, RIP/NIF/NIS) so a resubmission can be
+     * prefilled instead of retyped.
      */
     public function show(Request $request): JsonResponse
     {
-        return $this->ok(new UserResource($request->user()->load('entity')));
+        // `commune` backs the derived wilaya_id the KYC form needs first.
+        return $this->ok(new UserResource($request->user()->load(['entity', 'commune'])));
     }
 
     /**
@@ -44,6 +49,6 @@ class ProfileController extends ApiController
 
         $user->update($fields);
 
-        return $this->ok(new UserResource($user->fresh()), __('profile.flash_updated'));
+        return $this->ok(new UserResource($user->fresh()->load(['entity', 'commune'])), __('profile.flash_updated'));
     }
 }

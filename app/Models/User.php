@@ -154,6 +154,12 @@ class User extends Authenticatable implements HasLocalePreference
         return $this->hasMany(UserNotification::class);
     }
 
+    /** Mobile devices registered for push (POST /api/v1/devices). */
+    public function devices(): HasMany
+    {
+        return $this->hasMany(UserDevice::class);
+    }
+
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);

@@ -44,8 +44,10 @@ class ChargilyGateway implements PaymentGatewayInterface
             'payment_method' => (string) config('mazayada.payments.chargily.payment_method', 'cib'),
             // Browser return URLs carry OUR payment id; the gateway re-verifies on
             // return, so a tampered query param can never confirm an unpaid order.
-            'success_url' => route('payments.callback', ['ref' => $payment->id, 'decision' => 'success']),
-            'failure_url' => route('payments.callback', ['ref' => $payment->id, 'decision' => 'fail']),
+            // The caller supplies them (PaymentService::returnUrls) so a mobile web
+            // view returns to the session-less API callback instead of the web one.
+            'success_url' => $context['success_url'] ?? route('payments.callback', ['ref' => $payment->id, 'decision' => 'success']),
+            'failure_url' => $context['failure_url'] ?? route('payments.callback', ['ref' => $payment->id, 'decision' => 'fail']),
             // Authoritative confirmation channel (server-to-server, signed).
             'webhook_endpoint' => route('payments.chargily.webhook'),
             'description' => $context['description'] ?? 'Mazayada payment',

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\PaymentException;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Resources\Api\V1\PaymentResource;
 use App\Models\Auction;
@@ -9,7 +10,6 @@ use App\Models\Payment;
 use App\Services\PaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use RuntimeException;
 
 /**
  * @group Payments
@@ -24,13 +24,17 @@ class PaymentController extends ApiController
      *
      * Begins the winner's final payment (§4 step 7) and returns the gateway
      * redirect URL.
+     *
+     * A 422 carries a stable `code`: `not_winner` or `final_already_paid`.
+     *
+     * @response 422 {"message":"تم إتمام الدفع النهائي مسبقاً.","code":"final_already_paid"}
      */
     public function startFinalPayment(Auction $auction, Request $request, PaymentService $payments): JsonResponse
     {
         try {
-            $result = $payments->initiateFinalPayment($auction, $request->user());
-        } catch (RuntimeException $e) {
-            return $this->fail($e->getMessage(), [], 422);
+            $result = $payments->initiateFinalPayment($auction, $request->user(), 'api');
+        } catch (PaymentException $e) {
+            return $this->fail($e->getMessage(), [], 422, $e->errorCode);
         }
 
         return $this->ok([
@@ -52,7 +56,7 @@ class PaymentController extends ApiController
         $user = $request->user();
 
         if ($auction->winner_user_id !== $user->id) {
-            return $this->fail(__('payments.not_winner'), [], 403);
+            return $this->fail(__('payments.not_winner'), [], 403, 'not_winner');
         }
 
         $quote = $payments->finalPaymentQuote($auction, $user);
@@ -79,12 +83,20 @@ class PaymentController extends ApiController
     /**
      * Payment callback
      *
-     * Gateway return URL. Confirms (or fails) the payment set for the reference
-     * and reports the resulting status. Idempotent — safe to call more than once.
+     * Gateway return URL for the MOBILE checkout. Confirms (or fails) the payment
+     * set for the reference and reports the resulting status. Idempotent — safe to
+     * call more than once, and session-less, so it works inside a web view (the
+     * web `payments.callback` sits behind `auth` and would redirect to the login
+     * page instead).
+     *
+     * The client does not have to let this URL load: detecting the
+     * `/api/v1/payments/callback` prefix is enough to close the web view and poll
+     * `GET payments/{ref}/status`. The authoritative confirmation is the gateway's
+     * signed server-to-server webhook either way.
      *
      * @unauthenticated
      *
-     * @queryParam ref string required The gateway reference. Example: MOCK-ABC123
+     * @queryParam ref string required The gateway reference OR our payment id. Example: MOCK-ABC123
      * @queryParam decision string The gateway decision (success|fail). Example: success
      */
     public function callback(Request $request, PaymentService $payments): JsonResponse
@@ -96,7 +108,7 @@ class PaymentController extends ApiController
             $payments->handleCallback($ref, $decision);
         }
 
-        $confirmed = $ref !== '' && Payment::where('gateway_ref', $ref)
+        $confirmed = $ref !== '' && $this->forReference($ref)
             ->where('status', \App\Enums\PaymentStatus::CONFIRMED)->exists();
 
         return $this->ok(
@@ -108,12 +120,17 @@ class PaymentController extends ApiController
     /**
      * Payment status
      *
-     * Returns the status of every payment row sharing a gateway reference for the
+     * Returns the status of every payment row sharing a reference for the
      * authenticated user. Use this to poll after the gateway web view returns.
+     *
+     * `{ref}` accepts EITHER the gateway reference returned by
+     * `POST auctions/{auction}/register|buy-book|final-payment` OR our own payment
+     * id — the id is what the gateway echoes back on the return URL, so the client
+     * can poll with whichever value it holds.
      */
     public function status(string $ref, Request $request): JsonResponse
     {
-        $payments = Payment::where('gateway_ref', $ref)
+        $payments = $this->forReference($ref)
             ->where('user_id', $request->user()->id)
             ->get();
 
@@ -121,7 +138,22 @@ class PaymentController extends ApiController
 
         return $this->ok([
             'ref' => $ref,
+            // Echo the canonical gateway reference so a client that polled by
+            // payment id can switch to it (and vice versa).
+            'gateway_ref' => $payments->first()->gateway_ref,
+            'confirmed' => $payments->every(fn (Payment $p) => $p->status === \App\Enums\PaymentStatus::CONFIRMED),
             'payments' => PaymentResource::collection($payments)->resolve($request),
         ]);
+    }
+
+    /**
+     * Payments matching a reference in either form — the gateway's own reference
+     * or our payment id. Mirrors PaymentService::handleCallback, which resolves
+     * both, so polling never disagrees with what the callback just confirmed.
+     */
+    private function forReference(string $ref): \Illuminate\Database\Eloquent\Builder
+    {
+        return Payment::query()
+            ->where(fn ($q) => $q->where('gateway_ref', $ref)->orWhere('id', $ref));
     }
 }

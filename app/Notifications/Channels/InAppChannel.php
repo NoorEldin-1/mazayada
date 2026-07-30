@@ -36,6 +36,9 @@ class InAppChannel
             body: $data['body'] ?? '',
             actionUrl: $data['action_url'] ?? null,
             channel: NotificationChannel::IN_APP->value,
+            // The event key the copy was selected by — persisted so the API can
+            // return it as `type` and the client can branch without parsing text.
+            event: $data['event'] ?? null,
         );
     }
 }

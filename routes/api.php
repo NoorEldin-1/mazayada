@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BidController;
 use App\Http\Controllers\Api\V1\CommercialRegisterController;
 use App\Http\Controllers\Api\V1\DashboardController;
+use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\DocumentController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\KycController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\QuestionController;
 use App\Http\Controllers\Api\V1\RegistrationController;
 use App\Http\Controllers\Api\V1\ReportController;
+use App\Http\Controllers\Api\V1\VerificationController;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
@@ -50,6 +52,10 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     // --- System / health -------------------------------------------------
     Route::get('/ping', [HealthController::class, 'ping'])->name('ping');
 
+    // Public document authenticity check (the QR scanner's endpoint) — the JSON
+    // twin of the web /verify page.
+    Route::get('/verify', [VerificationController::class, 'verify'])->name('verify');
+
     // --- Authentication --------------------------------------------------
     Route::prefix('auth')->name('auth.')->group(function (): void {
         // Public (guest) endpoints — extra-strict throttling on top of throttle:api.
@@ -81,7 +87,11 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
     });
 
     // --- Auctions (public, read-only) -----------------------------------
-    Route::prefix('auctions')->name('auctions.')->group(function (): void {
+    // `token.optional` keeps these reachable by guests while still resolving a
+    // bearer token when one is sent, so `show` can return meta.viewer for a
+    // signed-in mobile user (a session-less client has no `web` guard to fall
+    // back on — see ResolveOptionalToken).
+    Route::prefix('auctions')->name('auctions.')->middleware('token.optional')->group(function (): void {
         Route::get('/', [AuctionController::class, 'index'])->name('index');
         // Static paths BEFORE the {auction} wildcard so they aren't captured by it.
         Route::get('/search', [AuctionController::class, 'search'])->name('search');
@@ -117,6 +127,12 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         // The download endpoint stays defined above (its own inline middleware).
         Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
         Route::get('/documents/summary', [DocumentController::class, 'summary'])->name('documents.summary');
+        Route::get('/documents/filters', [DocumentController::class, 'filters'])->name('documents.filters');
+
+        // Push-notification device registry (register on launch, remove on logout).
+        Route::post('/devices', [DeviceController::class, 'store'])->name('devices.store');
+        Route::delete('/devices', [DeviceController::class, 'destroy'])->name('devices.destroy');
+        Route::get('/devices/status', [DeviceController::class, 'status'])->name('devices.status');
 
         // Profile.
         Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
@@ -148,6 +164,8 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
         Route::prefix('reports')->name('reports.')->group(function (): void {
             Route::get('/summary', [ReportController::class, 'summary'])->name('summary');
             Route::get('/transactions', [ReportController::class, 'transactions'])->name('transactions');
+            // Binary download (csv | pdf) — NOT the JSON envelope. Same filters.
+            Route::get('/export/{format}', [ReportController::class, 'export'])->name('export');
         });
 
         // Notifications.

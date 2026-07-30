@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Enums\KycStatus;
 use App\Models\AuditLog;
 use App\Models\User;
-use App\Models\UserNotification;
 use App\Notifications\KycStatusNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -41,18 +40,12 @@ class SuspendStaleKyc extends Command
                 'grace_days' => $graceDays,
             ]);
 
-            $locale = $user->preferredLocale();
-            UserNotification::record(
-                $user->id,
-                __('kyc.notif_suspended_title', [], $locale),
-                __('kyc.notif_suspended_body', [], $locale),
-                route('citizen.kyc'),
-            );
-
+            // Email + in-app row + push, all from KycStatusNotification (it owns
+            // the copy and renders it in the user's preferred language).
             try {
                 $user->notify(new KycStatusNotification('suspended'));
             } catch (\Throwable $e) {
-                Log::error('KYC suspension email failed', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+                Log::error('KYC suspension notification failed', ['user_id' => $user->id, 'error' => $e->getMessage()]);
             }
 
             $this->info("Suspended stale KYC: {$user->id}");

@@ -9,6 +9,8 @@ use App\Models\CommercialRegister;
 use App\Models\User;
 use App\Services\Payments\PaymentDriver;
 use App\Services\Payments\PaymentGatewayInterface;
+use App\Services\Push\PushDriver;
+use App\Services\Push\PushSender;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\URL;
@@ -24,6 +26,11 @@ class AppServiceProvider extends ServiceProvider
         // single source of truth so the bound gateway always matches the value
         // PaymentService records on payments.gateway. See PaymentDriver.
         $this->app->bind(PaymentGatewayInterface::class, fn () => PaymentDriver::make());
+
+        // Push transport (log | fcm) — same single-source-of-truth pattern, so an
+        // unconfigured environment degrades to the log sender instead of failing
+        // the request that triggered the notification. See PushDriver.
+        $this->app->bind(PushSender::class, fn () => PushDriver::make());
     }
 
     public function boot(): void

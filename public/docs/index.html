@@ -212,6 +212,22 @@
                             </li>
                                                                         </ul>
                             </ul>
+                    <ul id="tocify-header-devices" class="tocify-header">
+                <li class="tocify-item level-1" data-unique="devices">
+                    <a href="#devices">Devices</a>
+                </li>
+                                    <ul id="tocify-subheader-devices" class="tocify-subheader">
+                                                    <li class="tocify-item level-2" data-unique="devices-POSTapi-v1-devices">
+                                <a href="#devices-POSTapi-v1-devices">Register this device</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="devices-DELETEapi-v1-devices">
+                                <a href="#devices-DELETEapi-v1-devices">Unregister this device</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="devices-GETapi-v1-devices-status">
+                                <a href="#devices-GETapi-v1-devices-status">Push status</a>
+                            </li>
+                                                                        </ul>
+                            </ul>
                     <ul id="tocify-header-documents" class="tocify-header">
                 <li class="tocify-item level-1" data-unique="documents">
                     <a href="#documents">Documents</a>
@@ -225,6 +241,9 @@
                             </li>
                                                                                 <li class="tocify-item level-2" data-unique="documents-GETapi-v1-documents-summary">
                                 <a href="#documents-GETapi-v1-documents-summary">My documents summary</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="documents-GETapi-v1-documents-filters">
+                                <a href="#documents-GETapi-v1-documents-filters">Document filter options</a>
                             </li>
                                                                         </ul>
                             </ul>
@@ -254,6 +273,9 @@
                             </li>
                                                                                 <li class="tocify-item level-2" data-unique="financial-reports-GETapi-v1-reports-transactions">
                                 <a href="#financial-reports-GETapi-v1-reports-transactions">Financial transactions</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="financial-reports-GETapi-v1-reports-export--format-">
+                                <a href="#financial-reports-GETapi-v1-reports-export--format-">Export transactions</a>
                             </li>
                                                                         </ul>
                             </ul>
@@ -335,6 +357,9 @@
                                                     <li class="tocify-item level-2" data-unique="system-GETapi-v1-ping">
                                 <a href="#system-GETapi-v1-ping">Ping</a>
                             </li>
+                                                                                <li class="tocify-item level-2" data-unique="system-GETapi-v1-verify">
+                                <a href="#system-GETapi-v1-verify">Verify a document</a>
+                            </li>
                                                                         </ul>
                             </ul>
             </div>
@@ -346,7 +371,7 @@
     </ul>
 
     <ul class="toc-footer" id="last-updated">
-        <li>Last updated: July 13, 2026</li>
+        <li>Last updated: July 30, 2026</li>
     </ul>
 </div>
 
@@ -1036,6 +1061,10 @@ payment gateway. Requires a verified (KYC-complete) account.</p>
 <p>Creates the pending book-purchase payment and returns the gateway redirect
 URL. Buying the book unlocks its download and is a prerequisite for
 registering. Open <code>redirect_url</code> in a web view, then re-fetch the auction.</p>
+<p>A 422 carries a stable <code>code</code> — branch on it rather than on the (translated)
+message: <code>book_free</code> and <code>already_bought_book</code> both mean "go straight to
+registration"; <code>commerce_register_required</code> and <code>not_eligible</code> mean "send the
+user to the Commercial Register / KYC screen first".</p>
 
 <span id="example-requests-POSTapi-v1-auctions--auction_id--buy-book">
 <blockquote>Example request:</blockquote>
@@ -1069,7 +1098,17 @@ fetch(url, {
 </span>
 
 <span id="example-responses-POSTapi-v1-auctions--auction_id--buy-book">
-</span>
+            <blockquote>
+            <p>Example response (422):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;لقد اشتريت كراسة الشروط بالفعل.&quot;,
+    &quot;code&quot;: &quot;already_bought_book&quot;
+}</code>
+ </pre>
+    </span>
 <span id="execution-results-POSTapi-v1-auctions--auction_id--buy-book" hidden>
     <blockquote>Received response<span
                 id="execution-response-status-POSTapi-v1-auctions--auction_id--buy-book"></span>:
@@ -1177,6 +1216,9 @@ You can check the Dev Tools console for debugging information.</code></pre>
 The condition book must already be purchased. Open <code>redirect_url</code> in a web
 view; once the gateway returns, poll <code>GET payments/{ref}/status</code> (or
 re-fetch the auction) to confirm.</p>
+<p>A 422 carries a stable <code>code</code>: <code>must_purchase_book</code> (go back a step),
+<code>already_registered</code> (proceed to bidding), <code>commerce_register_required</code>,
+<code>not_eligible</code>, <code>nothing_due</code>.</p>
 
 <span id="example-requests-POSTapi-v1-auctions--auction_id--register">
 <blockquote>Example request:</blockquote>
@@ -1210,7 +1252,17 @@ fetch(url, {
 </span>
 
 <span id="example-responses-POSTapi-v1-auctions--auction_id--register">
-</span>
+            <blockquote>
+            <p>Example response (422):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;يجب شراء كراسة الشروط أولاً قبل التسجيل في المزايدة.&quot;,
+    &quot;code&quot;: &quot;must_purchase_book&quot;
+}</code>
+ </pre>
+    </span>
 <span id="execution-results-POSTapi-v1-auctions--auction_id--register" hidden>
     <blockquote>Received response<span
                 id="execution-response-status-POSTapi-v1-auctions--auction_id--register"></span>:
@@ -3465,7 +3517,7 @@ the user in — call verify-otp with the returned user_id to obtain tokens.</p>
     \"last_name_ar\": \"mniihfqcoynlazghdtqtq\",
     \"phone\": \"consequatur\",
     \"email\": \"carolyne.luettgen@example.org\",
-    \"birth_date\": \"2006-04-05\",
+    \"birth_date\": \"2006-04-22\",
     \"password\": \"O[2UZ5ij-e\\/dl4m{o,\",
     \"device_name\": \"dqamniihfqcoynlazghdt\"
 }"
@@ -3489,7 +3541,7 @@ let body = {
     "last_name_ar": "mniihfqcoynlazghdtqtq",
     "phone": "consequatur",
     "email": "carolyne.luettgen@example.org",
-    "birth_date": "2006-04-05",
+    "birth_date": "2006-04-22",
     "password": "O[2UZ5ij-e\/dl4m{o,",
     "device_name": "dqamniihfqcoynlazghdt"
 };
@@ -3655,10 +3707,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="birth_date"                data-endpoint="POSTapi-v1-auth-register"
-               value="2006-04-05"
+               value="2006-04-22"
                data-component="body">
     <br>
-<p>يجب أن يكون value تاريخاً صحيحاً. يجب أن يكون value تاريخاً قبل <code>2008-07-13</code>. Example: <code>2006-04-05</code></p>
+<p>يجب أن يكون value تاريخاً صحيحاً. يجب أن يكون value تاريخاً قبل <code>2008-07-30</code>. Example: <code>2006-04-22</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>password</code></b>&nbsp;&nbsp;
@@ -5615,8 +5667,8 @@ re-upload. A PENDING-under-review or APPROVED record is locked (403).</p>
     --form "tax_number=000116001234567"\
     --form "activity_type=تجارة السيارات"\
     --form "start_date=2022-01-15"\
-    --form "register_document=@C:\Users\hp\AppData\Local\Temp\php5D3E.tmp" \
-    --form "tax_card_document=@C:\Users\hp\AppData\Local\Temp\php5D3F.tmp" </code></pre></div>
+    --form "register_document=@C:\Users\hp\AppData\Local\Temp\phpFBED.tmp" \
+    --form "tax_card_document=@C:\Users\hp\AppData\Local\Temp\phpFBEE.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -5803,7 +5855,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>The commercial register scan (PDF/JPG/PNG). Required on first submission. Example: <code>C:\Users\hp\AppData\Local\Temp\php5D3E.tmp</code></p>
+<p>The commercial register scan (PDF/JPG/PNG). Required on first submission. Example: <code>C:\Users\hp\AppData\Local\Temp\phpFBED.tmp</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>tax_card_document</code></b>&nbsp;&nbsp;
@@ -5815,7 +5867,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>The tax card scan (PDF/JPG/PNG). Required on first submission. Example: <code>C:\Users\hp\AppData\Local\Temp\php5D3F.tmp</code></p>
+<p>The tax card scan (PDF/JPG/PNG). Required on first submission. Example: <code>C:\Users\hp\AppData\Local\Temp\phpFBEE.tmp</code></p>
         </div>
         </form>
 
@@ -6125,7 +6177,15 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>
 </p>
 
-<p>The user's participations grouped by tab (active | won | lost | upcoming).</p>
+<p>The user's participations grouped by tab, each row carrying the viewer's own
+state on that auction (highest bid, whether they lead it, deposit/book
+flags, final-payment status) — everything the screen needs without a
+follow-up request per row.</p>
+<p>Tabs are VIEWS over one set, not a partition: an auction can appear in more
+than one (a won auction is also closed), and a participation whose auction
+was later cancelled appears only under <code>all</code>. <code>all</code> is the exhaustive tab —
+use it if you need every participation accounted for. Draft auctions are
+never visible to citizens, so they cannot appear at all.</p>
 
 <span id="example-requests-GETapi-v1-my-auctions">
 <blockquote>Example request:</blockquote>
@@ -6276,9 +6336,508 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value="active"
                data-component="query">
     <br>
-<p>One of active, won, lost, upcoming (default active). Example: <code>active</code></p>
+<p>One of all, active, won, lost, upcoming (default active). Example: <code>active</code></p>
             </div>
                 </form>
+
+                <h1 id="devices">Devices</h1>
+
+    <p>Push-notification device registry. The app registers its provider token here so
+the platform can reach it, and unregisters on sign-out.</p>
+
+                                <h2 id="devices-POSTapi-v1-devices">Register this device</h2>
+
+<p>
+</p>
+
+<p>Claims a push token for the authenticated user. Idempotent — call it on
+every launch and after every token refresh. If the token was previously
+registered to a different account (a shared device, or a reinstall), it is
+re-pointed, so the previous owner stops receiving this device's push.</p>
+
+<span id="example-requests-POSTapi-v1-devices">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request POST \
+    "https://mazayada.findosystem.com/api/v1/devices" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar" \
+    --data "{
+    \"token\": \"fMEP0b2sTk...\",
+    \"platform\": \"android\",
+    \"locale\": \"ar\",
+    \"app_version\": \"1.4.2\"
+}"
+</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/devices"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+let body = {
+    "token": "fMEP0b2sTk...",
+    "platform": "android",
+    "locale": "ar",
+    "app_version": "1.4.2"
+};
+
+fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-POSTapi-v1-devices">
+            <blockquote>
+            <p>Example response (204):</p>
+        </blockquote>
+                <pre>
+<code>Empty response</code>
+ </pre>
+    </span>
+<span id="execution-results-POSTapi-v1-devices" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-POSTapi-v1-devices"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-POSTapi-v1-devices"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-POSTapi-v1-devices" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-POSTapi-v1-devices">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-POSTapi-v1-devices" data-method="POST"
+      data-path="api/v1/devices"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('POSTapi-v1-devices', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-POSTapi-v1-devices"
+                    onclick="tryItOut('POSTapi-v1-devices');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-POSTapi-v1-devices"
+                    onclick="cancelTryOut('POSTapi-v1-devices');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-POSTapi-v1-devices"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-black">POST</small>
+            <b><code>api/v1/devices</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="POSTapi-v1-devices"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="POSTapi-v1-devices"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="POSTapi-v1-devices"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                                <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
+        <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>token</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="token"                data-endpoint="POSTapi-v1-devices"
+               value="fMEP0b2sTk..."
+               data-component="body">
+    <br>
+<p>The provider (FCM) registration token. Example: <code>fMEP0b2sTk...</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>platform</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="platform"                data-endpoint="POSTapi-v1-devices"
+               value="android"
+               data-component="body">
+    <br>
+<p>ios or android. Example: <code>android</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>locale</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="locale"                data-endpoint="POSTapi-v1-devices"
+               value="ar"
+               data-component="body">
+    <br>
+<p>The app UI language (ar|fr|en). Example: <code>ar</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>app_version</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="app_version"                data-endpoint="POSTapi-v1-devices"
+               value="1.4.2"
+               data-component="body">
+    <br>
+<p>The client build, for diagnostics. Example: <code>1.4.2</code></p>
+        </div>
+        </form>
+
+                    <h2 id="devices-DELETEapi-v1-devices">Unregister this device</h2>
+
+<p>
+</p>
+
+<p>Removes the token so this device stops receiving push. Call it on sign-out.
+Only the owner's own registration is removed — passing someone else's token
+is a no-op. Idempotent: an unknown token also returns 204.</p>
+
+<span id="example-requests-DELETEapi-v1-devices">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request DELETE \
+    "https://mazayada.findosystem.com/api/v1/devices" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar" \
+    --data "{
+    \"token\": \"fMEP0b2sTk...\"
+}"
+</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/devices"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+let body = {
+    "token": "fMEP0b2sTk..."
+};
+
+fetch(url, {
+    method: "DELETE",
+    headers,
+    body: JSON.stringify(body),
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-DELETEapi-v1-devices">
+            <blockquote>
+            <p>Example response (204):</p>
+        </blockquote>
+                <pre>
+<code>Empty response</code>
+ </pre>
+    </span>
+<span id="execution-results-DELETEapi-v1-devices" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-DELETEapi-v1-devices"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-DELETEapi-v1-devices"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-DELETEapi-v1-devices" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-DELETEapi-v1-devices">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-DELETEapi-v1-devices" data-method="DELETE"
+      data-path="api/v1/devices"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('DELETEapi-v1-devices', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-DELETEapi-v1-devices"
+                    onclick="tryItOut('DELETEapi-v1-devices');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-DELETEapi-v1-devices"
+                    onclick="cancelTryOut('DELETEapi-v1-devices');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-DELETEapi-v1-devices"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-red">DELETE</small>
+            <b><code>api/v1/devices</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="DELETEapi-v1-devices"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="DELETEapi-v1-devices"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="DELETEapi-v1-devices"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                                <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
+        <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>token</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="token"                data-endpoint="DELETEapi-v1-devices"
+               value="fMEP0b2sTk..."
+               data-component="body">
+    <br>
+<p>The token to remove. Example: <code>fMEP0b2sTk...</code></p>
+        </div>
+        </form>
+
+                    <h2 id="devices-GETapi-v1-devices-status">Push status</h2>
+
+<p>
+</p>
+
+<p>Whether the platform can actually deliver push right now, and how many
+devices this user has registered. Lets the app tell "notifications are off
+on this device" apart from "the server has no push provider configured".</p>
+
+<span id="example-requests-GETapi-v1-devices-status">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "https://mazayada.findosystem.com/api/v1/devices/status" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/devices/status"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-v1-devices-status">
+            <blockquote>
+            <p>Example response (401):</p>
+        </blockquote>
+                <details class="annotation">
+            <summary style="cursor: pointer;">
+                <small onclick="textContent = parentElement.parentElement.open ? 'Show headers' : 'Hide headers'">Show headers</small>
+            </summary>
+            <pre><code class="language-http">cache-control: no-cache, private
+content-type: application/json
+access-control-allow-origin: *
+ </code></pre></details>         <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;يلزم تسجيل الدخول.&quot;
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-v1-devices-status" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-v1-devices-status"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-v1-devices-status"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-v1-devices-status" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-v1-devices-status">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-v1-devices-status" data-method="GET"
+      data-path="api/v1/devices/status"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v1-devices-status', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-v1-devices-status"
+                    onclick="tryItOut('GETapi-v1-devices-status');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-v1-devices-status"
+                    onclick="cancelTryOut('GETapi-v1-devices-status');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-v1-devices-status"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v1/devices/status</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-v1-devices-status"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-v1-devices-status"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="GETapi-v1-devices-status"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                        </form>
 
                 <h1 id="documents">Documents</h1>
 
@@ -6849,6 +7408,150 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </div>
                         </form>
 
+                    <h2 id="documents-GETapi-v1-documents-filters">Document filter options</h2>
+
+<p>
+</p>
+
+<p>The dropdown values for the library filters, narrowed to the auctions THIS
+user actually has documents for — unlike the public <code>/auctions/filters</code>,
+which lists every category/wilaya on the platform and has no entities at
+all. Empty arrays mean the user has no documents yet.</p>
+
+<span id="example-requests-GETapi-v1-documents-filters">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "https://mazayada.findosystem.com/api/v1/documents/filters" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/documents/filters"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-v1-documents-filters">
+            <blockquote>
+            <p>Example response (401):</p>
+        </blockquote>
+                <details class="annotation">
+            <summary style="cursor: pointer;">
+                <small onclick="textContent = parentElement.parentElement.open ? 'Show headers' : 'Hide headers'">Show headers</small>
+            </summary>
+            <pre><code class="language-http">cache-control: no-cache, private
+content-type: application/json
+access-control-allow-origin: *
+ </code></pre></details>         <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;يلزم تسجيل الدخول.&quot;
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-v1-documents-filters" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-v1-documents-filters"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-v1-documents-filters"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-v1-documents-filters" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-v1-documents-filters">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-v1-documents-filters" data-method="GET"
+      data-path="api/v1/documents/filters"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v1-documents-filters', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-v1-documents-filters"
+                    onclick="tryItOut('GETapi-v1-documents-filters');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-v1-documents-filters"
+                    onclick="cancelTryOut('GETapi-v1-documents-filters');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-v1-documents-filters"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v1/documents/filters</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-v1-documents-filters"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-v1-documents-filters"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="GETapi-v1-documents-filters"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                        </form>
+
                 <h1 id="endpoints">Endpoints</h1>
 
     
@@ -7047,7 +7750,7 @@ fetch(url, {
             <pre><code class="language-http">cache-control: max-age=3600, public, s-maxage=3600
 content-type: application/json
 access-control-allow-origin: *
-set-cookie: XSRF-TOKEN=eyJpdiI6IkNMcEU3TzIzS2FyQ1laWFc1RFByOHc9PSIsInZhbHVlIjoiQitQQlJQTE5KMFhyeTFQblNmL1BaUmY3TlMzMmtFOSt2WEd6OGJhZW80MjRxVldtZHlYV3RTKzRiK1VyQmJVYmljbVhWeTdCRGgwaEpMcTBXNEJyMlN5N0tpdWt6STduNE9PNnJJTStkUWdObkF3a3dIOUMwWldQc0t6N21wQW8iLCJtYWMiOiI3MDA1ZWFkZDYyNDJkMmZiMzI5NzRhNjBlYmYzYTgwODBkZjU3N2I1MTUzODMwOWM0MjRkYTM3OGQzNTEyODNlIiwidGFnIjoiIn0%3D; expires=Mon, 13 Jul 2026 19:31:55 GMT; Max-Age=7200; path=/; samesite=lax; mazayada-session=eyJpdiI6ImJ3aEJHSC9ZaUV6WFBHbTFGWDhjOGc9PSIsInZhbHVlIjoiblkxb3dDS3BNZjFEdVMzUmtHZ3RJSndvL0pqRjVXcjUrNC9IaTYvdUJwUHZEWWJ4bk43S1QzK3pOc3oybHhGS1NFaVhXWFdIS20yMFFnc1hGU2oxc2kzZDk2ZjRxaklpbmE4OUdzVWZvb0Z1ejQ5TDB2cVYreFM0UHgzNHo3RjgiLCJtYWMiOiJhOGIyYTdhYTAxNWViNWUyNDBmYjUzZTQyYTVhNTZlNDljNDk5MTQxYTUwZTdhZmU2YjI0ZDk1MTc4NDMzNzhmIiwidGFnIjoiIn0%3D; expires=Mon, 13 Jul 2026 19:31:55 GMT; Max-Age=7200; path=/; httponly; samesite=lax
+set-cookie: XSRF-TOKEN=eyJpdiI6IklTMU80VlZudlVuNXlkQmptcXUvQ2c9PSIsInZhbHVlIjoiQVFlbGxLMnBhZmlMTzl1NloxeXR4dFdiaW1FYWdnT2dtQTJrM3ZnMGphTnlGZnE2Y2VZem9QS29yK0RqTjk5ODZ4QW1WYlJSNTlXczVJR0VPcHBVWGZLTXFuQkpGdUNXRWIwVXdmZ0ZvRmhnMi9IUVNFeHRNQVU4bS9ob0ptSWoiLCJtYWMiOiIwM2VkMDdiZWFlMjU2NjZkZjAyOWMxMWZiYjg5MmYwZjBkZDUwZWFjMjI3YjRmOWYzMjIwYmNkZTc4N2JiZjkzIiwidGFnIjoiIn0%3D; expires=Thu, 30 Jul 2026 11:06:23 GMT; Max-Age=7200; path=/; samesite=lax; mazayada-session=eyJpdiI6IlhTSzlaWmVjallIcUNhQk1sUTN5YlE9PSIsInZhbHVlIjoiZm9TRjYxNDVSak9nUmxCNTgrM3VqOXlEYUdISld4d2VkL094ZjJtcHF0L0p4Nlg2Rnd1WDByWXk2U0YyaTdPbUVhbXk2YWltQWZ6UVBUOUhFai95QzUrcGdUazNlWjVjbjBDR2Ruc2V4VlNQTUFrMFR2dGZXaU95RCsvL0wwdWoiLCJtYWMiOiIwOGY2YzBhMDQ4ZjkxOTE4NzZlMTEzNTM5MTVhNWRlN2VlYzE5NmI0NjM5MjI2MTk5NWViMzk0OTFjZmY1M2ZiIiwidGFnIjoiIn0%3D; expires=Thu, 30 Jul 2026 11:06:23 GMT; Max-Age=7200; path=/; httponly; samesite=lax
  </code></pre></details>         <pre>
 
 <code class="language-json" style="max-height: 300px;">[
@@ -7536,7 +8239,7 @@ fetch(url, {
             <pre><code class="language-http">cache-control: max-age=3600, public, s-maxage=3600
 content-type: application/json
 access-control-allow-origin: *
-set-cookie: XSRF-TOKEN=eyJpdiI6InEwRFM0TlRsSDVRamxmNXRLUWZJcWc9PSIsInZhbHVlIjoiWWhVR0VTL2tWZlJQZzVZWmFCNFZsQnhMdUNBWW9BdmwzT082aG5sbHNPdEg2enJZbVZkSEsrMVczcmZxT0wrR01Sc3llOG5TNDFWVFhKNnBZY0ZRTFd1RFdkSDdoU2R0ckZIMXJlSGRPSVdCaGxSNjVldWNBUVJmNEhJczVaVU0iLCJtYWMiOiI5MzMzNjUyNmExZTIxNTllOTkxY2M4YmI1ODNiMDdmYThlYmI2N2ZjMjhmMWRhMzgyZGE2NjcwYTc2MTEyMmE4IiwidGFnIjoiIn0%3D; expires=Mon, 13 Jul 2026 19:31:55 GMT; Max-Age=7200; path=/; samesite=lax; mazayada-session=eyJpdiI6InJUaDFjVGJ6ZXNUS3FLWElKd2MzUHc9PSIsInZhbHVlIjoidGx0alQ3NERtY0cwM0FZa2QwYTBDdzBNR1J6YmRvZDRwdi83eG9zRXJ2bjRkNWovRzg0L0k0ekRyZTJOK2VTcGl6RjNlTS9jdFQzK0VmSTRRS2Y5MTVCR011WStPQ2Vjb3Q3NkVGcS9DNzZaNy9SeWJ6OWw3UkxuUWFuczNOdFMiLCJtYWMiOiJkZDczMzIyOTc1MjE1MGRhOWU3NWVkYjExN2M4MjQyYTFiNWJmOTExMzAwYzdmYzk4NWI3MGEzMTdjZWFiMGIxIiwidGFnIjoiIn0%3D; expires=Mon, 13 Jul 2026 19:31:55 GMT; Max-Age=7200; path=/; httponly; samesite=lax
+set-cookie: XSRF-TOKEN=eyJpdiI6ImRaSlIyQnBuMS9wMUgvdE12dDZiY1E9PSIsInZhbHVlIjoidCtGRHZaZjVrL1JLNVBpNE5TbkN2akkyUjlseUVTMWxsYXVwRCtWc1RHaHlrYzkrdDAxK2ZCSmJ1M3luZXJTSFRGZGVWdThyQnBuMlZjMng2YytuZmN3M2diVU9mVVJkMGNvZHEvdjRZSVBxeVQ3OEJjMHE5MXpQUEJHbXJtd3giLCJtYWMiOiI5NjRjMjk3YjUyMTc4ZTM3NDdiNDc4YmE0NDAwMzRhMDM5NjRkZGNlYzEzYTIwZTdhMmQyYjc3YjNkMzI2OGRlIiwidGFnIjoiIn0%3D; expires=Thu, 30 Jul 2026 11:06:23 GMT; Max-Age=7200; path=/; samesite=lax; mazayada-session=eyJpdiI6InFiaFY2YS9EZ3hkRmVzQ1lWZklXeFE9PSIsInZhbHVlIjoiTElMV2NJbFpGcW1sb01YeVlVU1Q3SEdWR0dKY0MwZi9Cb1RtUDhJaUVEZy9OUUxkQXFZdmZIeTI1ZklXRGZBQ0dTa2dFQmFrdW8yV3dGS0J3NVBkbEtLZEptMkliQ1pLc0xWMys0OVdnK0RnUlM2U3EvMWNHTWdqby96U1RNRlciLCJtYWMiOiJlNzE0NzQ3ZWIxNDNjNGRmZjM0YTJkYTgzMjllMTkyZjE5YTE1ZjVmZDg2NjVjYzA1ZDI1MjA4ODlhZDkzMTNlIiwidGFnIjoiIn0%3D; expires=Thu, 30 Jul 2026 11:06:23 GMT; Max-Age=7200; path=/; httponly; samesite=lax
  </code></pre></details>         <pre>
 
 <code class="language-json" style="max-height: 300px;">[
@@ -7764,6 +8467,9 @@ You can check the Dev Tools console for debugging information.</code></pre>
 </p>
 
 <p>Aggregated KPIs, dimensions, and monthly series for the authenticated user's payments.</p>
+<p>Every monetary figure is <code>{ amount, formatted }</code> in DINARS — the same unit
+as <code>/reports/transactions</code> and the rest of the API. (<code>series.data</code> stays a
+flat integer array of dinars so it can be plotted directly.)</p>
 
 <span id="example-requests-GETapi-v1-reports-summary">
 <blockquote>Example request:</blockquote>
@@ -8069,6 +8775,157 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </div>
                         </form>
 
+                    <h2 id="financial-reports-GETapi-v1-reports-export--format-">Export transactions</h2>
+
+<p>
+</p>
+
+<p>Downloads the filtered transactions as a file, using the same filters as
+<code>/reports/summary</code> and <code>/reports/transactions</code>. <code>csv</code> streams (chunked, so a
+long history is safe); <code>pdf</code> renders the full report through mpdf with the
+Arabic shaping/RTL of the web export.</p>
+<p>The response is a BINARY download (<code>text/csv</code> or <code>application/pdf</code>), not the
+JSON envelope — request it with a bytes/stream response type and save it,
+don't try to decode it. Send the bearer token as usual.</p>
+
+<span id="example-requests-GETapi-v1-reports-export--format-">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "https://mazayada.findosystem.com/api/v1/reports/export/csv" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/reports/export/csv"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-v1-reports-export--format-">
+            <blockquote>
+            <p>Example response (200):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">The file body (Content-Disposition: attachment).</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-v1-reports-export--format-" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-v1-reports-export--format-"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-v1-reports-export--format-"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-v1-reports-export--format-" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-v1-reports-export--format-">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-v1-reports-export--format-" data-method="GET"
+      data-path="api/v1/reports/export/{format}"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v1-reports-export--format-', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-v1-reports-export--format-"
+                    onclick="tryItOut('GETapi-v1-reports-export--format-');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-v1-reports-export--format-"
+                    onclick="cancelTryOut('GETapi-v1-reports-export--format-');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-v1-reports-export--format-"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v1/reports/export/{format}</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-v1-reports-export--format-"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-v1-reports-export--format-"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="GETapi-v1-reports-export--format-"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>format</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="format"                data-endpoint="GETapi-v1-reports-export--format-"
+               value="csv"
+               data-component="url">
+    <br>
+<p>csv or pdf. Example: <code>csv</code></p>
+            </div>
+                    </form>
+
                 <h1 id="kyc">KYC</h1>
 
     <p>Identity verification: upload documents to the private disk, submit the profile
@@ -8234,7 +9091,7 @@ id-front, id-back, selfie-with-id, photo-biometric.</p>
     --header "Content-Type: multipart/form-data" \
     --header "Accept: application/json" \
     --header "Accept-Language: ar" \
-    --form "file=@C:\Users\hp\AppData\Local\Temp\php5CFB.tmp" </code></pre></div>
+    --form "file=@C:\Users\hp\AppData\Local\Temp\phpFB9B.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -8368,7 +9225,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>يجب أن يكون value صورة. يجب ألا يزيد حجم value عن 1024 كيلوبايت. Example: <code>C:\Users\hp\AppData\Local\Temp\php5CFB.tmp</code></p>
+<p>يجب أن يكون value صورة. يجب ألا يزيد حجم value عن 1024 كيلوبايت. Example: <code>C:\Users\hp\AppData\Local\Temp\phpFB9B.tmp</code></p>
         </div>
         </form>
 
@@ -8402,7 +9259,7 @@ account to UNDER_REVIEW.</p>
     \"postal_code\": \"15627\",
     \"profession\": \"udtdsufvyvddqamniihfq\",
     \"expected_income\": 8,
-    \"id_type\": \"LICENSE\",
+    \"id_type\": \"ID_CARD\",
     \"id_number\": \"oynlazghdtqtqxbajwbpi\"
 }"
 </code></pre></div>
@@ -8431,7 +9288,7 @@ let body = {
     "postal_code": "15627",
     "profession": "udtdsufvyvddqamniihfq",
     "expected_income": 8,
-    "id_type": "LICENSE",
+    "id_type": "ID_CARD",
     "id_number": "oynlazghdtqtqxbajwbpi"
 };
 
@@ -8680,10 +9537,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="id_type"                data-endpoint="POSTapi-v1-kyc-submit"
-               value="LICENSE"
+               value="ID_CARD"
                data-component="body">
     <br>
-<p>Example: <code>LICENSE</code></p>
+<p>Example: <code>ID_CARD</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>ID_CARD</code></li> <li><code>PASSPORT</code></li> <li><code>LICENSE</code></li></ul>
         </div>
@@ -9439,8 +10296,15 @@ endpoint the app polls after the gateway web view closes.</p>
 <p>
 </p>
 
-<p>Gateway return URL. Confirms (or fails) the payment set for the reference
-and reports the resulting status. Idempotent — safe to call more than once.</p>
+<p>Gateway return URL for the MOBILE checkout. Confirms (or fails) the payment
+set for the reference and reports the resulting status. Idempotent — safe to
+call more than once, and session-less, so it works inside a web view (the
+web <code>payments.callback</code> sits behind <code>auth</code> and would redirect to the login
+page instead).</p>
+<p>The client does not have to let this URL load: detecting the
+<code>/api/v1/payments/callback</code> prefix is enough to close the web view and poll
+<code>GET payments/{ref}/status</code>. The authoritative confirmation is the gateway's
+signed server-to-server webhook either way.</p>
 
 <span id="example-requests-GETapi-v1-payments-callback">
 <blockquote>Example request:</blockquote>
@@ -9597,7 +10461,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value="MOCK-ABC123"
                data-component="query">
     <br>
-<p>The gateway reference. Example: <code>MOCK-ABC123</code></p>
+<p>The gateway reference OR our payment id. Example: <code>MOCK-ABC123</code></p>
             </div>
                                     <div style="padding-left: 28px; clear: unset;">
                 <b style="line-height: 2;"><code>decision</code></b>&nbsp;&nbsp;
@@ -9618,8 +10482,12 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>
 </p>
 
-<p>Returns the status of every payment row sharing a gateway reference for the
+<p>Returns the status of every payment row sharing a reference for the
 authenticated user. Use this to poll after the gateway web view returns.</p>
+<p><code>{ref}</code> accepts EITHER the gateway reference returned by
+<code>POST auctions/{auction}/register|buy-book|final-payment</code> OR our own payment
+id — the id is what the gateway echoes back on the return URL, so the client
+can poll with whichever value it holds.</p>
 
 <span id="example-requests-GETapi-v1-payments--ref--status">
 <blockquote>Example request:</blockquote>
@@ -9932,6 +10800,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <p>Begins the winner's final payment (§4 step 7) and returns the gateway
 redirect URL.</p>
+<p>A 422 carries a stable <code>code</code>: <code>not_winner</code> or <code>final_already_paid</code>.</p>
 
 <span id="example-requests-POSTapi-v1-auctions--auction_id--final-payment">
 <blockquote>Example request:</blockquote>
@@ -9965,7 +10834,17 @@ fetch(url, {
 </span>
 
 <span id="example-responses-POSTapi-v1-auctions--auction_id--final-payment">
-</span>
+            <blockquote>
+            <p>Example response (422):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;تم إتمام الدفع النهائي مسبقاً.&quot;,
+    &quot;code&quot;: &quot;final_already_paid&quot;
+}</code>
+ </pre>
+    </span>
 <span id="execution-results-POSTapi-v1-auctions--auction_id--final-payment" hidden>
     <blockquote>Received response<span
                 id="execution-response-status-POSTapi-v1-auctions--auction_id--final-payment"></span>:
@@ -10073,7 +10952,9 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>
 </p>
 
-
+<p>The user's own profile, including the identity fields the KYC form asks for
+(father/mother names, birth details, RIP/NIF/NIS) so a resubmission can be
+prefilled instead of retyped.</p>
 
 <span id="example-requests-GETapi-v1-profile">
 <blockquote>Example request:</blockquote>
@@ -10234,7 +11115,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     \"postal_code\": \"15627\",
     \"profession\": \"udtdsufvyvddqamniihfq\",
     \"locale\": \"fr\",
-    \"secret_question\": \"mother_maiden\",
+    \"secret_question\": \"fav_teacher\",
     \"secret_answer\": \"coynlazghdtqtqxbajwbp\"
 }"
 </code></pre></div>
@@ -10258,7 +11139,7 @@ let body = {
     "postal_code": "15627",
     "profession": "udtdsufvyvddqamniihfq",
     "locale": "fr",
-    "secret_question": "mother_maiden",
+    "secret_question": "fav_teacher",
     "secret_answer": "coynlazghdtqtqxbajwbp"
 };
 
@@ -10449,10 +11330,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="secret_question"                data-endpoint="PUTapi-v1-profile"
-               value="mother_maiden"
+               value="fav_teacher"
                data-component="body">
     <br>
-<p>Example: <code>mother_maiden</code></p>
+<p>Example: <code>fav_teacher</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>mother_maiden</code></li> <li><code>first_school</code></li> <li><code>birth_city</code></li> <li><code>pet_name</code></li> <li><code>fav_teacher</code></li></ul>
         </div>
@@ -10480,8 +11361,16 @@ envelope, locale, rate limiting) is wired correctly.</p>
 <p>
 </p>
 
-<p>Returns a simple liveness payload wrapped in the standard envelope. Useful
-for smoke-testing the API plumbing and the active locale.</p>
+<p>Liveness payload plus the settings the client needs to bootstrap itself:
+the active locale and the PUBLIC realtime (Reverb) connection parameters.</p>
+<p>Fetch this at startup and configure the websocket from <code>realtime</code> rather
+than hardcoding a host per build — the production socket endpoint differs
+from the dev one, and it can change without an app release.</p>
+<p><code>realtime</code> is null when broadcasting is not configured; fall back to
+polling <code>GET auctions/{auction}/price</code> and <code>.../bids</code> in that case.</p>
+<p>SECURITY: only the public app key is published here. The Reverb app SECRET
+is server-side only and is never exposed. Subscribing to a private channel
+still requires POST /api/broadcasting/auth with the bearer token.</p>
 
 <span id="example-requests-GETapi-v1-ping">
 <blockquote>Example request:</blockquote>
@@ -10524,7 +11413,15 @@ fetch(url, {
     &quot;data&quot;: {
         &quot;status&quot;: &quot;ok&quot;,
         &quot;version&quot;: &quot;v1&quot;,
-        &quot;locale&quot;: &quot;ar&quot;
+        &quot;locale&quot;: &quot;ar&quot;,
+        &quot;realtime&quot;: {
+            &quot;driver&quot;: &quot;reverb&quot;,
+            &quot;key&quot;: &quot;mazayada&quot;,
+            &quot;host&quot;: &quot;mazayada.findosystem.com&quot;,
+            &quot;port&quot;: 443,
+            &quot;scheme&quot;: &quot;https&quot;,
+            &quot;auth_endpoint&quot;: &quot;https://mazayada.findosystem.com/api/broadcasting/auth&quot;
+        }
     },
     &quot;message&quot;: &quot;الواجهة البرمجية تعمل.&quot;,
     &quot;meta&quot;: {}
@@ -10615,6 +11512,188 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>Example: <code>ar</code></p>
             </div>
                         </form>
+
+                    <h2 id="system-GETapi-v1-verify">Verify a document</h2>
+
+<p>
+</p>
+
+<p>The JSON twin of the web <code>/verify</code> page, so the app's QR scanner can render
+the result natively instead of opening a browser. The QR printed on every
+document encodes the web URL; take its <code>doc</code> and <code>sig</code> query parameters and
+call this endpoint with them.</p>
+<p>Deliberately public and deliberately minimal: it answers "was this paper
+issued by the platform and is it unaltered?" and returns only what a holder
+can already read off the sheet (type, auction title, issue date, amount) plus
+a short signature fingerprint to compare. Never any personal data, and never
+the document file — downloading still requires an authorised session.</p>
+<p>An invalid or unknown pair returns HTTP 200 with <code>valid: false</code> (not a 404):
+failing to verify IS the answer, and an error status would be indistinguishable
+from a network problem.</p>
+
+<span id="example-requests-GETapi-v1-verify">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "https://mazayada.findosystem.com/api/v1/verify?doc=9b1f...&amp;sig=4f3c..." \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/verify"
+);
+
+const params = {
+    "doc": "9b1f...",
+    "sig": "4f3c...",
+};
+Object.keys(params)
+    .forEach(key =&gt; url.searchParams.append(key, params[key]));
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-v1-verify">
+            <blockquote>
+            <p>Example response (200):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;data&quot;: {
+        &quot;valid&quot;: false,
+        &quot;document&quot;: null
+    },
+    &quot;message&quot;: null,
+    &quot;meta&quot;: {}
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-v1-verify" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-v1-verify"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-v1-verify"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-v1-verify" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-v1-verify">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-v1-verify" data-method="GET"
+      data-path="api/v1/verify"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v1-verify', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-v1-verify"
+                    onclick="tryItOut('GETapi-v1-verify');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-v1-verify"
+                    onclick="cancelTryOut('GETapi-v1-verify');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-v1-verify"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v1/verify</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-v1-verify"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-v1-verify"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="GETapi-v1-verify"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                            <h4 class="fancy-heading-panel"><b>Query Parameters</b></h4>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>doc</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="doc"                data-endpoint="GETapi-v1-verify"
+               value="9b1f..."
+               data-component="query">
+    <br>
+<p>The document id from the QR code. Example: <code>9b1f...</code></p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>sig</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="sig"                data-endpoint="GETapi-v1-verify"
+               value="4f3c..."
+               data-component="query">
+    <br>
+<p>The signature from the QR code. Example: <code>4f3c...</code></p>
+            </div>
+                </form>
 
             
 

@@ -33,9 +33,19 @@ trait RespondsWithEnvelope
         return response()->json(null, 204);
     }
 
-    protected function fail(?string $message = null, array $errors = [], int $status = 400): JsonResponse
+    /**
+     * @param  array<string, array<int, string>>  $errors  field => messages
+     * @param  string|null  $code  stable machine code the client branches on —
+     *                             ALWAYS prefer this over matching $message, which
+     *                             is translated and free to change.
+     */
+    protected function fail(?string $message = null, array $errors = [], int $status = 400, ?string $code = null): JsonResponse
     {
         $payload = ['message' => $message ?? __('common.api.error')];
+
+        if ($code !== null) {
+            $payload['code'] = $code;
+        }
 
         if ($errors !== []) {
             $payload['errors'] = $errors;

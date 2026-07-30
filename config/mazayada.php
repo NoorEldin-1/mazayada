@@ -46,6 +46,27 @@ return [
         'nin_checksum_enforced' => (bool) env('NIN_CHECKSUM_ENFORCED', false),
     ],
 
+    /*
+    | Mobile push notifications. Devices register their token via
+    | POST /api/v1/devices; PushChannel fans a notification out to all of them.
+    |
+    | Driver: 'log' (default — records the payload, delivers nothing) or 'fcm'
+    | (Firebase Cloud Messaging HTTP v1). Going live is credentials-only: put the
+    | service-account JSON somewhere the web user can read and point
+    | FCM_CREDENTIALS at it. 'fcm' silently degrades to 'log' without it, so an
+    | unconfigured environment never attempts a network call.
+    |
+    | The file is a SECRET — store it OUTSIDE the document root and never commit it.
+    */
+    'push' => [
+        'driver' => env('PUSH_DRIVER', 'log'),
+
+        'fcm' => [
+            // Absolute path to the Firebase service-account JSON.
+            'credentials' => env('FCM_CREDENTIALS'),
+        ],
+    ],
+
     'payments' => [
         // Active payment driver: 'mock' | 'chargily' | 'cibweb'. Defaults to the
         // legacy CIBWEB_MOCK flag so existing deployments keep their behaviour;

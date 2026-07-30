@@ -31,9 +31,32 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'address' => $this->address,
             'commune_id' => $this->commune_id,
+            // The KYC form asks for the wilaya before the commune; users only
+            // store the commune, so derive it rather than making the client
+            // reverse-look it up through /wilayas.
+            'wilaya_id' => $this->commune?->wilaya_id,
             'postal_code' => $this->postal_code,
             'profession' => $this->profession,
             'locale' => $this->locale,
+
+            // --- KYC form prefill -------------------------------------------
+            // The full set of identity fields SubmitKycRequest accepts, so a
+            // resubmission (e.g. after a rejection over one field) can be
+            // pre-populated instead of retyped. Null until first submitted.
+            'birth_date' => $this->birth_date?->toDateString(),
+            'birth_place' => $this->birth_place,
+            'father_name' => $this->father_name,
+            'mother_name' => $this->mother_name,
+            'mother_surname' => $this->mother_surname,
+            'expected_income' => $this->expected_income,
+            'id_card_number' => $this->id_card_number,
+            'passport_number' => $this->passport_number,
+            'license_number' => $this->license_number,
+            // Financial identifiers — the user's own, returned in full because
+            // the form needs to show what is already on file.
+            'rip' => $this->rip,
+            'nif' => $this->nif,
+            'nis' => $this->nis,
             'role' => $this->role?->value,
             'account_status' => $this->account_status?->value,
             'account_type' => $this->account_type?->value,

@@ -15,7 +15,7 @@ class UserNotification extends Model
     protected $table = 'notifications';
 
     protected $fillable = [
-        'user_id', 'title', 'body', 'channel',
+        'user_id', 'title', 'body', 'event', 'channel',
         'is_read', 'action_url', 'created_at',
     ];
 
@@ -37,13 +37,18 @@ class UserNotification extends Model
      * Create an in-app notification row for a user. Convenience wrapper used by
      * the KYC review flow and the suspension command so callers don't repeat
      * the channel/created_at boilerplate.
+     *
+     * `$event` is the machine-readable type (outbid, auction_won, …) the mobile
+     * client branches on; it is exposed as `type` by NotificationResource. Leave
+     * it null only where no meaningful event key exists.
      */
-    public static function record(string $userId, string $title, string $body, ?string $actionUrl = null, string $channel = 'PUSH'): self
+    public static function record(string $userId, string $title, string $body, ?string $actionUrl = null, string $channel = 'PUSH', ?string $event = null): self
     {
         return self::create([
             'user_id' => $userId,
             'title' => $title,
             'body' => $body,
+            'event' => $event,
             'channel' => $channel,
             'action_url' => $actionUrl,
             'created_at' => now(),

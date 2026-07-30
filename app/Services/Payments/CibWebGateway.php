@@ -28,7 +28,17 @@ class CibWebGateway implements PaymentGatewayInterface
             'orderNumber' => $payment->id,
             'amount' => $payment->amount, // centimes
             'currency' => config('mazayada.payments.cibweb.currency', '012'),
-            'returnUrl' => $context['return_url'] ?? route('payments.callback'),
+            // SATIM sends the payer to ONE returnUrl and reports the outcome via
+            // getOrderStatus. We still pass ref + decision so the callback can
+            // resolve the payment set (it re-verifies with the gateway anyway).
+            'returnUrl' => $context['success_url'] ?? route('payments.callback', [
+                'ref' => $payment->id,
+                'decision' => 'success',
+            ]),
+            'failUrl' => $context['failure_url'] ?? route('payments.callback', [
+                'ref' => $payment->id,
+                'decision' => 'fail',
+            ]),
             'description' => $context['description'] ?? 'Mazayada payment',
             'language' => app()->getLocale() === 'fr' ? 'FR' : 'AR',
         ]);

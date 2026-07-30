@@ -6,7 +6,6 @@ use App\Enums\KycStatus;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\User;
-use App\Models\UserNotification;
 use App\Notifications\KycStatusNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -114,24 +113,17 @@ class AdminKycController extends Controller
     }
 
     /**
-     * Email + in-app notify the citizen of a KYC decision. The in-app row is
-     * stored in the citizen's preferred language; mail failures are logged but
-     * never bubble up into a 500.
+     * Notify the citizen of a KYC decision over every channel (email, in-app row,
+     * push). KycStatusNotification owns the copy and renders it in the citizen's
+     * preferred language; delivery failures are logged but never bubble up into a
+     * 500 that would undo the admin's decision.
      */
     private function notifyDecision(User $user, string $type, ?string $reason = null): void
     {
-        $locale = $user->preferredLocale();
-        UserNotification::record(
-            $user->id,
-            __("kyc.notif_{$type}_title", [], $locale),
-            __("kyc.notif_{$type}_body", ['reason' => $reason ?? ''], $locale),
-            route('citizen.kyc'),
-        );
-
         try {
             $user->notify(new KycStatusNotification($type, $reason));
         } catch (\Throwable $e) {
-            Log::error('KYC decision email failed', ['user_id' => $user->id, 'type' => $type, 'error' => $e->getMessage()]);
+            Log::error('KYC decision notification failed', ['user_id' => $user->id, 'type' => $type, 'error' => $e->getMessage()]);
         }
     }
 }

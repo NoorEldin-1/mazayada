@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\UserRole;
+use App\Events\PersonalAuctionEvent;
 use App\Models\Appeal;
 use App\Models\Auction;
 use App\Models\AuctionReport;
@@ -12,6 +13,7 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Notifications\AuctionEventNotification;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Single dispatch point for the auction lifecycle notifications (spec §10.1).
@@ -45,6 +47,11 @@ class NotificationService
         ];
         $user->notify(new AuctionEventNotification('payment_confirmed', $params,
             $payment->auction ? route('auctions.show', $payment->auction) : null));
+
+        $this->broadcastPersonal($user, $payment->auction, 'payment_confirmed', [
+            'payment_type' => $payment->payment_type?->value,
+            'amount' => dinars((int) $payment->amount),
+        ]);
     }
 
     public function paymentFailed(User $user, Payment $payment): void
@@ -56,6 +63,10 @@ class NotificationService
         ];
         $user->notify(new AuctionEventNotification('payment_failed', $params,
             $payment->auction ? route('auctions.show', $payment->auction) : null));
+
+        $this->broadcastPersonal($user, $payment->auction, 'payment_failed', [
+            'payment_type' => $payment->payment_type?->value,
+        ]);
     }
 
     public function inspectionAnswered(InspectionQuestion $question): void
@@ -76,6 +87,13 @@ class NotificationService
             'amount' => dzd_text($newPriceCentimes),
         ];
         $user->notify(new AuctionEventNotification('outbid', $params, route('auctions.show', $auction)));
+
+        // The one event a live bidder must see instantly — the public
+        // auction.{id} channel says the price moved, but only this says it was
+        // YOUR bid that got beaten.
+        $this->broadcastPersonal($user, $auction, 'outbid', [
+            'new_price' => dinars($newPriceCentimes),
+        ]);
     }
 
     public function auctionWon(User $user, Auction $auction): void
@@ -86,12 +104,19 @@ class NotificationService
             'days' => $auction->finalPaymentDeadlineDays(),
         ];
         $user->notify(new AuctionEventNotification('auction_won', $params, route('auctions.show', $auction)));
+
+        $this->broadcastPersonal($user, $auction, 'auction_won', [
+            'final_price' => dinars((int) $auction->final_price),
+            'deadline_days' => $auction->finalPaymentDeadlineDays(),
+        ]);
     }
 
     public function auctionLost(User $user, Auction $auction): void
     {
         $params = ['auction' => $auction->localizedTitle()];
         $user->notify(new AuctionEventNotification('auction_lost', $params, route('auctions.show', $auction)));
+
+        $this->broadcastPersonal($user, $auction, 'auction_lost');
     }
 
     public function finalPaymentDue(User $user, Auction $auction): void
@@ -193,6 +218,35 @@ class NotificationService
         }
         $params = ['auction' => $report->auction?->localizedTitle() ?? ''];
         $account->notify(new AuctionEventNotification('auction_report_referred', $params, route('admin.auction-reports.index')));
+    }
+
+    /**
+     * Push a realtime nudge to the participant's private auction channel
+     * (`auction.{id}.user.{id}`), alongside the durable notification row.
+     *
+     * Best-effort by design: broadcasting is an inline HTTP call to Reverb, and a
+     * websocket server being down must never fail the bid or payment that
+     * triggered it — the notification row and the email still went out, and the
+     * client falls back to polling.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    private function broadcastPersonal(User $user, ?Auction $auction, string $type, array $payload = []): void
+    {
+        if (! $auction) {
+            return;
+        }
+
+        try {
+            PersonalAuctionEvent::dispatch($user->id, $auction->id, $type, $payload);
+        } catch (\Throwable $e) {
+            Log::warning('Personal auction broadcast failed', [
+                'user_id' => $user->id,
+                'auction_id' => $auction->id,
+                'type' => $type,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

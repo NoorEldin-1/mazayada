@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\DocumentType;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Resources\Api\V1\DocumentResource;
 use App\Models\Document;
@@ -56,6 +57,38 @@ class DocumentController extends ApiController
     public function summary(Request $request, DocumentLibraryService $service): JsonResponse
     {
         return $this->ok($service->stats($request->user()));
+    }
+
+    /**
+     * Document filter options
+     *
+     * The dropdown values for the library filters, narrowed to the auctions THIS
+     * user actually has documents for — unlike the public `/auctions/filters`,
+     * which lists every category/wilaya on the platform and has no entities at
+     * all. Empty arrays mean the user has no documents yet.
+     */
+    public function filters(Request $request, DocumentLibraryService $service): JsonResponse
+    {
+        $options = $service->filterOptions($request->user());
+
+        return $this->ok([
+            'categories' => $options['categories']
+                ->map(fn ($c) => ['id' => $c->id, 'name' => $c->name])->values(),
+            'wilayas' => $options['wilayas']
+                ->map(fn ($w) => ['id' => $w->id, 'code' => $w->code, 'name' => $w->name])->values(),
+            'entities' => $options['entities']
+                ->map(fn ($e) => ['id' => $e->id, 'name' => $e->name])->values(),
+            'types' => array_map(fn ($t) => [
+                'value' => $t->value,
+                'label' => $t->label(),
+            ], array_values(array_filter(
+                DocumentType::cases(),
+                // AUCTION_REPORT is admin-only and never appears in the library.
+                fn (DocumentType $t) => $t !== DocumentType::AUCTION_REPORT,
+            ))),
+            'presets' => ['today', '7d', '30d', 'this_month', 'this_year', 'all'],
+            'sorts' => ['recent', 'oldest', 'auction'],
+        ]);
     }
 
     /**
