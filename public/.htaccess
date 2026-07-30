@@ -1,27 +1,3 @@
-# WebSocket proxy → Laravel Reverb (live auctions, spec §6): sends
-# wss://<domain>/app/{key} to the internal Reverb instead of index.php.
-#
-# THIS BLOCK IS TRANSCRIBED FROM A CONFIGURATION VERIFIED ON THE LIVE SERVER
-# (404 before, 101 after). Every detail below is load-bearing — three of them
-# were each, on their own, enough to silently break the handshake and leave the
-# auction page with no live updates at all:
-#
-#  • http://, not ws:// — LiteSpeed Enterprise 6.2 (this host runs it in
-#    Apache-config mode, so its WebAdmin lists zero virtual hosts and the
-#    Web Socket Proxy screen there cannot be used) 404s a ws:// proxy target,
-#    and performs the upgrade itself when the target is http://.
-#  • Port 8081, not Reverb's default 8080 — another tenant on this shared
-#    server already listens on 8080 with its own app registry, which is what
-#    answered "No matching application for ID [170884]". REVERB_PORT and
-#    REVERB_SERVER_PORT in .env must stay 8081 to match.
-#  • ONE condition, on Upgrade only. Adding the usual companion
-#    `RewriteCond %{HTTP:Connection} upgrade` makes the rule stop matching —
-#    LiteSpeed does not expose that hop-by-hop header to mod_rewrite.
-#
-# It lives at the top of the file, ahead of the front-controller block, because
-# it has to win before Laravel's `RewriteRule ^ index.php` claims the URL.
-# Keep it COMMITTED: deploys run `git reset --hard`, which erases any fix that
-# only exists on the server.
 <IfModule LiteSpeed>
 RewriteEngine On
 RewriteCond %{HTTP:Upgrade} =websocket [NC]
@@ -34,6 +10,10 @@ RewriteRule ^app/(.*)$ http://127.0.0.1:8081/app/$1 [P,L]
     </IfModule>
 
     RewriteEngine On
+
+    RewriteCond %{HTTP:Upgrade} websocket [NC]
+    RewriteCond %{HTTP:Connection} upgrade [NC]
+    RewriteRule ^/?app/(.*)$ "ws://127.0.0.1:8080/app/$1" [P,L]
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
@@ -53,3 +33,39 @@ RewriteRule ^app/(.*)$ http://127.0.0.1:8081/app/$1 [P,L]
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# ---------------------------------------------------------------------------
+# WebSocket proxy → Laravel Reverb (live auctions, spec §6)
+#
+# READ THIS BEFORE EDITING ANYTHING ABOVE.
+#
+# The two blocks at the top of this file are a byte-faithful copy of the only
+# configuration ever observed working on the production host (LiteSpeed
+# Enterprise 6.2 in Apache-config mode, so its WebAdmin lists zero virtual
+# hosts and the Web Socket Proxy screen there cannot be used at all).
+#
+# Everything about it that looks wrong was tried and mattered:
+#
+#   • Tidying it into a single rule broke live updates. The second, seemingly
+#     dead ws://…:8080 rule was present when the handshake returned 101; the
+#     version without it returned 404. Leave it until someone can retest its
+#     removal deliberately, in a window where a 404 is acceptable.
+#   • Moving these comments above the <IfModule LiteSpeed> block coincided with
+#     the same breakage. They stay at the bottom.
+#   • The live target is http://, not ws:// — LiteSpeed 404s a ws:// proxy
+#     target and performs the upgrade itself over http://.
+#   • Port 8081, not Reverb's default 8080: another tenant on this shared
+#     server already listens on 8080 with its own app registry, which is what
+#     answered "No matching application for ID [170884]". REVERB_PORT and
+#     REVERB_SERVER_PORT in .env must stay 8081 to match.
+#
+# The rule has to win before Laravel's `RewriteRule ^ index.php`, and it must
+# stay COMMITTED: deploys run `git reset --hard`, which erases any fix that
+# only exists on the server — that is exactly how this broke twice.
+#
+# Verify after any change (expect 101, not 404):
+#   curl -s -o /dev/null -w '%{http_code}\n' \
+#     -H 'Connection: Upgrade' -H 'Upgrade: websocket' \
+#     -H 'Sec-WebSocket-Version: 13' -H 'Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==' \
+#     'https://<domain>/app/<REVERB_APP_KEY>?protocol=7&client=js&version=8.4.0'
+# ---------------------------------------------------------------------------
