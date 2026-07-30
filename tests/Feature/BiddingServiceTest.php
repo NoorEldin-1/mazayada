@@ -17,8 +17,11 @@ use App\Models\User;
 use App\Models\Wilaya;
 use App\Services\BiddingService;
 use Database\Seeders\RolesPermissionsSeeder;
+use Illuminate\Broadcasting\BroadcastException;
+use Illuminate\Contracts\Broadcasting\Factory as BroadcastFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 use Tests\TestCase;
 
@@ -94,6 +97,31 @@ class BiddingServiceTest extends TestCase
         $auction->refresh();
         $this->assertSame(AuctionStatus::EXTENDED, $auction->status);
         $this->assertTrue($auction->end_time->greaterThan(now()->addMinutes(4)));
+    }
+
+    /**
+     * Regression: BidPlaced is a ShouldBroadcastNow event, so it publishes to
+     * Reverb over HTTP inline, *after* the bid has been committed. A Reverb
+     * server that is down or registered under a different app id used to raise
+     * a BroadcastException — a RuntimeException — which the controllers caught
+     * and showed to the bidder as a rejected bid, even though the bid was saved.
+     */
+    public function test_bid_survives_a_failing_realtime_broadcast(): void
+    {
+        [$auction, $user] = $this->setupActiveAuctionAndParticipant();
+
+        $this->mock(BroadcastFactory::class, function ($mock) {
+            $mock->shouldReceive('queue')
+                ->atLeast()->once()
+                ->andThrow(new BroadcastException('Pusher error: No matching application for ID [170884].'));
+        });
+        Log::spy();
+
+        $bid = app(BiddingService::class)->placeBid($auction, $user, 2_000_000);
+
+        $this->assertNotNull($bid->id);
+        $this->assertDatabaseHas('bids', ['id' => $bid->id, 'amount' => 2_000_000]);
+        Log::shouldHaveReceived('warning')->with('Auction broadcast failed', \Mockery::any());
     }
 
     public function test_blacklisted_user_cannot_bid(): void

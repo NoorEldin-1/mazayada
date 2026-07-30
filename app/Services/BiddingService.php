@@ -12,6 +12,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
 class BiddingService
@@ -57,10 +58,11 @@ class BiddingService
 
         $lock = Cache::lock("auction:{$auction->id}:bid", 3);
         $outbidUserId = null;
+        $extendedAuction = null;
 
         try {
-            $bid = $lock->block(2, function () use ($auction, $user, $amountCentimes, $ip, $userAgent, &$outbidUserId) {
-                return DB::transaction(function () use ($auction, $user, $amountCentimes, $ip, $userAgent, &$outbidUserId) {
+            $bid = $lock->block(2, function () use ($auction, $user, $amountCentimes, $ip, $userAgent, &$outbidUserId, &$extendedAuction) {
+                return DB::transaction(function () use ($auction, $user, $amountCentimes, $ip, $userAgent, &$outbidUserId, &$extendedAuction) {
                     /** @var Auction $freshAuction */
                     $freshAuction = Auction::query()->lockForUpdate()->find($auction->id);
                     if (! $freshAuction) {
@@ -123,7 +125,10 @@ class BiddingService
                             'status' => AuctionStatus::EXTENDED,
                             'extension_count' => $freshAuction->extension_count + 1,
                         ]);
-                        AuctionExtended::dispatch($freshAuction->fresh());
+                        // Broadcast only once the transaction commits, so a
+                        // listening client can never see an extension that a
+                        // later rollback undoes.
+                        $extendedAuction = $freshAuction->fresh();
                     }
 
                     AuditLog::log('BID_PLACED', 'auction', $freshAuction->id, $user->id, $user->role?->value, [
@@ -147,7 +152,18 @@ class BiddingService
         // Invalidate cached current price for the auction.
         Cache::forget("auction:{$auction->id}:current_price");
 
-        BidPlaced::dispatch($bid, $this->aliases->aliasFor($user->id, $auction->id));
+        // Realtime is best-effort (same rule as NotificationService): these are
+        // ShouldBroadcastNow events, i.e. an inline HTTP call to Reverb, and the
+        // bid is already committed by now. A Reverb server that is down, stale or
+        // configured with a different app id must never turn a valid, persisted
+        // bid into an error for the bidder — the page re-reads the canonical
+        // state from the DB on the next load.
+        $this->broadcast(fn () => BidPlaced::dispatch($bid, $this->aliases->aliasFor($user->id, $auction->id)),
+            'BidPlaced', $auction->id);
+
+        if ($extendedAuction) {
+            $this->broadcast(fn () => AuctionExtended::dispatch($extendedAuction), 'AuctionExtended', $auction->id);
+        }
 
         // Notify the bidder who was just outbid (spec §10.1).
         if ($outbidUserId) {
@@ -158,5 +174,19 @@ class BiddingService
         }
 
         return $bid;
+    }
+
+    /** Dispatch a realtime event without ever letting it break the caller. */
+    private function broadcast(callable $dispatch, string $event, string $auctionId): void
+    {
+        try {
+            $dispatch();
+        } catch (\Throwable $e) {
+            Log::warning('Auction broadcast failed', [
+                'event' => $event,
+                'auction_id' => $auctionId,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }

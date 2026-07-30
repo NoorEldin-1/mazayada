@@ -8,6 +8,7 @@ use App\Models\Auction;
 use App\Models\AuditLog;
 use App\Models\Bid;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AuctionService
 {
@@ -95,7 +96,18 @@ class AuctionService
         $winnerAlias = $winningBid
             ? $this->aliases->aliasFor($winningBid->user_id, $auction->id)
             : null;
-        AuctionClosed::dispatch($auction, $winnerAlias, (int) $auction->final_price);
+        // Best-effort, like every other realtime dispatch: close() also runs
+        // lazily from a plain page view (AuctionController@show), so a failing
+        // inline broadcast to Reverb would otherwise 500 the auction page for
+        // every visitor of an ended auction.
+        try {
+            AuctionClosed::dispatch($auction, $winnerAlias, (int) $auction->final_price);
+        } catch (\Throwable $e) {
+            Log::warning('Auction close broadcast failed', [
+                'auction_id' => $auction->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         $this->declareOutcome($auction, $winningBid);
     }
