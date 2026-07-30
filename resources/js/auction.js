@@ -68,6 +68,10 @@ import './echo';
     let locked = false;
     let closedFinal = false;
 
+    // High-water mark for the polling fallback below: the timestamp of the
+    // newest bid already drawn on this page, from either transport.
+    let lastBidMs = 0;
+
     // ── Helpers ────────────────────────────────────────────────────────────
     // Mirror Blade's <x-money>: number_format(dinars, 0, ',', ' ') → "1 234".
     function formatDinars(centimes) {
@@ -492,32 +496,141 @@ import './echo';
     }
 
     // ── Echo subscription ──────────────────────────────────────────────────
-    if (!window.Echo) return;
+    if (window.Echo) {
+        window.Echo.channel('auction.' + cfg.auctionId)
+            .listen('.bid.placed', (e) => {
+                // A fresh valid bid proves the auction is still live — if our clock
+                // ran ahead and we locked early, reopen.
+                if (locked && !closedFinal) unlockBidding();
+                setPrice(e.new_price);
+                incrementCount();
+                applyNewBid(e.bidder_alias, e.new_price);
+                // Keep the poller's high-water mark ahead of what we just drew,
+                // so a tick landing mid-broadcast can't repaint the same bid.
+                lastBidMs = Date.now();
+            })
+            .listen('.auction.extended', (e) => {
+                if (e.new_end_time) {
+                    state.endMs = Number(e.new_end_time) * 1000;
+                    const el = document.querySelector('.countdown');
+                    if (el) el.dataset.end = new Date(state.endMs).toISOString();
+                }
+                // Anti-sniping pushed the end forward — reopen if we'd locked at zero.
+                if (locked && !closedFinal) unlockBidding();
+                toast(i18n.extended);
+            })
+            .listen('.auction.closed', (e) => {
+                // Show the canonical result inline at once (no "live" flash), then
+                // reload to pick up the server-rendered panel (winner's pay button…).
+                renderClosed(e && e.winner_alias, e && e.final_price);
+                toast(i18n.closed);
+                setTimeout(() => window.location.reload(), 2500);
+            });
+    }
 
-    window.Echo.channel('auction.' + cfg.auctionId)
-        .listen('.bid.placed', (e) => {
-            // A fresh valid bid proves the auction is still live — if our clock
-            // ran ahead and we locked early, reopen.
-            if (locked && !closedFinal) unlockBidding();
-            setPrice(e.new_price);
-            incrementCount();
-            applyNewBid(e.bidder_alias, e.new_price);
-        })
-        .listen('.auction.extended', (e) => {
-            if (e.new_end_time) {
-                state.endMs = Number(e.new_end_time) * 1000;
-                const el = document.querySelector('.countdown');
-                if (el) el.dataset.end = new Date(state.endMs).toISOString();
+    // ── Polling fallback ───────────────────────────────────────────────────
+    // The WebSocket is best-effort, and on a shared host it can be impossible
+    // to get: reaching Reverb needs a wss:// proxy on /app, which LiteSpeed
+    // Enterprise in Apache-config mode gives no supported way to configure
+    // (its WebAdmin lists zero virtual hosts, and an .htaccess [P] rule to
+    // ws:// or http:// 404s). Without this the price on a live auction only
+    // ever moved on a manual refresh — for the one page where standing still
+    // is worst.
+    //
+    // So the socket is now an optimisation, not a requirement. Every tick
+    // yields the moment Echo reports a live connection, which means a working
+    // WebSocket costs one `connection.state` read every 5s and nothing else:
+    // no duplicate rows, no double-counted bids, no competing writes.
+    //
+    // The endpoint was built for exactly this — see the "poll it as a fallback
+    // when the realtime socket is unavailable" note on
+    // Api\V1\AuctionController::latestBids. It is public (token.optional), so
+    // guests watching an auction get live updates too.
+    const POLL_MS = 5000;
+    const bidsUrl = '/api/v1/auctions/' + encodeURIComponent(cfg.auctionId) + '/bids?limit=10';
+    let inFlight = false;
+    let reloadingForClose = false;
+
+    function echoConnected() {
+        try {
+            return window.Echo?.connector?.pusher?.connection?.state === 'connected';
+        } catch (_) {
+            return false;
+        }
+    }
+
+    function setBidCount(n) {
+        if (countEl && Number.isFinite(n)) countEl.textContent = String(n);
+    }
+
+    // `seed` runs once before the timer starts: the server already rendered the
+    // current bids, so the first pass only records how far we've got. Without it
+    // the first tick would redraw a row the page is already showing.
+    async function poll(seed) {
+        if (inFlight || closedFinal || reloadingForClose) return;
+        if (!seed && echoConnected()) return;
+        inFlight = true;
+        try {
+            const res = await fetch(bidsUrl, {
+                headers: { Accept: 'application/json' },
+                credentials: 'same-origin',
+            });
+            if (!res.ok) return;
+
+            const body = await res.json();
+            const bids = Array.isArray(body?.data) ? body.data : [];   // newest first
+            const meta = body?.meta || {};
+
+            const newestMs = bids.length ? Date.parse(bids[0].bid_time) : NaN;
+            if (seed) {
+                lastBidMs = Number.isFinite(newestMs) ? newestMs : 0;
+                return;
             }
-            // Anti-sniping pushed the end forward — reopen if we'd locked at zero.
-            if (locked && !closedFinal) unlockBidding();
-            toast(i18n.extended);
-        })
-        .listen('.auction.closed', (e) => {
-            // Show the canonical result inline at once (no "live" flash), then
-            // reload to pick up the server-rendered panel (winner's pay button…).
-            renderClosed(e && e.winner_alias, e && e.final_price);
-            toast(i18n.closed);
-            setTimeout(() => window.location.reload(), 2500);
+
+            const fresh = bids.filter((b) => Date.parse(b.bid_time) > lastBidMs);
+            if (fresh.length) {
+                lastBidMs = Date.parse(fresh[0].bid_time);
+                if (locked && !closedFinal) unlockBidding();
+                // Oldest first: each row is prepended, so this leaves the newest
+                // bid on top exactly as the broadcast path does.
+                fresh.slice().reverse().forEach((b) => {
+                    applyNewBid(b.bidder_alias, (Number(b.amount?.amount) || 0) * 100);
+                });
+            }
+
+            // Trust the server's numbers rather than counting locally — a tab
+            // that slept through a burst of bids still lands on the truth.
+            if (Number.isFinite(Number(meta.current_price))) {
+                setPrice(Number(meta.current_price) * 100);
+            }
+            setBidCount(Number(meta.bid_count));
+
+            // Closed / cancelled: reload once so the server renders the canonical
+            // panel (winner, final price, the winner's payment button).
+            const status = String(meta.status || '').toUpperCase();
+            if (status === 'CLOSED' || status === 'CANCELLED') {
+                reloadingForClose = true;
+                toast(i18n.closed);
+                setTimeout(() => window.location.reload(), 1200);
+            }
+        } catch (_) {
+            // Offline, a dropped request, a 500 — say nothing and try again on
+            // the next tick. A failed poll must never disturb the page.
+        } finally {
+            inFlight = false;
+        }
+    }
+
+    poll(true).finally(() => {
+        setInterval(() => {
+            // A hidden tab has nobody watching: skip the request and catch up on
+            // the tick after it comes back.
+            if (document.visibilityState === 'hidden') return;
+            poll(false);
+        }, POLL_MS);
+        // Coming back to the tab should feel instant, not up to 5s stale.
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') poll(false);
         });
+    });
 })();
