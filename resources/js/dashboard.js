@@ -16,15 +16,33 @@ import 'preline';
    so there is no flash. Here we only handle the toggle button and
    persist the choice back to the cookie.
    ------------------------------------------------------------- */
+function syncThemeControls(t) {
+    // Segmented light/dark control(s) in the account menu.
+    document.querySelectorAll('[data-theme-set]').forEach((btn) => {
+        const on = btn.dataset.themeSet === t;
+        btn.classList.toggle('is-on', on);
+        btn.setAttribute('aria-pressed', String(on));
+    });
+}
+
 function applyTheme(theme) {
     const t = theme === 'dark' ? 'dark' : 'light';
     document.documentElement.dataset.theme = t;
     document.cookie = 'theme=' + t + '; path=/; max-age=31536000; samesite=lax';
+    syncThemeControls(t);
     // Let listeners (e.g. ApexCharts) re-theme themselves.
     window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: t } }));
 }
 
 document.addEventListener('click', (e) => {
+    // Segmented control — pick an explicit theme (keeps the menu open).
+    const setter = e.target.closest('[data-theme-set]');
+    if (setter) {
+        e.preventDefault();
+        applyTheme(setter.dataset.themeSet);
+        return;
+    }
+    // Legacy single toggle (kept for backward compatibility).
     const toggle = e.target.closest('[data-theme-toggle]');
     if (!toggle) return;
     e.preventDefault();
@@ -56,6 +74,90 @@ window.addEventListener('resize', () => {
     if (window.innerWidth >= 1024) {
         document.documentElement.classList.remove('drawer-open');
     }
+});
+
+/* -------------------------------------------------------------
+   Collapsible sidebar (desktop). [data-sidebar-toggle] flips
+   html.sidebar-collapsed and persists it to the `sidebar` cookie
+   (mirrors the theme cookie; read server-side so there's no flash).
+   The rail's icon-only tooltips are handled by the module below.
+   ------------------------------------------------------------- */
+document.addEventListener('click', (e) => {
+    const toggle = e.target.closest('[data-sidebar-toggle]');
+    if (!toggle) return;
+    e.preventDefault();
+    const collapsed = document.documentElement.classList.toggle('sidebar-collapsed');
+    document.cookie = 'sidebar=' + (collapsed ? 'collapsed' : 'expanded') + '; path=/; max-age=31536000; samesite=lax';
+    const label = collapsed ? toggle.dataset.labelExpand : toggle.dataset.labelCollapse;
+    if (label) { toggle.setAttribute('aria-label', label); toggle.setAttribute('title', label); }
+    if (window.hideRailTip) window.hideRailTip();
+});
+
+/* -------------------------------------------------------------
+   Rail tooltips — shown only while the sidebar is collapsed on
+   desktop. A single fixed .rail-tip element is positioned from the
+   hovered/focused nav link, so it escapes the nav's overflow clip.
+   Label text is read from the link's classless label span (falling
+   back to title / aria-label). RTL-aware (tip flips to the start).
+   ------------------------------------------------------------- */
+(function () {
+    let tip = null;
+    let current = null;
+
+    function collapsedRail() {
+        return window.innerWidth >= 1024
+            && document.documentElement.classList.contains('sidebar-collapsed');
+    }
+    function labelFor(a) {
+        const span = a.querySelector('span:not([class])');
+        return (span && span.textContent.trim())
+            || a.getAttribute('title') || a.getAttribute('aria-label') || '';
+    }
+    function show(a) {
+        const text = labelFor(a);
+        if (!text) return;
+        if (!tip) { tip = document.createElement('div'); tip.className = 'rail-tip'; document.body.appendChild(tip); }
+        tip.textContent = text;
+        tip.classList.add('is-visible'); // reveal first so offsetWidth is measurable
+        const r = a.getBoundingClientRect();
+        const gap = 10;
+        tip.style.top = Math.round(r.top + r.height / 2) + 'px';
+        tip.style.left = document.documentElement.dir === 'rtl'
+            ? Math.round(r.left - gap - tip.offsetWidth) + 'px'
+            : Math.round(r.right + gap) + 'px';
+    }
+    function hide() { current = null; if (tip) tip.classList.remove('is-visible'); }
+    window.hideRailTip = hide;
+
+    document.addEventListener('mouseover', (e) => {
+        if (!collapsedRail()) return;
+        const a = e.target.closest('.dash-side nav a');
+        if (a && a !== current) { current = a; show(a); }
+        else if (!a && current) { hide(); }
+    });
+    document.addEventListener('focusin', (e) => {
+        if (!collapsedRail()) return;
+        const a = e.target.closest('.dash-side nav a');
+        if (a) { current = a; show(a); } else { hide(); }
+    });
+    window.addEventListener('scroll', hide, true);
+    window.addEventListener('resize', hide);
+})();
+
+/* -------------------------------------------------------------
+   Keep the active nav item in view. With a long sidebar, the
+   current page's link can sit below the fold; after each full-page
+   navigation we centre it inside the scrollable nav (without moving
+   the window — we adjust the nav's own scrollTop only).
+   ------------------------------------------------------------- */
+document.addEventListener('DOMContentLoaded', () => {
+    const active = document.querySelector('.dash-side nav a[aria-current="page"]');
+    const nav = active && active.closest('nav');
+    if (!nav) return;
+    const a = active.getBoundingClientRect();
+    const n = nav.getBoundingClientRect();
+    if (a.top >= n.top && a.bottom <= n.bottom) return; // already fully visible
+    nav.scrollTop += (a.top - n.top) - (n.height - a.height) / 2;
 });
 
 /* -------------------------------------------------------------
@@ -187,9 +289,19 @@ window.addEventListener('themechange', renderCharts);
 
     function openMenu(menu) {
         const trigger = menu.querySelector('[data-act-trigger]');
-        const panel = menu.querySelector('[data-act-panel]');
+        // The panel may have been portaled to <body> on a previous open, so
+        // resolve it via aria-controls rather than assuming it's a descendant.
+        const panel = menu.querySelector('[data-act-panel]')
+            || (trigger && document.getElementById(trigger.getAttribute('aria-controls')));
         if (!trigger || !panel) return;
         closeMenu();
+        // If the menu lives inside a transformed ancestor (the mobile sidebar
+        // drawer uses translateX), position:fixed would resolve against that
+        // ancestor, not the viewport — so the panel lands in the wrong spot.
+        // Opt-in [data-act-portal] menus move their panel to <body> on open.
+        if (menu.hasAttribute('data-act-portal') && panel.parentElement !== document.body) {
+            document.body.appendChild(panel);
+        }
         panel.hidden = false; // reveal so it can be measured
         trigger.setAttribute('aria-expanded', 'true');
         openState = { menu, trigger, panel };
@@ -227,8 +339,10 @@ window.addEventListener('themechange', renderCharts);
             closeMenu();
             return;
         }
-        // Clicked outside any open menu.
-        if (openState && !e.target.closest('[data-act-menu]')) closeMenu();
+        // Clicked outside any open menu. Also treat clicks inside the panel
+        // itself as "inside" — a portaled panel lives outside [data-act-menu],
+        // and non-menuitem controls in it (theme / language) must keep it open.
+        if (openState && !e.target.closest('[data-act-menu]') && !e.target.closest('[data-act-panel]')) closeMenu();
     });
 
     document.addEventListener('keydown', (e) => {

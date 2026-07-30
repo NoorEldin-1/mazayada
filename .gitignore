@@ -14,6 +14,7 @@
 /.zed
 /auth.json
 /node_modules
+/mazayada-app
 # NOTE: public/build is intentionally COMMITTED (tracked). The production
 # server has no Node/Vite build step, so the dashboards' @vite assets
 # (dashboard.css/js) must be pre-built locally and shipped via git.

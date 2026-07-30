@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ locale_lang() }}" dir="{{ locale_dir() }}"
-      data-theme="{{ request()->cookie('theme') === 'dark' ? 'dark' : 'light' }}">
+      data-theme="{{ request()->cookie('theme') === 'dark' ? 'dark' : 'light' }}"
+      class="{{ request()->cookie('sidebar') === 'collapsed' ? 'sidebar-collapsed' : '' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,15 +20,30 @@
 
 {{-- Sidebar --}}
 <aside class="dash-side fixed inset-y-0 start-0 z-40 w-64 flex flex-col bg-[var(--sidebar-bg)] text-white border-e border-white/5">
-    <a href="{{ url('/') }}" class="flex items-center gap-3 px-5 py-[1.35rem] border-b border-white/10 hover:bg-white/5 transition" title="{{ __('nav.home') }}">
-        <span class="grid place-items-center size-10 rounded-xl bg-white/15">
-            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 17.5 3 3 3-3"/><path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
-        </span>
-        <div>
-            <div class="text-lg font-bold leading-none">{{ __('common.app_name') }}</div>
-            <div class="text-[11px] opacity-60 mt-1">{{ __('admin.panel') }}</div>
-        </div>
-    </a>
+    {{-- Floating collapse/expand toggle straddling the rail's outer edge
+         (desktop only). Persists via the `sidebar` cookie (read server-side
+         on <html> below) so there is no flash. --}}
+    <button type="button"
+            class="dash-side__toggle"
+            data-sidebar-toggle
+            aria-label="{{ __('nav.collapse_sidebar') }}"
+            title="{{ __('nav.collapse_sidebar') }}"
+            data-label-collapse="{{ __('nav.collapse_sidebar') }}"
+            data-label-expand="{{ __('nav.expand_sidebar') }}">
+        <svg class="dash-side__toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+
+    <div class="dash-side__head flex items-center gap-3 px-4 py-[1.15rem] border-b border-white/10">
+        <a href="{{ url('/') }}" class="dash-side__brand flex items-center gap-3 min-w-0 flex-1 rounded-xl -mx-1 px-1 py-1 hover:bg-white/5 transition" title="{{ __('nav.home') }}">
+            <span class="dash-side__logo grid place-items-center size-10 rounded-xl bg-white/15 shrink-0">
+                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 17.5 3 3 3-3"/><path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
+            </span>
+            <span class="dash-side__brand-text min-w-0">
+                <span class="block text-lg font-bold leading-none truncate">{{ __('common.app_name') }}</span>
+                <span class="block text-[11px] opacity-60 mt-1 truncate">{{ __('admin.panel') }}</span>
+            </span>
+        </a>
+    </div>
 
     <nav class="flex-1 overflow-y-auto px-2.5 py-3.5 flex flex-col gap-1">
         {{-- The platform dashboard surfaces global figures; entity (read-only)
@@ -155,12 +171,14 @@
         @endcan
     </nav>
 
-    <div class="flex items-center gap-2.5 px-3.5 py-4 border-t border-white/10">
-        <div class="grid place-items-center size-9 rounded-lg bg-white/15 font-bold text-sm shrink-0">{{ auth()->check() ? mb_substr(auth()->user()->first_name_ar, 0, 1) : '?' }}</div>
-        <div class="min-w-0">
-            <div class="text-[13px] font-semibold truncate">{{ auth()->check() ? auth()->user()->fullNameAr() : '' }}</div>
-            <div class="text-[11px] opacity-60 truncate">{{ auth()->check() ? auth()->user()->role->label() : '' }}</div>
-        </div>
+    {{-- Account: avatar-triggered menu (theme · language · logout).
+         Reuses <x-ui.user-menu> in its dark "sidebar" context. --}}
+    <div class="dash-side__foot p-2.5 border-t border-white/10">
+        <x-ui.user-menu
+            context="sidebar"
+            :name="auth()->user()->fullNameAr()"
+            :subtitle="auth()->user()->role->label()"
+            :initial="mb_substr(auth()->user()->first_name_ar, 0, 1)" />
     </div>
 </aside>
 
@@ -169,18 +187,18 @@
 
 {{-- Main --}}
 <div class="dash-main min-h-screen flex flex-col">
-    <header class="dash-top sticky top-0 z-20 flex items-center justify-between gap-3 bg-surface border-b border-line px-5 sm:px-7 py-3.5">
-        <div class="flex items-center gap-3 min-w-0">
-            <x-ui.icon-button class="lg:hidden" data-drawer-toggle aria-label="{{ __('nav.menu') }}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-            </x-ui.icon-button>
-            <h1 class="text-xl sm:text-[22px] font-bold truncate">@yield('page-title', __('admin.page_title_default'))</h1>
-        </div>
-        <div class="flex items-center gap-2.5">
-            <x-ui.user-menu
-                :name="auth()->user()->fullNameAr()"
-                :subtitle="auth()->user()->role->label()"
-                :initial="mb_substr(auth()->user()->first_name_ar, 0, 1)" />
+    {{-- Lightweight context strip (replaces the old top navbar). Holds the
+         mobile drawer toggle, an optional breadcrumb (@section('breadcrumb'))
+         and the page title. Account controls now live in the sidebar footer. --}}
+    <header class="dash-top sticky top-0 z-20 flex items-center gap-3 bg-surface/85 backdrop-blur border-b border-line px-5 sm:px-7 py-3">
+        <x-ui.icon-button class="lg:hidden shrink-0" data-drawer-toggle aria-label="{{ __('nav.menu') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </x-ui.icon-button>
+        <div class="min-w-0">
+            @hasSection('breadcrumb')
+                <nav class="dash-crumbs text-[12px] text-ink-2 mb-0.5 truncate" aria-label="breadcrumb">@yield('breadcrumb')</nav>
+            @endif
+            <h1 class="text-lg sm:text-xl font-bold truncate leading-tight">@yield('page-title', __('admin.page_title_default'))</h1>
         </div>
     </header>
 

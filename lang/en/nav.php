@@ -14,6 +14,11 @@ return [
     'account_menu' => 'Account',
     'appearance' => 'Appearance',
     'language' => 'Language',
+    'collapse_sidebar' => 'Collapse sidebar',
+    'expand_sidebar' => 'Expand sidebar',
+    'theme_light' => 'Light',
+    'theme_dark' => 'Dark',
+    'online' => 'Online',
     'logout_confirm_title' => 'Confirm sign out',
     'logout_confirm_message' => 'Are you sure you want to sign out?',
 

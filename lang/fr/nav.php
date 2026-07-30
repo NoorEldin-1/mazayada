@@ -14,6 +14,11 @@ return [
     'account_menu' => 'Compte',
     'appearance' => 'Apparence',
     'language' => 'Langue',
+    'collapse_sidebar' => 'Réduire la barre latérale',
+    'expand_sidebar' => 'Développer la barre latérale',
+    'theme_light' => 'Clair',
+    'theme_dark' => 'Sombre',
+    'online' => 'En ligne',
     'logout_confirm_title' => 'Confirmer la déconnexion',
     'logout_confirm_message' => 'Voulez-vous vraiment vous déconnecter ?',
 

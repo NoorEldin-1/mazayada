@@ -41,10 +41,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('api', ApiSetLocale::class);
         $middleware->appendToGroup('api', ForceJsonResponse::class);
 
-        // The dashboard light/dark theme is stored in a plain (unencrypted)
-        // cookie so JS can write it and Blade can read it back verbatim for
-        // server-rendered <html data-theme> (no flash of wrong theme).
-        $middleware->encryptCookies(except: ['theme']);
+        // The dashboard light/dark theme and the sidebar collapsed/expanded
+        // state are stored in plain (unencrypted) cookies so JS can write them
+        // and Blade can read them back verbatim for the server-rendered <html>
+        // attributes (no flash of the wrong theme / sidebar width).
+        $middleware->encryptCookies(except: ['theme', 'sidebar']);
 
         // Chargily's signed webhook is a server-to-server POST with no session/CSRF
         // token; it is authenticated by its HMAC signature in the controller.

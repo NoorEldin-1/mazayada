@@ -14,6 +14,11 @@ return [
     'account_menu' => 'قائمة الحساب',
     'appearance' => 'المظهر',
     'language' => 'اللغة',
+    'collapse_sidebar' => 'طيّ القائمة الجانبية',
+    'expand_sidebar' => 'توسيع القائمة الجانبية',
+    'theme_light' => 'فاتح',
+    'theme_dark' => 'داكن',
+    'online' => 'متصل',
     'logout_confirm_title' => 'تأكيد تسجيل الخروج',
     'logout_confirm_message' => 'هل تريد بالفعل تسجيل الخروج من حسابك؟',
 
