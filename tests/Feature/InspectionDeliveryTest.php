@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\DeliveryStatus;
 use App\Enums\InspectionQuestionStatus;
+use App\Enums\UserRole;
 use App\Models\Delivery;
 use App\Models\InspectionQuestion;
 use App\Models\UserNotification;
@@ -61,6 +62,49 @@ class InspectionDeliveryTest extends TestCase
         app(NotificationService::class)->inspectionAnswered($question->fresh());
 
         $this->assertDatabaseHas('notifications', ['user_id' => $asker->id, 'channel' => 'IN_APP']);
+    }
+
+    /**
+     * An empty answer used to look like a dead button: the rejection redirected
+     * back to a page that rendered neither the error nor the modal it came
+     * from. The response must now carry both.
+     */
+    public function test_empty_answer_is_rejected_with_a_visible_error(): void
+    {
+        $auction = $this->makeAuction();
+        $question = InspectionQuestion::create([
+            'auction_id' => $auction->id,
+            'user_id' => $this->makeCitizen()->id,
+            'question' => 'سؤال',
+            'status' => InspectionQuestionStatus::PENDING,
+            'is_public' => true,
+        ]);
+
+        $admin = $this->makeCitizen(['role' => UserRole::SUPER_ADMIN]);
+        $admin->syncRoles([UserRole::SUPER_ADMIN->value]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.inspections.answer', $question), ['answer' => ''])
+            ->assertRedirect()
+            ->assertSessionHasErrors('answer')
+            // Carries the modal id back so the error is rendered where the user
+            // typed, instead of vanishing with the closed modal.
+            ->assertSessionHas('open_modal', 'inspection-'.$question->id);
+
+        $this->assertSame(InspectionQuestionStatus::PENDING, $question->fresh()->status);
+    }
+
+    /** The admin layout must surface flashes/validation errors on every page. */
+    public function test_admin_pages_render_the_shared_feedback_region(): void
+    {
+        $admin = $this->makeCitizen(['role' => UserRole::SUPER_ADMIN]);
+        $admin->syncRoles([UserRole::SUPER_ADMIN->value]);
+
+        $this->actingAs($admin)
+            ->withSession(['success' => 'تم الحفظ بنجاح'])
+            ->get(route('admin.inspections.index'))
+            ->assertOk()
+            ->assertSee('تم الحفظ بنجاح');
     }
 
     public function test_delivery_schedule_and_complete_generates_report(): void

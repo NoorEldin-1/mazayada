@@ -11,10 +11,6 @@
     </x-slot:actions>
 </x-ui.page-header>
 
-@if($errors->any())
-    <div class="mb-4 rounded-xl bg-danger/10 text-danger px-4 py-3 text-sm">{{ $errors->first() }}</div>
-@endif
-
 <x-ui.table>
     <thead>
         <tr>

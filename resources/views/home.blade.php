@@ -33,35 +33,48 @@
             </button>
         </form>
 
+        {{-- Live counts, not marketing copy — see HomeController::index(). --}}
         <div class="hero-stats" style="justify-content:center;margin-top:36px">
-            <div class="st"><div class="v num">58</div><div class="l">{{ __('home.stat_wilayas') }}</div></div>
-            <div class="st"><div class="v num">5</div><div class="l">{{ __('home.stat_entities') }}</div></div>
-            <div class="st"><div class="v num">+2400</div><div class="l">{{ __('home.stat_auctions') }}</div></div>
+            <div class="st"><div class="v num">{{ number_format($stats['wilayas_count']) }}</div><div class="l">{{ __('home.stat_wilayas') }}</div></div>
+            <div class="st"><div class="v num">{{ number_format($stats['entities_count']) }}</div><div class="l">{{ __('home.stat_entities') }}</div></div>
+            <div class="st"><div class="v num">{{ number_format($stats['public_auctions']) }}</div><div class="l">{{ __('home.stat_auctions') }}</div></div>
         </div>
     </div>
 </div>
 
 {{-- ===== Entities ===== --}}
+{{-- Real institutions with their real published-auction counts (the strip used
+     to be a hard-coded list of five bodies with invented figures). --}}
+@if($entities->isNotEmpty())
+@php
+    $entityPalette = [
+        'linear-gradient(135deg,#1B4D3E,#2D6A4F)',
+        'linear-gradient(135deg,#2E5E92,#3A86C7)',
+        'linear-gradient(135deg,#D4A843,#B8852E)',
+        'linear-gradient(135deg,#6B45B7,#4A2B91)',
+        'linear-gradient(135deg,#B14641,#D9544E)',
+    ];
+@endphp
 <div class="entities-strip">
     <div class="container">
         <div class="ent-trust reveal">{{ __('home.entities_trust') }}</div>
         <div class="entities-grid">
-            @foreach([
-                ['code' => 'DGD', 'name' => __('home.entities.dgd'), 'count' => '+320', 'bg' => 'linear-gradient(135deg,#1B4D3E,#2D6A4F)'],
-                ['code' => 'DGDPE', 'name' => __('home.entities.dgdpe'), 'count' => '+180', 'bg' => 'linear-gradient(135deg,#2E5E92,#3A86C7)'],
-                ['code' => 'APC', 'name' => __('home.entities.apc'), 'count' => '+540', 'bg' => 'linear-gradient(135deg,#D4A843,#B8852E)'],
-                ['code' => 'HUI', 'name' => __('home.entities.hui'), 'count' => '+95', 'bg' => 'linear-gradient(135deg,#6B45B7,#4A2B91)'],
-                ['code' => 'DGI', 'name' => __('home.entities.dgi'), 'count' => '+210', 'bg' => 'linear-gradient(135deg,#B14641,#D9544E)'],
-            ] as $i => $ent)
+            @foreach($entities as $i => $ent)
+            @php
+                // The raw `name` column is the internal admin label ("DGD - الجمارك");
+                // its leading token is the institution's short code.
+                $code = Str::upper(Str::limit(trim(Str::before($ent->getRawOriginal('name'), '-')), 6, ''));
+            @endphp
             <div class="ent-cell reveal" style="--i:{{ $i }}">
-                <div class="ent-logo" style="background:{{ $ent['bg'] }}"><span>{{ $ent['code'] }}</span></div>
-                <div class="ent-name">{{ $ent['name'] }}</div>
-                <div class="ent-count num">{{ $ent['count'] }} {{ __('home.entity_auctions') }}</div>
+                <div class="ent-logo" style="background:{{ $entityPalette[$i % count($entityPalette)] }}"><span>{{ $code ?: Str::limit($ent->name, 6, '') }}</span></div>
+                <div class="ent-name" dir="auto">{{ $ent->name }}</div>
+                <div class="ent-count num">{{ number_format($ent->public_auctions_count) }} {{ __('home.entity_auctions') }}</div>
             </div>
             @endforeach
         </div>
     </div>
 </div>
+@endif
 
 {{-- ===== Features ===== --}}
 <section>
@@ -101,9 +114,12 @@
             @forelse ($auctions as $auction)
             <a href="{{ route('auctions.show', $auction) }}" class="auc-card" style="text-decoration:none">
                 <div class="auc-img">
-                    @php $cover = $auction->coverPhotoUrl(); @endphp
-                    @if($cover)
-                    <img src="{{ $cover }}" alt="{{ $auction->title_ar }}" loading="lazy">
+                    @php $thumb = $auction->thumbnailMedia(); @endphp
+                    @if($thumb && $thumb['type'] === 'image')
+                    <img src="{{ $thumb['url'] }}" alt="{{ $auction->localizedTitle() }}" loading="lazy">
+                    @elseif($thumb)
+                    <video src="{{ $thumb['url'] }}" muted playsinline preload="metadata"
+                           controlsList="nodownload" disablePictureInPicture aria-hidden="true"></video>
                     @else
                     <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
                     @endif
@@ -115,7 +131,9 @@
                 </div>
                 <div class="auc-body">
                     <div class="auc-cat">{{ $auction->category?->name ?? __('auctions.general_category') }}</div>
-                    <div class="auc-ttl">{{ $auction->title_ar }}</div>
+                    {{-- dir="auto" — a title that has no translation for the active
+                         locale falls back to Arabic, which must not be laid out LTR. --}}
+                    <div class="auc-ttl" dir="auto">{{ $auction->localizedTitle() }}</div>
                     <div class="auc-loc">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                         {{ $auction->wilaya?->name ?? '' }}

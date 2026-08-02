@@ -24,18 +24,42 @@ class AdminKycController extends Controller
         'photo-biometric' => 'photo_biometric_path',
     ];
 
-    public function pending(): View
+    public function pending(Request $request): View
     {
         $this->authorize('kyc.review');
 
-        // Only real submissions awaiting a decision — not every freshly
-        // registered (PENDING) account.
-        $users = User::where('kyc_status', KycStatus::UNDER_REVIEW)
-            ->with(['biometrics', 'commune.wilaya'])
-            ->orderBy('kyc_submitted_at')
-            ->paginate(20);
+        // The queue defaults to real submissions awaiting a decision
+        // (UNDER_REVIEW) — not every freshly registered account, which sits in
+        // PENDING until the citizen actually uploads documents. Those accounts
+        // still appear in the Users list, so the queue exposes a status filter
+        // (with counts) to explain where each one is rather than looking empty
+        // while the Users list shows people "waiting".
+        $status = $request->input('status');
+        $selected = KycStatus::tryFrom((string) $status);
 
-        return view('admin.kyc.index', compact('users'));
+        $query = User::query()->with(['biometrics', 'commune.wilaya']);
+
+        if ($status !== 'all') {
+            $selected ??= KycStatus::UNDER_REVIEW;
+            $query->where('kyc_status', $selected);
+        }
+
+        $users = $query
+            ->orderByRaw('kyc_submitted_at IS NULL, kyc_submitted_at ASC')
+            ->paginate(20)
+            ->withQueryString();
+
+        // One grouped query drives every tab's badge.
+        $counts = User::query()
+            ->selectRaw('kyc_status, COUNT(*) as aggregate')
+            ->groupBy('kyc_status')
+            ->pluck('aggregate', 'kyc_status');
+
+        return view('admin.kyc.index', [
+            'users' => $users,
+            'counts' => $counts,
+            'activeStatus' => $status === 'all' ? 'all' : ($selected?->value ?? KycStatus::UNDER_REVIEW->value),
+        ]);
     }
 
     public function show(User $user): View

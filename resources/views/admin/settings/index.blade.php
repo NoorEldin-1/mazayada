@@ -14,14 +14,14 @@
         <x-ui.card :title="__('admin.settings.group_'.$group)" class="mb-6">
 
             @foreach($rows as $setting)
-                {{-- Label + technical key grouped ABOVE the input so each field
-                     reads as one clear unit (the key never floats next to the
-                     next field's label). --}}
+                {{-- Only the human label is shown; the technical key is a
+                     developer identifier, so it lives in the tooltip (hover /
+                     screen-reader) rather than as user-facing text. --}}
                 <div class="field" style="margin-bottom:18px;{{ ! $loop->last ? 'padding-bottom:16px;border-bottom:1px solid var(--line);' : '' }}">
-                    <label for="set-{{ $setting->key }}" style="display:block;font-weight:600;margin-bottom:2px">
+                    <label for="set-{{ $setting->key }}" style="display:block;font-weight:600;margin-bottom:8px"
+                           title="{{ $setting->key }}">
                         {{ __('admin.settings.key_'.str_replace('.', '_', $setting->key)) }}
                     </label>
-                    <code style="display:block;font-size:11px;color:var(--muted);direction:ltr;text-align:start;margin-bottom:8px">{{ $setting->key }}</code>
 
                     @if($setting->type === 'bool')
                         <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer">

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $auction->title_ar)
+@section('title', $auction->localizedTitle())
 
 @section('content')
 <div class="container" style="padding-top:28px;padding-bottom:48px">
@@ -59,9 +59,16 @@
                                 @foreach($media as $m)
                                     <div class="swiper-slide mzd-hero-slide" data-type="{{ $m['type'] }}">
                                         @if($m['type'] === 'video')
-                                            <video controls preload="metadata" playsinline src="{{ $m['url'] }}"></video>
+                                            {{-- poster (first photo) + the #t=0.1 media fragment so the slide
+                                                 paints a real frame instead of a solid black rectangle that
+                                                 reads as broken media. controlsList/disablePictureInPicture
+                                                 keep browser download overlays off the gallery. --}}
+                                            <video controls preload="metadata" playsinline
+                                                   controlsList="nodownload" disablePictureInPicture
+                                                   @if($photoUrls) poster="{{ $photoUrls[0] }}" @endif
+                                                   src="{{ $m['url'] }}#t=0.1"></video>
                                         @else
-                                            <img src="{{ $m['url'] }}" alt="{{ $auction->title_ar }}" loading="lazy">
+                                            <img src="{{ $m['url'] }}" alt="{{ $auction->localizedTitle() }}" loading="lazy">
                                         @endif
                                     </div>
                                 @endforeach
@@ -84,12 +91,17 @@
                     </div>
 
                     @if($mediaCount > 1)
-                        <div class="swiper ad-thumbs" data-thumbs>
+                        {{-- NOTE: class prefix must stay `mzd-`. An `ad-*` class here was
+                             matched by ad-blocker cosmetic filters, which hid the whole strip
+                             and left its <video> without a layout box — the browser's media
+                             download badge then floated to the page's top-left corner. --}}
+                        <div class="swiper mzd-thumbs" data-thumbs>
                             <div class="swiper-wrapper">
                                 @foreach($media as $i => $m)
                                     <div class="swiper-slide mzd-thumb {{ $m['type'] === 'video' ? 'is-video' : '' }}">
                                         @if($m['type'] === 'video')
-                                            <video src="{{ $m['url'] }}#t=0.1" muted preload="metadata"></video>
+                                            <video src="{{ $m['url'] }}#t=0.1" muted playsinline preload="metadata"
+                                                   controlsList="nodownload" disablePictureInPicture></video>
                                             <span class="play" aria-label="{{ __('auctions.show.media_video') }}"><svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
                                         @else
                                             <img src="{{ $m['url'] }}" alt="" loading="lazy">
@@ -110,7 +122,7 @@
 
             {{-- Title + Status --}}
             <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px">
-                <h1 style="margin:0;font-size:clamp(20px,5.5vw,26px);font-weight:700;letter-spacing:-.4px;word-break:break-word">{{ $auction->title_ar }}</h1>
+                <h1 dir="auto" style="margin:0;font-size:clamp(20px,5.5vw,26px);font-weight:700;letter-spacing:-.4px;word-break:break-word">{{ $auction->localizedTitle() }}</h1>
                 <span class="chip {{ $auction->status->chipClass() }}">
                     <span class="dot"></span>
                     {{ $auction->status->label() }}
@@ -184,9 +196,12 @@
                                 <div class="spec-group">
                                     <h4 class="spec-h">{{ __('auctions.show.specs_group_asset_specs') }}</h4>
                                     @foreach($assetSpecs as $spec)
+                                        {{-- dir="auto": specifications with no translation for the
+                                             active locale fall back to Arabic, which must not be laid
+                                             out left-to-right inside the FR/EN pages. --}}
                                         <div style="padding:9px 0;{{ $loop->last ? '' : 'border-bottom:1px solid var(--line)' }}">
-                                            <div style="font-size:13.5px;font-weight:700;color:var(--ink);margin-bottom:4px">{{ $spec['title'] }}</div>
-                                            <p style="margin:0;font-size:13.5px;line-height:1.8;color:var(--ink-2);white-space:pre-line">{{ $spec['body'] }}</p>
+                                            <div dir="auto" style="font-size:13.5px;font-weight:700;color:var(--ink);margin-bottom:4px">{{ $spec['title'] }}</div>
+                                            <p dir="auto" style="margin:0;font-size:13.5px;line-height:1.8;color:var(--ink-2);white-space:pre-line">{{ $spec['body'] }}</p>
                                         </div>
                                     @endforeach
                                 </div>
@@ -880,6 +895,12 @@
         'auctionId' => $auction->id,
         'currentPrice' => $auction->currentPrice(),
         'endTime' => $auction->isLive() ? $auction->end_time?->toIso8601String() : null,
+        // Lifecycle state THIS page was rendered from. The client polls (and may
+        // reload on a close) only when it started live — otherwise a terminal
+        // page would keep reading back its own terminal status and reload for
+        // it on every tick, forever.
+        'status' => $auction->status?->value,
+        'live' => $auction->isLive(),
         'bidUrl' => route('auctions.bid', $auction),
         'currency' => __('common.currency'),
         'i18n' => [

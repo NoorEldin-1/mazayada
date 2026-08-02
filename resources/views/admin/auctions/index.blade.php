@@ -46,7 +46,11 @@
             <th>{{ __('admin.th_title') }}</th>
             <th>{{ __('admin.th_entity') }}</th>
             <th>{{ __('admin.th_category') }}</th>
-            <th>{{ __('admin.th_price') }}</th>
+            {{-- Explicit price labels: this column shows the OPENING price while
+                 the public pages show the CURRENT price, which read as the same
+                 auction reporting two different figures. --}}
+            <th>{{ __('admin.th_opening_price') }}</th>
+            <th>{{ __('admin.th_current_price') }}</th>
             <th>{{ __('admin.th_bids') }}</th>
             <th>{{ __('admin.th_status') }}</th>
             <th>{{ __('common.actions') }}</th>
@@ -55,10 +59,11 @@
     <tbody>
         @forelse($auctions as $auction)
             <tr>
-                <td>{{ $auction->title_ar }}</td>
+                <td dir="auto">{{ $auction->localizedTitle() }}</td>
                 <td>{{ $auction->entity?->name ?? '—' }}</td>
                 <td>{{ $auction->category?->name ?? '—' }}</td>
                 <td class="num"><x-money :centimes="$auction->opening_price" /></td>
+                <td class="num"><x-money :centimes="$auction->currentPrice()" /></td>
                 <td class="num">{{ $auction->bidCount() }}</td>
                 <td>
                     <span class="chip {{ $auction->status->chipClass() }}">{{ $auction->status->label() }}</span>
@@ -130,7 +135,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="7" class="text-center text-muted py-8">{{ __('admin.auctions.no_auctions') }}</td>
+                <td colspan="8" class="text-center text-muted py-8">{{ __('admin.auctions.no_auctions') }}</td>
             </tr>
         @endforelse
     </tbody>

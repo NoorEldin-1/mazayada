@@ -150,6 +150,10 @@ Route::middleware(['auth', 'admin.2fa', 'role:'.implode(',', \App\Enums\UserRole
     Route::get('/auctions/{auction}/edit', [AdminAuctionController::class, 'edit'])->name('auctions.edit');
     Route::put('/auctions/{auction}', [AdminAuctionController::class, 'update'])->name('auctions.update');
     Route::delete('/auctions/{auction}', [AdminAuctionController::class, 'destroy'])->name('auctions.destroy');
+    // Asset media removal — the edit form can only ever APPEND uploads, so
+    // correcting a wrong photo or video needs its own action.
+    Route::delete('/auctions/{auction}/photos', [AdminAuctionController::class, 'destroyPhoto'])->name('auctions.photos.destroy');
+    Route::delete('/auctions/{auction}/video', [AdminAuctionController::class, 'destroyVideo'])->name('auctions.video.destroy');
     Route::post('/auctions/{auction}/publish', [AdminAuctionController::class, 'publish'])->name('auctions.publish');
     Route::post('/auctions/{auction}/start', [AdminAuctionController::class, 'start'])->name('auctions.start');
     Route::post('/auctions/{auction}/extend', [AdminAuctionController::class, 'extend'])->name('auctions.extend');

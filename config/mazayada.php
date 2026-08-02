@@ -17,6 +17,32 @@ return [
     // Falls back to APP_KEY when not explicitly set.
     'alias_secret' => env('ALIAS_SECRET', env('APP_KEY')),
 
+    // Upper sanity bound (in dinars) for admin-entered auction prices. Without
+    // one, a mistyped opening price was accepted verbatim and rendered as an
+    // unreadable multi-trillion figure on the public pages. 10 billion DZD is
+    // far above any realistic public asset while still catching stray zeros.
+    'limits' => [
+        'max_price_dzd' => (int) env('MAX_AUCTION_PRICE_DZD', 10_000_000_000),
+    ],
+
+    /*
+    | Auction asset media (spec §4 step 1) — the DESIRED caps for photos and the
+    | short asset video. These are wishes, not guarantees: PHP's own
+    | upload_max_filesize / post_max_size / max_file_uploads always win, and a
+    | request larger than post_max_size is discarded by PHP *before* Laravel
+    | boots (empty $_POST → a bare CSRF 419 after a long upload). So never read
+    | these values directly — go through App\Support\UploadLimits, which
+    | reconciles them with the runtime ini and is the single source of truth for
+    | the validation rules, the form hints and the client-side guards.
+    */
+    'media' => [
+        'max_photos' => (int) env('AUCTION_MAX_PHOTOS', 10),
+        'photo_max_kb' => (int) env('AUCTION_PHOTO_MAX_KB', 4096),      // 4 MB each
+        'photo_max_dimension' => (int) env('AUCTION_PHOTO_MAX_DIMENSION', 10000), // px, anti decompression-bomb
+        'video_max_kb' => (int) env('AUCTION_VIDEO_MAX_KB', 51200),     // 50 MB
+        'video_max_seconds' => (int) env('AUCTION_VIDEO_MAX_SECONDS', 120),
+    ],
+
     'bidding' => [
         'max_per_minute' => (int) env('BID_MAX_PER_MINUTE', 10),
 

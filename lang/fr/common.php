@@ -41,6 +41,8 @@ return [
     'filter' => 'Filtrer',
     'none' => 'Aucun',
     'optional' => 'Facultatif',
+    'validation_summary' => 'Veuillez corriger les points suivants avant d’enregistrer :',
+    'no_image' => 'Aucune image',
     'active' => 'Actif',
     'inactive' => 'Inactif',
 

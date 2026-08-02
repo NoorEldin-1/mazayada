@@ -5,13 +5,6 @@
 
 @section('content')
 
-@if(session('success'))
-    <div class="mb-5 rounded-xl bg-ok/10 text-ok px-4 py-3 text-sm">{{ session('success') }}</div>
-@endif
-@if(session('error'))
-    <div class="mb-5 rounded-xl bg-danger/10 text-danger px-4 py-3 text-sm">{{ session('error') }}</div>
-@endif
-
 @php
     // Both platform staff and entity accounts use this page; the available
     // actions differ. Entity accounts only ever act on a forwarded appeal.

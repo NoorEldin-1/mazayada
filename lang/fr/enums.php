@@ -2,7 +2,8 @@
 
 return [
     'kyc_status' => [
-        'PENDING' => 'En attente',
+        // PENDING = compte n’ayant pas encore soumis ses documents.
+        'PENDING' => 'Non soumis',
         'UNDER_REVIEW' => 'En cours d’examen',
         'COMPLETE' => 'Vérifié',
         'REJECTED' => 'Rejeté',

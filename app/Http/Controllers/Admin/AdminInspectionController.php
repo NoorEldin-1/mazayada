@@ -9,6 +9,7 @@ use App\Models\InspectionQuestion;
 use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
 /**
@@ -41,10 +42,22 @@ class AdminInspectionController extends Controller
     {
         $this->authorize('inspections.answer');
 
-        $validated = $request->validate([
+        // Validated by hand so a rejected answer can carry the modal id back:
+        // the row modal is re-opened with the error inside it instead of the
+        // redirect silently returning an unchanged-looking page.
+        $validator = Validator::make($request->all(), [
             'answer' => ['required', 'string', 'max:2000'],
             'is_public' => ['nullable', 'boolean'],
         ]);
+
+        if ($validator->fails()) {
+            return back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('open_modal', 'inspection-'.$question->id);
+        }
+
+        $validated = $validator->validated();
 
         $question->update([
             'answer' => $validated['answer'],

@@ -115,7 +115,28 @@ return [
     | Noms des champs affichés dans les messages ci-dessus.
     |--------------------------------------------------------------------------
     */
+    /*
+    |--------------------------------------------------------------------------
+    | Messages personnalisés pour les téléversements.
+    |--------------------------------------------------------------------------
+    | post_too_large est le seul cas que la validation ne peut pas atteindre :
+    | PHP jette le corps de la requête avant le démarrage de Laravel, le jeton
+    | CSRF n’arrive donc jamais et une page 419 trompeuse s’affiche. Traduit en
+    | ce message dans bootstrap/app.php.
+    */
+    'custom' => [
+        'upload' => [
+            'post_too_large' => 'Les fichiers envoyés dépassent ce que le serveur accepte (:max Mo maximum par requête). Retirez des photos ou compressez la vidéo, puis réessayez.',
+            'photos_limit' => 'Une enchère ne peut pas dépasser :max photos (restant : :remaining). Supprimez d’abord une photo existante.',
+            'store_failed' => 'Impossible d’enregistrer les fichiers sur le serveur. Aucune modification n’a été enregistrée — veuillez réessayer.',
+            'photo_not_found' => 'Le fichier à supprimer ne fait pas partie des fichiers de cette enchère.',
+        ],
+    ],
+
     'attributes' => [
+        'photos' => 'photos du bien',
+        'photos.*' => 'photo du bien',
+        'video' => 'vidéo du bien',
         'nin' => 'numéro d’identification nationale',
         'nin_or_email' => 'numéro d’identification nationale ou e-mail',
         'first_name_ar' => 'prénom (en arabe)',

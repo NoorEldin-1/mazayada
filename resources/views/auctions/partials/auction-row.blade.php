@@ -3,16 +3,24 @@
     Expects: $auction (with entity/category/wilaya loaded).
 --}}
 @php
-    $cover = $auction->coverPhotoUrl();
+    $thumb = $auction->thumbnailMedia();
     $mediaCount = count($auction->photoUrls());
     $hasVideo = (bool) $auction->video;
 @endphp
 <a href="{{ route('auctions.show', $auction) }}" class="auc-row @if($auction->requires_commerce_register) cr-required @endif">
     <div class="auc-row-img">
-        @if($cover)
-            <img src="{{ $cover }}" alt="{{ $auction->localizedTitle() }}" loading="lazy">
+        @if($thumb && $thumb['type'] === 'image')
+            <img src="{{ $thumb['url'] }}" alt="{{ $auction->localizedTitle() }}" loading="lazy">
+        @elseif($thumb)
+            {{-- No photos, but a video exists: show a still frame rather than the
+                 "no media" placeholder. --}}
+            <video src="{{ $thumb['url'] }}" muted playsinline preload="metadata"
+                   controlsList="nodownload" disablePictureInPicture aria-hidden="true"></video>
         @else
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3.5l6 6M3 21l1.5-4.5L17 4a1.41 1.41 0 0 1 2 2L6.5 18.5 3 21z"/><path d="M15 6l3 3"/></svg>
+            <span class="auc-row-noimg">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                <span>{{ __('common.no_image') }}</span>
+            </span>
         @endif
         @if($auction->isLive())
             <span class="auc-tag live"><span class="dot"></span> {{ __('auctions.live') }}</span>
@@ -34,7 +42,9 @@
                 <span class="auc-row-cat">{{ $auction->category->name }}</span>
             @endif
         </div>
-        <span class="auc-row-ttl">{{ $auction->localizedTitle() }}</span>
+        {{-- dir="auto" — an untranslated title falls back to Arabic and must
+             keep its own direction inside the FR/EN listing. --}}
+        <span class="auc-row-ttl" dir="auto">{{ $auction->localizedTitle() }}</span>
         <div class="auc-row-sub">
             <span class="auc-loc">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>

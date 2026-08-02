@@ -372,6 +372,19 @@ window.addEventListener('themechange', renderCharts);
 })();
 
 /* -------------------------------------------------------------
+   Validation summary — <x-ui.flash>.
+   Long forms redirect back with every error at once; bring the
+   summary into view and move focus to it so the failure is never
+   missed halfway down a scrolled page.
+   ------------------------------------------------------------- */
+(function () {
+    const summary = document.querySelector('[data-error-summary]');
+    if (!summary) return;
+    summary.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    summary.focus({ preventScroll: true });
+})();
+
+/* -------------------------------------------------------------
    Generic form modal — <x-ui.modal>.
    Opened by any [data-modal-target="#id"]; closed by
    [data-modal-close], backdrop click, or Escape. Many modals may
@@ -431,4 +444,47 @@ window.addEventListener('themechange', renderCharts);
         if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
         else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     });
+
+    /* Never let a modal form fail silently. Relying on the browser's native
+       `required` bubble is not enough: inside a modal some browsers refuse to
+       submit without ever painting the bubble, so the button reads as inert.
+       We render our own message next to the offending field. */
+    function fieldError(field, message) {
+        let note = field.parentElement?.querySelector('[data-field-error]');
+        if (!note) {
+            note = document.createElement('small');
+            note.setAttribute('data-field-error', '');
+            note.className = 'text-danger text-xs mt-1 block';
+            field.insertAdjacentElement('afterend', note);
+        }
+        note.textContent = message;
+    }
+
+    function clearFieldErrors(form) {
+        form.querySelectorAll('[data-field-error]').forEach((n) => n.remove());
+    }
+
+    document.addEventListener('submit', (e) => {
+        const form = e.target;
+        if (!(form instanceof HTMLFormElement) || !form.closest('.mdl-overlay[data-modal]')) return;
+
+        clearFieldErrors(form);
+        if (form.checkValidity()) return;
+
+        e.preventDefault();
+        let firstInvalid = null;
+        form.querySelectorAll('input, textarea, select').forEach((field) => {
+            if (field.willValidate && !field.checkValidity()) {
+                fieldError(field, field.validationMessage);
+                firstInvalid = firstInvalid || field;
+            }
+        });
+        firstInvalid?.focus();
+    });
+
+    /* Re-open the modal a failed submission came from (session('open_modal')),
+       so its server-side validation errors are visible instead of disappearing
+       with the modal on redirect. */
+    const reopen = document.body.dataset.openModal;
+    if (reopen) openModal(document.getElementById(reopen));
 })();

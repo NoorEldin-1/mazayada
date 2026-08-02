@@ -5,7 +5,9 @@
 
 @section('content')
 
-<form method="POST" action="{{ route('admin.auctions.update', $auction) }}" enctype="multipart/form-data">
+{{-- novalidate — see the note in create.blade.php: all errors are reported at
+     once by the server instead of one native bubble per submit. --}}
+<form method="POST" action="{{ route('admin.auctions.update', $auction) }}" enctype="multipart/form-data" novalidate>
     @csrf
     @method('PUT')
 
@@ -237,44 +239,7 @@
     </x-ui.card>
 
     {{-- Section 2c: Photos + short video (spec §4 step 1) --}}
-    <x-ui.card :title="__('admin.auctions.sec_photos')" class="mb-6">
-        {{-- Sub-section: images --}}
-        <h3 style="font-size:0.9rem;font-weight:600;color:var(--ink);margin-block-end:0.75rem">{{ __('admin.auctions.sec_photos_images') }}</h3>
-        @if($auction->photosArray())
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-block-end:12px">
-                @foreach($auction->photosArray() as $p)
-                    <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($p) }}" style="width:90px;height:90px;object-fit:cover;border-radius:8px;border:1px solid var(--line)">
-                @endforeach
-            </div>
-        @endif
-        <div class="field">
-            <label for="photos">{{ __('admin.auctions.f_photos') }}</label>
-            <input type="file" id="photos" name="photos[]" class="input" accept="image/jpeg,image/png,image/webp" multiple>
-            <small style="color:var(--ink-muted)">{{ __('admin.auctions.photos_hint') }}</small>
-            @error('photos.*') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
-        </div>
-        <div id="photos-preview" style="display:flex;gap:8px;flex-wrap:wrap;margin-block-start:12px"></div>
-
-        {{-- Sub-section: a single short asset video (1–2 min, MP4, ≤50 MB) --}}
-        <hr style="border:0;border-top:1px solid var(--line);margin-block:1.25rem">
-        <h3 style="font-size:0.9rem;font-weight:600;color:var(--ink);margin-block-end:0.75rem">{{ __('admin.auctions.sec_photos_video') }}</h3>
-        @if($auction->videoUrl())
-            <video controls src="{{ $auction->videoUrl() }}" style="max-width:320px;width:100%;border-radius:8px;border:1px solid var(--line);margin-block-end:12px"></video>
-        @endif
-        <div class="field">
-            <label for="video">{{ __('admin.auctions.f_video') }}</label>
-            <input type="file" id="video" name="video" class="input" accept="video/mp4"
-                   data-err-type="{{ __('admin.auctions.video_err_type') }}"
-                   data-err-size="{{ __('admin.auctions.video_err_size') }}"
-                   data-err-duration="{{ __('admin.auctions.video_err_duration') }}">
-            <small style="color:var(--ink-muted)">{{ __('admin.auctions.video_hint') }}</small>
-            <small id="video-error" class="text-danger text-xs mt-1" style="display:none"></small>
-            @error('video') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
-        </div>
-        <div id="video-preview" style="margin-block-start:12px;display:none">
-            <video controls style="max-width:320px;width:100%;border-radius:8px;border:1px solid var(--line)"></video>
-        </div>
-    </x-ui.card>
+    @include('admin.auctions.partials.media-fields')
 
     {{-- Section 3: Pricing --}}
     <x-ui.card :title="__('admin.auctions.sec_pricing')" class="mb-6">
@@ -418,71 +383,9 @@
             if (wilaya.value) loadCommunes(preselectCommune);
         }
 
-        // --- Image preview (newly chosen files) ---
-        var photos = document.getElementById('photos');
-        var photosPreview = document.getElementById('photos-preview');
-        if (photos && photosPreview) {
-            photos.addEventListener('change', function () {
-                photosPreview.innerHTML = '';
-                Array.prototype.forEach.call(photos.files, function (file) {
-                    if (!file.type.startsWith('image/')) return;
-                    var img = document.createElement('img');
-                    img.src = URL.createObjectURL(file);
-                    img.onload = function () { URL.revokeObjectURL(img.src); };
-                    img.style.cssText = 'width:90px;height:90px;object-fit:cover;border-radius:8px;border:1px solid var(--line)';
-                    photosPreview.appendChild(img);
-                });
-            });
-        }
-
-        // --- Single short video: strict type/size + 1–2 min duration (client gate) ---
-        var video = document.getElementById('video');
-        var videoError = document.getElementById('video-error');
-        var videoPreview = document.getElementById('video-preview');
-        var videoValid = true;
-        if (video) {
-            var MAX_BYTES = 50 * 1024 * 1024; // 50 MB
-            var MAX_SEC = 120; // up to 2 minutes; any shorter length is fine
-            function showVideoError(msg) {
-                videoValid = false;
-                video.value = '';
-                if (videoPreview) videoPreview.style.display = 'none';
-                videoError.textContent = msg;
-                videoError.style.display = 'block';
-            }
-            function clearVideoError() {
-                videoValid = true;
-                videoError.textContent = '';
-                videoError.style.display = 'none';
-            }
-            video.addEventListener('change', function () {
-                clearVideoError();
-                var file = video.files[0];
-                if (!file) { if (videoPreview) videoPreview.style.display = 'none'; return; }
-                if (file.type !== 'video/mp4') { showVideoError(video.dataset.errType); return; }
-                if (file.size > MAX_BYTES) { showVideoError(video.dataset.errSize); return; }
-                var url = URL.createObjectURL(file);
-                var probe = document.createElement('video');
-                probe.preload = 'metadata';
-                probe.onloadedmetadata = function () {
-                    var dur = probe.duration;
-                    if (!isNaN(dur) && dur > MAX_SEC) {
-                        URL.revokeObjectURL(url);
-                        showVideoError(video.dataset.errDuration);
-                        return;
-                    }
-                    if (videoPreview) {
-                        videoPreview.querySelector('video').src = url;
-                        videoPreview.style.display = 'block';
-                    }
-                };
-                probe.onerror = function () {
-                    URL.revokeObjectURL(url);
-                    showVideoError(video.dataset.errType);
-                };
-                probe.src = url;
-            });
-        }
+        // --- Asset media: previews, per-file removal, size/type/duration guards
+        //     and the post_max_size budget check (shared with the create form) ---
+        @include('admin.auctions.partials.media-js')
 
         // --- Entity → staff cascade (SUPER_ADMIN only; others are server-rendered) ---
         var entity = document.getElementById('entity_id');
@@ -534,17 +437,6 @@
             // Start with one blank row when empty (the server prunes it if untouched).
             if (!wrap.querySelector('.spec-row')) addRow();
         })();
-
-        // --- Block submit while the chosen video is invalid ---
-        var form = video ? video.closest('form') : null;
-        if (form) {
-            form.addEventListener('submit', function (e) {
-                if (!videoValid) {
-                    e.preventDefault();
-                    if (videoError) videoError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            });
-        }
 
         // --- Live participation-deposit preview (opening_price × percent) ---
         @include('admin.auctions.partials.deposit-preview-js')

@@ -41,6 +41,8 @@ return [
     'filter' => 'Filter',
     'none' => 'None',
     'optional' => 'Optional',
+    'validation_summary' => 'Please correct the following before saving:',
+    'no_image' => 'No image',
     'active' => 'Active',
     'inactive' => 'Inactive',
 

@@ -221,9 +221,14 @@ class Auction extends Model
         return $this->isLive() && $this->end_time !== null && ! $this->end_time->isFuture();
     }
 
+    /**
+     * The stored photo paths, always a clean 0..n list. array_filter alone left
+     * gaps when a blank segment crept into the ';'-joined column, and callers
+     * that index by [0] (coverPhotoUrl) then saw no cover at all.
+     */
     public function photosArray(): array
     {
-        return $this->photos ? array_filter(explode(';', $this->photos)) : [];
+        return $this->photos ? array_values(array_filter(explode(';', $this->photos))) : [];
     }
 
     /**
@@ -244,6 +249,27 @@ class Auction extends Model
     public function coverPhotoUrl(): ?string
     {
         return $this->photoUrls()[0] ?? null;
+    }
+
+    /**
+     * The best available media for a listing card: the cover photo, else a
+     * still frame of the asset video. Listing cards fell back to a bare icon
+     * for every photo-less auction, which read as broken imagery even when the
+     * auction did carry a video.
+     *
+     * @return array{type: 'image'|'video', url: string}|null
+     */
+    public function thumbnailMedia(): ?array
+    {
+        if ($cover = $this->coverPhotoUrl()) {
+            return ['type' => 'image', 'url' => $cover];
+        }
+
+        // #t=0.1 asks the browser for a frame just past the start; without it
+        // the poster-less element paints solid black.
+        return ($video = $this->videoUrl())
+            ? ['type' => 'video', 'url' => $video.'#t=0.1']
+            : null;
     }
 
     /**

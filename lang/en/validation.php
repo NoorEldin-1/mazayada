@@ -116,7 +116,28 @@ return [
     | Custom Attributes — readable field names used in messages above.
     |--------------------------------------------------------------------------
     */
+    /*
+    |--------------------------------------------------------------------------
+    | Custom upload messages.
+    |--------------------------------------------------------------------------
+    | post_too_large is the one failure ordinary validation can never reach: PHP
+    | discards the request body before Laravel boots, so the CSRF token never
+    | arrives and a misleading 419 page is shown instead. Translated into this
+    | message in bootstrap/app.php.
+    */
+    'custom' => [
+        'upload' => [
+            'post_too_large' => 'The files you sent are larger than the server accepts (:max MB per request). Remove some photos or compress the video, then try again.',
+            'photos_limit' => 'An auction cannot hold more than :max photos (:remaining remaining). Delete an existing photo first.',
+            'store_failed' => 'The files could not be saved on the server. Nothing was saved — please try again.',
+            'photo_not_found' => 'The file you asked to delete is not one of this auction’s files.',
+        ],
+    ],
+
     'attributes' => [
+        'photos' => 'asset photos',
+        'photos.*' => 'asset photo',
+        'video' => 'asset video',
         'nin' => 'national ID number',
         'nin_or_email' => 'national ID number or email',
         'first_name_ar' => 'first name (Arabic)',

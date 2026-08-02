@@ -10,6 +10,7 @@ use App\Http\Middleware\KycVerified;
 use App\Http\Middleware\NoCacheHeaders;
 use App\Http\Middleware\ResolveOptionalToken;
 use App\Http\Middleware\SetLocale;
+use App\Support\UploadLimits;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -18,6 +19,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
+use Illuminate\Session\TokenMismatchException;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
@@ -65,6 +67,40 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        /*
+         | An upload larger than PHP's post_max_size never reaches the
+         | application intact: PHP discards the whole request body before Laravel
+         | boots, so $_POST is empty, the CSRF token is missing and the admin —
+         | who just spent a minute uploading auction photos — was shown a bare
+         | "419 Page Expired" with no hint of the real cause and no way back to
+         | their form.
+         |
+         | The truncation is detectable (a declared Content-Length past the limit
+         | with nothing parsed out of it), so we translate that specific CSRF
+         | failure into the message it should have been all along. Genuine token
+         | mismatches still render the normal 419.
+         */
+        $exceptions->render(function (TokenMismatchException $e, Request $request) {
+            $limits = new UploadLimits;
+
+            if (! $limits->requestWasTruncated($request)) {
+                return null;
+            }
+
+            $message = __('validation.custom.upload.post_too_large', [
+                'max' => UploadLimits::mb($limits->postMaxBytes()),
+            ]);
+
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $message], 413);
+            }
+
+            // No input to preserve — PHP threw it away — but the previous URL
+            // survives in the session, so the admin lands back on their form
+            // with a readable explanation instead of a dead end.
+            return redirect()->back()->withErrors(['photos' => $message]);
+        });
+
         // Render every exception thrown under /api/* as the unified JSON error
         // shape { message, errors? }. Web requests fall through (return null) so
         // their redirect/HTML behaviour is unchanged.

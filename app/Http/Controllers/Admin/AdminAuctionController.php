@@ -11,14 +11,88 @@ use App\Models\Category;
 use App\Models\Entity;
 use App\Models\EntityUser;
 use App\Models\Wilaya;
+use App\Services\AuctionMediaService;
+use App\Support\UploadLimits;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class AdminAuctionController extends Controller
 {
+    public function __construct(
+        private readonly AuctionMediaService $media,
+        private readonly UploadLimits $limits,
+    ) {}
+
+    /** Upper sanity bound (dinars) shared by every price field. */
+    private function maxPrice(): int
+    {
+        return (int) config('mazayada.limits.max_price_dzd', 10_000_000_000);
+    }
+
+    /**
+     * Validation rules for the asset photos and the short video.
+     *
+     * Every bound comes from UploadLimits, which clamps the configured caps to
+     * what PHP will actually accept. Declaring a 50 MB video while post_max_size
+     * was 40M meant the request never reached validation at all — PHP dropped
+     * the body and the admin got a bare CSRF 419 after a long upload.
+     *
+     * Photos are checked three ways on purpose: `image` proves it decodes,
+     * `mimes` pins the extension and `mimetypes` inspects the real content, so
+     * an SVG (which `image` alone accepts) or a renamed script cannot slip in.
+     * `dimensions` caps the pixel count against decompression bombs.
+     *
+     * @return array<string, array<int, string>>
+     */
+    private function mediaRules(): array
+    {
+        $dimension = $this->limits->photoMaxDimension();
+
+        return [
+            'photos' => ['nullable', 'array', 'max:'.$this->limits->maxPhotos()],
+            'photos.*' => [
+                'file',
+                'image',
+                'mimes:jpeg,jpg,png,webp',
+                'mimetypes:image/jpeg,image/png,image/webp',
+                'max:'.$this->limits->photoMaxKb(),
+                'dimensions:max_width='.$dimension.',max_height='.$dimension,
+            ],
+            // A single short asset video. `mimetypes` accepts both spellings a
+            // real MP4 container reports through finfo; `mimes:mp4` keeps the
+            // extension honest. Duration is gated client-side.
+            'video' => [
+                'nullable',
+                'file',
+                'mimetypes:video/mp4,application/mp4',
+                'mimes:mp4',
+                'max:'.$this->limits->videoMaxKb(),
+            ],
+        ];
+    }
+
+    /**
+     * Persist the uploaded photos and video for an auction.
+     *
+     * Called inside the surrounding transaction so a storage failure — which the
+     * media service reports as a ValidationException after rolling its own files
+     * back — also rolls back the row. Before this, a failed photo write left the
+     * auction created but empty and the admin staring at a 500.
+     */
+    private function saveMedia(Request $request, Auction $auction): void
+    {
+        if ($request->hasFile('photos')) {
+            $this->media->attachPhotos($auction, (array) $request->file('photos'));
+        }
+
+        if ($request->hasFile('video')) {
+            $this->media->replaceVideo($auction, $request->file('video'));
+        }
+    }
+
     public function index(Request $request): View
     {
         $this->authorize('viewAny', Auction::class);
@@ -79,8 +153,11 @@ class AdminAuctionController extends Controller
         // A SUPER_ADMIN picks the entity (and the staff list is fetched live);
         // other staff are pinned to their own entity, so we pre-render its roster.
         $entityUsers = $this->staffForForm();
+        // The form states — and the client-side guards enforce — the EFFECTIVE
+        // limits, not the configured wishes. See UploadLimits.
+        $mediaLimits = $this->limits;
 
-        return view('admin.auctions.create', compact('categories', 'wilayas', 'entities', 'entityUsers'));
+        return view('admin.auctions.create', compact('categories', 'wilayas', 'entities', 'entityUsers', 'mediaLimits'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -120,11 +197,13 @@ class AdminAuctionController extends Controller
             'specifications.*.body_fr' => ['nullable', 'string', 'max:2000'],
             'condition' => ['required', 'string'],
             'auction_type' => ['required', 'string'],
-            'opening_price' => ['required', 'numeric', 'min:0'],
+            // Bounded above (config mazayada.limits.max_price_dzd) so a stray
+            // zero can't publish a multi-trillion-dinar auction.
+            'opening_price' => ['required', 'numeric', 'min:0', 'max:'.$this->maxPrice()],
             // Participation deposit is a PERCENTAGE of the opening price (default
             // 10%); the centimes amount is derived, never entered directly.
             'deposit_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'book_price' => ['nullable', 'numeric', 'min:0'],
+            'book_price' => ['nullable', 'numeric', 'min:0', 'max:'.$this->maxPrice()],
             'start_time' => ['required', 'date', 'after:now'],
             'end_time' => ['required', 'date', 'after:start_time'],
             'wilaya_id' => ['required', 'exists:wilayas,id'],
@@ -135,11 +214,6 @@ class AdminAuctionController extends Controller
             // Map coordinates (Leaflet picker). Both-or-neither so a point is always complete.
             'latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_with:longitude'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:latitude'],
-            // Asset photos (spec §4 step 1).
-            'photos' => ['nullable', 'array', 'max:10'],
-            'photos.*' => ['image', 'mimes:jpeg,png,webp', 'max:4096'],
-            // A single short asset video — MP4, max 50 MB (duration is gated client-side).
-            'video' => ['nullable', 'file', 'mimetypes:video/mp4', 'mimes:mp4', 'max:51200'],
             // Lifecycle fields (spec §2, §4).
             'asset_class' => ['nullable', 'string', 'in:MOVABLE,REAL_ESTATE,CUSTOMS'],
             'requires_commerce_register' => ['nullable', 'boolean'],
@@ -150,6 +224,9 @@ class AdminAuctionController extends Controller
             'original_owner_nin' => ['nullable', 'digits:18'],
             'lease_duration_years' => ['nullable', 'integer', 'min:1', 'max:99'],
             'lease_renewals' => ['nullable', 'integer', 'min:0', 'max:10'],
+            // Asset photos + short video (spec §4 step 1) — bounds derived from
+            // the effective PHP upload limits. See mediaRules().
+            ...$this->mediaRules(),
         ]);
 
         // Convert DZD to centimes
@@ -192,22 +269,24 @@ class AdminAuctionController extends Controller
         // never trust a client-supplied id that points at another entity.
         $this->assertStaffBelongsToEntity($validated['entity_user_id'] ?? null, $validated['entity_id']);
 
-        // Uploaded files are handled separately (storePhotos/storeVideo) — never mass-assign.
+        // Uploaded files are handled separately (AuctionMediaService) — never mass-assign.
         unset($validated['photos'], $validated['video']);
 
-        $auction = Auction::create($validated);
+        // The row and its media are one unit: the media service needs the id to
+        // build the storage path, so the auction is created first, but a storage
+        // failure must not leave a media-less auction behind. It rolls its own
+        // files back and throws, and the transaction takes the row with it.
+        $auction = DB::transaction(function () use ($request, $validated) {
+            $auction = Auction::create($validated);
 
-        if ($request->hasFile('photos')) {
-            $auction->update(['photos' => $this->storePhotos($request, $auction)]);
-        }
+            $this->saveMedia($request, $auction);
 
-        if ($request->hasFile('video')) {
-            $auction->update(['video' => $this->storeVideo($request, $auction)]);
-        }
+            AuditLog::log('AUCTION_CREATED', 'Auction', $auction->id, null, null, [
+                'title' => $validated['title_ar'],
+            ]);
 
-        AuditLog::log('AUCTION_CREATED', 'Auction', $auction->id, null, null, [
-            'title' => $validated['title_ar'],
-        ]);
+            return $auction;
+        });
 
         return redirect()->route('admin.auctions.index')
             ->with('success', __('admin.flash.auction_created'));
@@ -221,8 +300,9 @@ class AdminAuctionController extends Controller
         $wilayas = Wilaya::orderBy('code')->get();
         $entities = Entity::where('is_active', true)->get();
         $entityUsers = $this->staffForForm();
+        $mediaLimits = $this->limits;
 
-        return view('admin.auctions.edit', compact('auction', 'categories', 'wilayas', 'entities', 'entityUsers'));
+        return view('admin.auctions.edit', compact('auction', 'categories', 'wilayas', 'entities', 'entityUsers', 'mediaLimits'));
     }
 
     public function update(Request $request, Auction $auction): RedirectResponse
@@ -260,9 +340,9 @@ class AdminAuctionController extends Controller
             'specifications.*.body_fr' => ['nullable', 'string', 'max:2000'],
             'condition' => ['sometimes', 'string'],
             'auction_type' => ['sometimes', 'string'],
-            'opening_price' => ['sometimes', 'numeric', 'min:0'],
+            'opening_price' => ['sometimes', 'numeric', 'min:0', 'max:'.$this->maxPrice()],
             'deposit_percent' => ['sometimes', 'numeric', 'min:0', 'max:100'],
-            'book_price' => ['nullable', 'numeric', 'min:0'],
+            'book_price' => ['nullable', 'numeric', 'min:0', 'max:'.$this->maxPrice()],
             'start_time' => ['sometimes', 'date'],
             'end_time' => ['sometimes', 'date'],
             'wilaya_id' => ['sometimes', 'exists:wilayas,id'],
@@ -272,9 +352,6 @@ class AdminAuctionController extends Controller
             // Map coordinates (Leaflet picker). Both-or-neither so a point is always complete.
             'latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_with:longitude'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:latitude'],
-            'photos' => ['nullable', 'array', 'max:10'],
-            'photos.*' => ['image', 'mimes:jpeg,png,webp', 'max:4096'],
-            'video' => ['nullable', 'file', 'mimetypes:video/mp4', 'mimes:mp4', 'max:51200'],
             'asset_class' => ['nullable', 'string', 'in:MOVABLE,REAL_ESTATE,CUSTOMS'],
             'requires_commerce_register' => ['nullable', 'boolean'],
             'inspection_start' => ['nullable', 'date'],
@@ -284,6 +361,10 @@ class AdminAuctionController extends Controller
             'original_owner_nin' => ['nullable', 'digits:18'],
             'lease_duration_years' => ['nullable', 'integer', 'min:1', 'max:99'],
             'lease_renewals' => ['nullable', 'integer', 'min:0', 'max:10'],
+            // Newly attached photos are APPENDED to the stored gallery; the
+            // service enforces the total cap, which the per-request `max` rule
+            // alone could not (ten more were accepted on every save).
+            ...$this->mediaRules(),
         ]);
 
         if (isset($validated['opening_price'])) {
@@ -341,26 +422,19 @@ class AdminAuctionController extends Controller
             );
         }
 
-        // Uploaded files are handled separately (storePhotos/storeVideo) — never mass-assign.
+        // Uploaded files are handled separately (AuctionMediaService) — never mass-assign.
         unset($validated['photos'], $validated['video']);
 
-        $auction->update($validated);
+        // Same all-or-nothing contract as store(): if the new photos or video
+        // cannot be written, none of the edit is saved, so what the admin sees
+        // after the error is exactly what is stored.
+        DB::transaction(function () use ($request, $auction, $validated) {
+            $auction->update($validated);
 
-        // Newly uploaded photos are appended to any existing ones.
-        if ($request->hasFile('photos')) {
-            $existing = $auction->photos ? $auction->photos.';' : '';
-            $auction->update(['photos' => $existing.$this->storePhotos($request, $auction)]);
-        }
+            $this->saveMedia($request, $auction);
 
-        // The asset video is a single file — a new upload replaces the old one.
-        if ($request->hasFile('video')) {
-            if ($auction->video) {
-                Storage::disk('public')->delete($auction->video);
-            }
-            $auction->update(['video' => $this->storeVideo($request, $auction)]);
-        }
-
-        AuditLog::log('AUCTION_UPDATED', 'Auction', $auction->id);
+            AuditLog::log('AUCTION_UPDATED', 'Auction', $auction->id);
+        });
 
         return redirect()->route('admin.auctions.index')
             ->with('success', __('admin.flash.auction_updated'));
@@ -377,10 +451,62 @@ class AdminAuctionController extends Controller
         $auctionId = $auction->id;
         $auction->delete();
 
+        // The row was the only pointer to the uploaded files; deleting it
+        // without this left every photo and video on disk forever.
+        $this->media->purge($auction);
+
         AuditLog::log('AUCTION_DELETED', 'Auction', $auctionId);
 
         return redirect()->route('admin.auctions.index')
             ->with('success', __('admin.flash.auction_deleted'));
+    }
+
+    /**
+     * Remove one uploaded photo.
+     *
+     * Media could previously only ever be appended — a wrong or duplicated photo
+     * stayed on the auction for good. The path arrives from the form, so the
+     * service verifies it belongs to this auction before touching the disk.
+     */
+    public function destroyPhoto(Request $request, Auction $auction): RedirectResponse
+    {
+        $this->authorize('update', $auction);
+
+        if ($auction->status !== AuctionStatus::DRAFT) {
+            return back()->withErrors(['photos' => __('admin.flash.auction_edit_only_draft')]);
+        }
+
+        $validated = $request->validate([
+            'path' => ['required', 'string', 'max:2048'],
+        ]);
+
+        if (! $this->media->deletePhoto($auction, $validated['path'])) {
+            return back()->withErrors(['photos' => __('validation.custom.upload.photo_not_found')]);
+        }
+
+        AuditLog::log('AUCTION_PHOTO_DELETED', 'Auction', $auction->id, null, null, [
+            'path' => $validated['path'],
+        ]);
+
+        return back()->with('success', __('admin.flash.auction_photo_deleted'));
+    }
+
+    /** Remove the single asset video. */
+    public function destroyVideo(Auction $auction): RedirectResponse
+    {
+        $this->authorize('update', $auction);
+
+        if ($auction->status !== AuctionStatus::DRAFT) {
+            return back()->withErrors(['video' => __('admin.flash.auction_edit_only_draft')]);
+        }
+
+        if (! $this->media->deleteVideo($auction)) {
+            return back()->withErrors(['video' => __('validation.custom.upload.photo_not_found')]);
+        }
+
+        AuditLog::log('AUCTION_VIDEO_DELETED', 'Auction', $auction->id);
+
+        return back()->with('success', __('admin.flash.auction_video_deleted'));
     }
 
     public function publish(Auction $auction): RedirectResponse
@@ -433,29 +559,6 @@ class AdminAuctionController extends Controller
         ]);
 
         return back()->with('success', __('admin.flash.auction_extended'));
-    }
-
-    /**
-     * Store uploaded asset photos on the PUBLIC disk (served via /storage) and
-     * return a ';'-joined path string for the auctions.photos column.
-     */
-    private function storePhotos(Request $request, Auction $auction): string
-    {
-        $paths = [];
-        foreach ($request->file('photos') as $file) {
-            $paths[] = $file->store('auctions/'.$auction->id, 'public');
-        }
-
-        return implode(';', $paths);
-    }
-
-    /**
-     * Store the single asset video on the PUBLIC disk and return its path for
-     * the auctions.video column.
-     */
-    private function storeVideo(Request $request, Auction $auction): string
-    {
-        return $request->file('video')->store('auctions/'.$auction->id.'/video', 'public');
     }
 
     /**

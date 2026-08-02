@@ -5,12 +5,6 @@
 
 @section('content')
 
-@if(session('success'))
-<div style="background:#E5F3EC;color:#1d6045;padding:14px 18px;border-radius:12px;margin-bottom:20px;font-size:13px">
-    {{ session('success') }}
-</div>
-@endif
-
 <x-ui.table>
     <thead>
         <tr>

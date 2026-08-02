@@ -5,13 +5,6 @@
 
 @section('content')
 
-@if(session('success'))
-    <div class="mb-5 rounded-xl bg-ok/10 text-ok px-4 py-3 text-sm">{{ session('success') }}</div>
-@endif
-@if(session('error'))
-    <div class="mb-5 rounded-xl bg-danger/10 text-danger px-4 py-3 text-sm">{{ session('error') }}</div>
-@endif
-
 <div class="flex justify-end mb-5">
     <x-ui.btn variant="danger-ghost" size="sm" :href="route('admin.users.blacklisted')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>

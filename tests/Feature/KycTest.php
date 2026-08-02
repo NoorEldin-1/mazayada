@@ -206,6 +206,33 @@ class KycTest extends TestCase
         $response->assertDontSee($pending->nin);
     }
 
+    /**
+     * The queue showing only UNDER_REVIEW while the Users list showed accounts
+     * labelled "pending" read as missing data. The status filter makes every
+     * account reachable from the queue and explains where each one sits.
+     */
+    public function test_admin_queue_can_filter_to_accounts_that_never_submitted(): void
+    {
+        $admin = $this->createAdmin();
+        $pending = $this->createCitizen(['kyc_status' => KycStatus::PENDING], seed: 11);
+        $underReview = $this->createCitizen([
+            'kyc_status' => KycStatus::UNDER_REVIEW,
+            'kyc_submitted_at' => now(),
+        ], seed: 12);
+
+        $this->actingAs($admin)
+            ->get(route('admin.kyc.index', ['status' => KycStatus::PENDING->value]))
+            ->assertOk()
+            ->assertSee($pending->nin)
+            ->assertDontSee($underReview->nin);
+
+        $this->actingAs($admin)
+            ->get(route('admin.kyc.index', ['status' => 'all']))
+            ->assertOk()
+            ->assertSee($pending->nin)
+            ->assertSee($underReview->nin);
+    }
+
     public function test_admin_approve_marks_complete_and_notifies(): void
     {
         Notification::fake();

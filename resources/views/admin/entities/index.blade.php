@@ -10,10 +10,6 @@
     <x-ui.btn variant="primary" size="sm" :href="route('admin.entities.create')">{{ __('admin.entities.add') }}</x-ui.btn>
 </div>
 
-@if($errors->any())
-    <div class="alert alert-danger" style="margin:1rem">{{ $errors->first() }}</div>
-@endif
-
 <x-ui.table>
     <thead>
         <tr>

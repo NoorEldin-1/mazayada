@@ -80,6 +80,22 @@ class AdminAuctionStoreTest extends TestCase
         ]);
     }
 
+    /**
+     * A mistyped opening price used to be accepted verbatim and rendered as an
+     * unreadable multi-trillion-dinar figure on the public pages.
+     */
+    public function test_opening_price_beyond_the_sanity_bound_is_rejected(): void
+    {
+        $this->actingAs($this->admin())
+            ->post(route('admin.auctions.store'), $this->salePayload([
+                'title_ar' => 'مزاد بسعر خيالي',
+                'opening_price' => (int) config('mazayada.limits.max_price_dzd') + 1,
+            ]))
+            ->assertSessionHasErrors('opening_price');
+
+        $this->assertDatabaseMissing('auctions', ['title_ar' => 'مزاد بسعر خيالي']);
+    }
+
     public function test_deposit_is_derived_from_percentage_and_entry_fee_zeroed(): void
     {
         $this->actingAs($this->admin())

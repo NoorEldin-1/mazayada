@@ -209,7 +209,7 @@ section{padding:72px 0}
 .auc-img{aspect-ratio:5/3;background:linear-gradient(135deg,#EDF2F0,#FBF5E1);display:grid;place-items:center;color:var(--primary-2);position:relative;overflow:hidden}
 .auc-img::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent 0 18px,rgba(0,0,0,.025) 18px 19px)}
 .auc-img svg{width:54px;height:54px;opacity:.5;position:relative;z-index:1}
-.auc-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+.auc-img img,.auc-img video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
 .auc-tag{position:absolute;top:12px;inset-inline-start:12px;background:rgba(0,0,0,.7);color:#fff;backdrop-filter:blur(8px);padding:4px 10px;border-radius:7px;font-size:11px;font-weight:600;z-index:2;display:flex;align-items:center;gap:5px}
 .auc-tag.live{background:#D9544E}
 .auc-tag.live .dot{width:6px;height:6px;border-radius:50%;background:#fff;animation:pulse 1.2s infinite}
@@ -500,17 +500,17 @@ html[dir="rtl"] .auth-carousel-arrow svg{transform:scaleX(-1)}
 .mzd-expand:active{transform:scale(.95)}
 
 /* Thumbnail strip — a single free-scrolling row (no more orphaned grid cell).
-   Rules are scoped under .ad-thumbs so they out-specify Swiper's generic
+   Rules are scoped under .mzd-thumbs so they out-specify Swiper's generic
    `.swiper-slide{width:100%;height:100%}` (which loads after this file). */
-.ad-thumbs{padding:8px;background:var(--surface);overflow:hidden}
-.ad-thumbs .swiper-wrapper{display:flex;align-items:stretch}
-.ad-thumbs .mzd-thumb{flex:0 0 auto;width:88px;height:auto;aspect-ratio:5/4;border-radius:10px;overflow:hidden;position:relative;cursor:pointer;border:2px solid transparent;opacity:.55;background:var(--bg-2);transition:opacity .2s,border-color .2s}
-.ad-thumbs .mzd-thumb:hover{opacity:.85}
-.ad-thumbs .mzd-thumb img,.ad-thumbs .mzd-thumb video{width:100%;height:100%;object-fit:cover;display:block}
-.ad-thumbs .mzd-thumb.swiper-slide-thumb-active{opacity:1;border-color:var(--primary)}
-.ad-thumbs .mzd-thumb.is-video::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.32);z-index:1}
-.ad-thumbs .mzd-thumb.is-video .play{position:absolute;inset:0;z-index:2;display:grid;place-items:center;color:#fff}
-.ad-thumbs .mzd-thumb.is-video .play svg{width:20px;height:20px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.55))}
+.mzd-thumbs{padding:8px;background:var(--surface);overflow:hidden}
+.mzd-thumbs .swiper-wrapper{display:flex;align-items:stretch}
+.mzd-thumbs .mzd-thumb{flex:0 0 auto;width:88px;height:auto;aspect-ratio:5/4;border-radius:10px;overflow:hidden;position:relative;cursor:pointer;border:2px solid transparent;opacity:.55;background:var(--bg-2);transition:opacity .2s,border-color .2s}
+.mzd-thumbs .mzd-thumb:hover{opacity:.85}
+.mzd-thumbs .mzd-thumb img,.mzd-thumbs .mzd-thumb video{width:100%;height:100%;object-fit:cover;display:block}
+.mzd-thumbs .mzd-thumb.swiper-slide-thumb-active{opacity:1;border-color:var(--primary)}
+.mzd-thumbs .mzd-thumb.is-video::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.32);z-index:1}
+.mzd-thumbs .mzd-thumb.is-video .play{position:absolute;inset:0;z-index:2;display:grid;place-items:center;color:#fff}
+.mzd-thumbs .mzd-thumb.is-video .play svg{width:20px;height:20px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.55))}
 
 /* Fullscreen zoom lightbox (built by resources/js/gallery.js on first open). */
 .mzd-lb-open{overflow:hidden}
@@ -539,7 +539,7 @@ html[dir="rtl"] .auth-carousel-arrow svg{transform:scaleX(-1)}
   .mzd-nav svg{width:18px;height:18px}
   .mzd-nav-prev{inset-inline-start:10px}
   .mzd-nav-next{inset-inline-end:10px}
-  .ad-thumbs .mzd-thumb{width:72px}
+  .mzd-thumbs .mzd-thumb{width:72px}
   .mzd-lb-close{top:12px;inset-inline-end:12px}
   .mzd-lb-prev{inset-inline-start:8px}
   .mzd-lb-next{inset-inline-end:8px}
@@ -1371,8 +1371,12 @@ html[dir="rtl"] .legal-related-card .arr{transform:scaleX(-1)}
 .cr-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;background:rgba(228,178,60,.15);color:#9A6B0F;border:1px solid rgba(228,178,60,.45)}
 .cr-badge svg{width:13px;height:13px}
 .auc-row-img{position:relative;width:150px;flex-shrink:0;border-radius:12px;overflow:hidden;background:linear-gradient(135deg,#f3f5f0,#e6ece4);display:grid;place-items:center;min-height:112px}
-.auc-row-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.auc-row-img img,.auc-row-img video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .auc-row-img > svg{width:38px;height:38px;color:var(--primary-4)}
+/* Explicit "no image" state — a bare glyph read as broken imagery. */
+.auc-row-noimg{display:grid;place-items:center;gap:4px;padding:8px;text-align:center;color:var(--primary-4)}
+.auc-row-noimg svg{width:30px;height:30px}
+.auc-row-noimg span{font-size:10.5px;font-weight:600;letter-spacing:.1px}
 .auc-row-img .auc-tag{top:8px;inset-inline-start:8px}
 .auc-row-body{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:7px}
 .auc-row-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}

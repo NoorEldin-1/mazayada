@@ -5,13 +5,6 @@
 
 @section('content')
 
-@if(session('success'))
-    <div class="mb-5 rounded-xl bg-ok/10 text-ok px-4 py-3 text-sm">{{ session('success') }}</div>
-@endif
-@if(session('error'))
-    <div class="mb-5 rounded-xl bg-danger/10 text-danger px-4 py-3 text-sm">{{ session('error') }}</div>
-@endif
-
 {{-- Platform admin sees every report + can refer; the organising entity sees
      only reports referred to it and may only view them. --}}
 <x-ui.table>

@@ -16,7 +16,9 @@
     @vite(['resources/css/dashboard.css', 'resources/js/dashboard.js'])
     @stack('styles')
 </head>
-<body class="bg-bg text-ink antialiased">
+{{-- data-open-modal re-opens the row modal a failed submission came from, so
+     its validation errors are visible instead of vanishing with the modal. --}}
+<body class="bg-bg text-ink antialiased" @if(session('open_modal')) data-open-modal="{{ session('open_modal') }}" @endif>
 
 {{-- Sidebar --}}
 <aside class="dash-side fixed inset-y-0 start-0 z-40 w-64 flex flex-col bg-[var(--sidebar-bg)] text-white border-e border-white/5">
@@ -203,6 +205,9 @@
     </header>
 
     <div class="flex-1 p-5 sm:p-7">
+        {{-- Shared feedback surface for every admin page (flashes + the
+             consolidated validation summary). Pages must NOT re-render these. --}}
+        <x-ui.flash />
         @yield('content')
     </div>
 </div>

@@ -2,7 +2,10 @@
 
 return [
     'kyc_status' => [
-        'PENDING' => 'Pending',
+        // PENDING is the state of an account that has NOT submitted documents
+        // yet — it is not queued for review, so it must not read as "waiting
+        // on us".
+        'PENDING' => 'Not submitted',
         'UNDER_REVIEW' => 'Under review',
         'COMPLETE' => 'Verified',
         'REJECTED' => 'Rejected',

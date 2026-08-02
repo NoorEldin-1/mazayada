@@ -32,8 +32,9 @@
                             <form method="POST" action="{{ route('admin.inspections.answer', $question) }}">
                                 @csrf
                                 <div class="field" style="margin-bottom:0.75rem">
-                                    <label style="font-size:0.85rem;display:block;margin-bottom:.3rem">{{ __('inspections.answer_label') }}</label>
-                                    <textarea name="answer" class="textarea" rows="3" required></textarea>
+                                    <label style="font-size:0.85rem;display:block;margin-bottom:.3rem">{{ __('inspections.answer_label') }} <span class="text-danger">*</span></label>
+                                    <textarea name="answer" class="textarea" rows="3" required>{{ old('answer') }}</textarea>
+                                    @error('answer') <small class="text-danger text-xs mt-1 block">{{ $message }}</small> @enderror
                                 </div>
                                 <label style="display:flex;align-items:center;gap:.4rem;font-size:.8rem;margin-bottom:.9rem">
                                     <input type="checkbox" name="is_public" value="1" checked> {{ __('inspections.public') }}

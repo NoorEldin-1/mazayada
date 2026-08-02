@@ -45,6 +45,18 @@ import './echo';
         endMs: cfg.endTime ? new Date(cfg.endTime).getTime() : null,
     };
 
+    // Was this page server-rendered from a LIVE auction (ACTIVE / EXTENDED)?
+    // Everything that costs the user something — the 5s poll, and above all the
+    // reload that swaps in the canonical closed panel — is gated on this.
+    //
+    // A page rendered on a terminal auction (CLOSED / CANCELLED) has nothing to
+    // learn from the server: its price can't move and its status can't change.
+    // Polling one anyway meant every tick read back the same terminal status,
+    // took it for a fresh close, and reloaded — which re-armed the same timer,
+    // reloading the page every few seconds for as long as it stayed open and
+    // wiping out whatever the visitor was doing on it.
+    const startedLive = cfg.live === true;
+
     // ── DOM hooks (all optional) ───────────────────────────────────────────
     const priceEl = document.getElementById('liveCurrentPrice');
     const countEl = document.getElementById('liveBidCount');
@@ -524,7 +536,14 @@ import './echo';
                 // reload to pick up the server-rendered panel (winner's pay button…).
                 renderClosed(e && e.winner_alias, e && e.final_price);
                 toast(i18n.closed);
-                setTimeout(() => window.location.reload(), 2500);
+                // Only a page that was live has something to gain from the reload.
+                // On an already-closed page the server would render exactly what
+                // is on screen, so the reload would be pure disruption.
+                if (startedLive) {
+                    stopPolling();
+                    reloadingForClose = true;
+                    setTimeout(() => window.location.reload(), 2500);
+                }
             });
     }
 
@@ -546,10 +565,23 @@ import './echo';
     // when the realtime socket is unavailable" note on
     // Api\V1\AuctionController::latestBids. It is public (token.optional), so
     // guests watching an auction get live updates too.
+    //
+    // It only ever runs on a page rendered from a live auction (`startedLive`),
+    // for the reason spelled out where that flag is defined.
     const POLL_MS = 5000;
     const bidsUrl = '/api/v1/auctions/' + encodeURIComponent(cfg.auctionId) + '/bids?limit=10';
     let inFlight = false;
     let reloadingForClose = false;
+    let pollTimer = null;
+
+    // Stop ticking for good — used once the auction reaches a terminal status,
+    // so the page settles instead of polling an auction that can never change.
+    function stopPolling() {
+        if (pollTimer !== null) {
+            clearInterval(pollTimer);
+            pollTimer = null;
+        }
+    }
 
     function echoConnected() {
         try {
@@ -605,10 +637,21 @@ import './echo';
             }
             setBidCount(Number(meta.bid_count));
 
-            // Closed / cancelled: reload once so the server renders the canonical
-            // panel (winner, final price, the winner's payment button).
+            // Terminal status reached. Stop polling either way — nothing about
+            // this auction can move again.
+            //
+            // The reload is for the *transition* only: the auction closed while
+            // this visitor was watching a live page, so the server now has a
+            // panel we can't build client-side (winner, final price, the
+            // winner's payment button). `startedLive` is already true here (we
+            // never poll otherwise), so this is a transition by construction —
+            // it stays as an explicit guard because a reload throws away
+            // whatever the user was in the middle of, and must never fire on a
+            // page that was already showing the closed state.
             const status = String(meta.status || '').toUpperCase();
             if (status === 'CLOSED' || status === 'CANCELLED') {
+                stopPolling();
+                if (!startedLive) return;
                 reloadingForClose = true;
                 toast(i18n.closed);
                 setTimeout(() => window.location.reload(), 1200);
@@ -621,16 +664,21 @@ import './echo';
         }
     }
 
-    poll(true).finally(() => {
-        setInterval(() => {
-            // A hidden tab has nobody watching: skip the request and catch up on
-            // the tick after it comes back.
-            if (document.visibilityState === 'hidden') return;
-            poll(false);
-        }, POLL_MS);
-        // Coming back to the tab should feel instant, not up to 5s stale.
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') poll(false);
+    // A scheduled (PUBLISHED) auction is deliberately left out too: it has no
+    // bids and no clock yet, so it would poll for minutes or days to learn one
+    // thing. Its page is opened again when it starts.
+    if (startedLive) {
+        poll(true).finally(() => {
+            pollTimer = setInterval(() => {
+                // A hidden tab has nobody watching: skip the request and catch up
+                // on the tick after it comes back.
+                if (document.visibilityState === 'hidden') return;
+                poll(false);
+            }, POLL_MS);
+            // Coming back to the tab should feel instant, not up to 5s stale.
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible' && pollTimer !== null) poll(false);
+            });
         });
-    });
+    }
 })();

@@ -29,10 +29,6 @@
     <span class="rtl:-scale-x-100 inline-block">←</span> {{ __('admin.kyc.back_to_queue') }}
 </a>
 
-@if($errors->any())
-<div class="mb-5 rounded-xl bg-danger/10 text-danger px-4 py-3 text-sm">{{ $errors->first() }}</div>
-@endif
-
 {{-- Identity header --}}
 <x-ui.card class="mb-5">
     <x-slot:header>

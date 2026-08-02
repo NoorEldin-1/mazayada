@@ -41,6 +41,8 @@ return [
     'filter' => 'تصفية',
     'none' => 'لا يوجد',
     'optional' => 'اختياري',
+    'validation_summary' => 'يرجى تصحيح ما يلي قبل الحفظ:',
+    'no_image' => 'لا توجد صورة',
     'active' => 'نشط',
     'inactive' => 'غير نشط',
 
