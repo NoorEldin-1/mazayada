@@ -12,11 +12,15 @@ class Category extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['name_ar', 'name_fr', 'name_en', 'icon', 'is_active'];
+    protected $fillable = ['name_ar', 'name_fr', 'name_en', 'icon', 'is_active', 'min_increment_percent'];
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean'];
+        return [
+            'is_active' => 'boolean',
+            // Sector rule (القطاع): minimum bid increment over the current price.
+            'min_increment_percent' => 'decimal:2',
+        ];
     }
 
     public function auctions(): HasMany

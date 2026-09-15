@@ -88,9 +88,12 @@ class AdminCategoryController extends Controller
             'name_fr' => ['nullable', 'string', 'max:100'],
             'name_en' => ['nullable', 'string', 'max:100'],
             'icon' => ['nullable', 'string', 'max:100'],
+            // Sector rule (edit 11): minimum raise over the current price, in %.
+            'min_increment_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);
 
         $validated['is_active'] = $request->boolean('is_active');
+        $validated['min_increment_percent'] = (float) ($validated['min_increment_percent'] ?? 0);
 
         return $validated;
     }

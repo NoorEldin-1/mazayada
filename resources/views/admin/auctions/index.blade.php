@@ -129,8 +129,20 @@
                             @endcan
                         @else
                             <x-ui.action-menu.item :href="route('auctions.show', $auction)">{{ __('common.view') }}</x-ui.action-menu.item>
+                            {{-- Edits 6-10 — re-run a session that ended without an award. --}}
+                            @if(app(\App\Services\AuctionSessionService::class)->canReschedule($auction))
+                                @can('create', \App\Models\Auction::class)
+                                    <x-ui.action-menu.item data-modal-target="#reschedule-{{ $auction->id }}">{{ __('auctions.session.reschedule') }}</x-ui.action-menu.item>
+                                @endcan
+                            @endif
                         @endif
                     </x-ui.action-menu>
+
+                    @if(in_array($auction->status, [\App\Enums\AuctionStatus::CLOSED, \App\Enums\AuctionStatus::CANCELLED], true))
+                        @can('create', \App\Models\Auction::class)
+                            @include('admin.auctions.partials.reschedule-modal', ['auction' => $auction])
+                        @endcan
+                    @endif
                 </td>
             </tr>
         @empty

@@ -47,11 +47,17 @@ tags:
     name: KYC
     description: "\nIdentity verification: upload documents to the private disk, submit the profile\nfor review, and stream back the user's own documents. Mirrors the web KYC flow."
   -
+    name: 'Notification preferences'
+    description: "\nChannels + preferred auction categories (edits 27 · 30). The PUT is a full\nreplace, and its response is the SAVED state — values the user may not hold\n(e.g. email for a non-subscriber) come back corrected."
+  -
     name: Notifications
     description: "\nThe citizen's in-app notification inbox."
   -
     name: Payments
     description: "\nThe winner's final payment plus the gateway return handling and a status\nendpoint the app polls after the gateway web view closes."
+  -
+    name: 'Premium subscription'
+    description: "\nPremium membership (edits 24 · 25). The checkout reuses the payment gateway:\nopen `redirect_url` in a web view, then poll `GET payments/{ref}/status`."
   -
     name: Profile
     description: "\nView and update the authenticated citizen's editable profile fields."
@@ -308,12 +314,12 @@ paths:
               schema:
                 type: object
                 example:
-                  message: 'لقد اشتريت كراسة الشروط بالفعل.'
+                  message: 'لقد اشتريت دفتر الشروط بالفعل.'
                   code: already_bought_book
                 properties:
                   message:
                     type: string
-                    example: 'لقد اشتريت كراسة الشروط بالفعل.'
+                    example: 'لقد اشتريت دفتر الشروط بالفعل.'
                   code:
                     type: string
                     example: already_bought_book
@@ -350,12 +356,12 @@ paths:
               schema:
                 type: object
                 example:
-                  message: 'يجب شراء كراسة الشروط أولاً قبل التسجيل في المزايدة.'
+                  message: 'يجب شراء دفتر الشروط أولاً قبل التسجيل في المزايدة.'
                   code: must_purchase_book
                 properties:
                   message:
                     type: string
-                    example: 'يجب شراء كراسة الشروط أولاً قبل التسجيل في المزايدة.'
+                    example: 'يجب شراء دفتر الشروط أولاً قبل التسجيل في المزايدة.'
                   code:
                     type: string
                     example: must_purchase_book
@@ -1676,6 +1682,14 @@ paths:
                     category:
                       id: 2
                       name: عقارات
+                    sector:
+                      id: '2'
+                      name: عقارات
+                      min_increment_percent: 0
+                    min_bid:
+                      amount: 6100001
+                      formatted: '6 100 001 دج'
+                    min_increment_percent: 0
                     wilaya:
                       id: 2
                       code: '02'
@@ -1737,7 +1751,7 @@ paths:
                     condition_book:
                       id: f5cea43f-df52-4942-89bf-716077671467
                       type: CONDITION_BOOK
-                      type_label: 'كراسة الشروط'
+                      type_label: 'دفتر الشروط'
                       title: 'كراسة شروط — new one'
                       is_public: false
                       file_size: 56144
@@ -1746,6 +1760,22 @@ paths:
                       download_url: 'http://mazayada.findosystem.com/api/v1/documents/f5cea43f-df52-4942-89bf-716077671467/download'
                       verify_url: 'http://mazayada.findosystem.com/verify?doc=f5cea43f-df52-4942-89bf-716077671467&sig=8a080d731cbc88a58981e64e0cb855eeafb200d24fa8e9caecddfdec8c02bd8c'
                     award_document: null
+                    book_purchase_open: false
+                    publication_priority: NORMAL
+                    session:
+                      round: 1
+                      code: SES-2026-0001
+                      start_time: '2026-06-14T11:10:00+01:00'
+                      end_time: '2026-06-14T12:00:00+01:00'
+                      opening_price:
+                        amount: 1000000
+                        formatted: '1 000 000 دج'
+                      reduction_percent: 0
+                      reschedule_count: 0
+                      original_opening_price:
+                        amount: 1000000
+                        formatted: '1 000 000 دج'
+                      history: []
                   message: null
                   meta:
                     viewer: null
@@ -1819,6 +1849,30 @@ paths:
                           name:
                             type: string
                             example: عقارات
+                      sector:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            example: '2'
+                          name:
+                            type: string
+                            example: عقارات
+                          min_increment_percent:
+                            type: integer
+                            example: 0
+                      min_bid:
+                        type: object
+                        properties:
+                          amount:
+                            type: integer
+                            example: 6100001
+                          formatted:
+                            type: string
+                            example: '6 100 001 دج'
+                      min_increment_percent:
+                        type: integer
+                        example: 0
                       wilaya:
                         type: object
                         properties:
@@ -2002,7 +2056,7 @@ paths:
                             example: CONDITION_BOOK
                           type_label:
                             type: string
-                            example: 'كراسة الشروط'
+                            example: 'دفتر الشروط'
                           title:
                             type: string
                             example: 'كراسة شروط — new one'
@@ -2028,6 +2082,54 @@ paths:
                         type: string
                         example: null
                         nullable: true
+                      book_purchase_open:
+                        type: boolean
+                        example: false
+                      publication_priority:
+                        type: string
+                        example: NORMAL
+                      session:
+                        type: object
+                        properties:
+                          round:
+                            type: integer
+                            example: 1
+                          code:
+                            type: string
+                            example: SES-2026-0001
+                          start_time:
+                            type: string
+                            example: '2026-06-14T11:10:00+01:00'
+                          end_time:
+                            type: string
+                            example: '2026-06-14T12:00:00+01:00'
+                          opening_price:
+                            type: object
+                            properties:
+                              amount:
+                                type: integer
+                                example: 1000000
+                              formatted:
+                                type: string
+                                example: '1 000 000 دج'
+                          reduction_percent:
+                            type: integer
+                            example: 0
+                          reschedule_count:
+                            type: integer
+                            example: 0
+                          original_opening_price:
+                            type: object
+                            properties:
+                              amount:
+                                type: integer
+                                example: 1000000
+                              formatted:
+                                type: string
+                                example: '1 000 000 دج'
+                          history:
+                            type: array
+                            example: []
                   message:
                     type: string
                     example: null
@@ -2282,6 +2384,10 @@ paths:
                   data:
                     current_price: 6100000
                     current_price_formatted: '6 100 000 دج'
+                    min_bid:
+                      amount: 6100001
+                      formatted: '6 100 001 دج'
+                    min_increment_percent: 0
                     bid_count: 15
                     status: CLOSED
                     end_time: '2026-06-14T12:00:00+01:00'
@@ -2299,6 +2405,18 @@ paths:
                       current_price_formatted:
                         type: string
                         example: '6 100 000 دج'
+                      min_bid:
+                        type: object
+                        properties:
+                          amount:
+                            type: integer
+                            example: 6100001
+                          formatted:
+                            type: string
+                            example: '6 100 001 دج'
+                      min_increment_percent:
+                        type: integer
+                        example: 0
                       bid_count:
                         type: integer
                         example: 15
@@ -2378,8 +2496,8 @@ paths:
                   example: carolyne.luettgen@example.org
                 birth_date:
                   type: string
-                  description: 'يجب أن يكون value تاريخاً صحيحاً. يجب أن يكون value تاريخاً قبل <code>2008-07-30</code>.'
-                  example: '2006-04-22'
+                  description: 'يجب أن يكون value تاريخاً صحيحاً. يجب أن يكون value تاريخاً قبل <code>2008-09-15</code>.'
+                  example: '2006-06-08'
                 password:
                   type: string
                   description: ''
@@ -2597,6 +2715,86 @@ paths:
                 - email
                 - secret_answer
                 - password
+      security: []
+  /api/v1/auth/email-recovery/status:
+    post:
+      summary: 'Email recovery status'
+      operationId: emailRecoveryStatus
+      description: 'The latest recovery request filed for a NIN. `data` is null when none exists.'
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nin:
+                  type: string
+                  description: 'The 18-digit NIN.'
+                  example: '109823041175663801'
+              required:
+                - nin
+      security: []
+  /api/v1/auth/email-recovery:
+    post:
+      summary: 'Submit an email recovery request'
+      operationId: submitAnEmailRecoveryRequest
+      description: "Multipart. NIN, birth date and phone must match the account. Only one open\nrequest per account; throttled to 3 per NIN and 10 per IP per hour."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                nin:
+                  type: string
+                  description: 'The 18-digit NIN of the account.'
+                  example: '109823041175663801'
+                birth_date:
+                  type: string
+                  description: 'Birth date on the account (Y-m-d).'
+                  example: '1990-01-01'
+                phone:
+                  type: string
+                  description: 'Phone on the account (10 digits starting with 0).'
+                  example: '0555123456'
+                new_email:
+                  type: string
+                  description: 'The new email address (not used by another account).'
+                  example: new.me@gmail.com
+                selfie_with_id:
+                  type: string
+                  format: binary
+                  description: 'A selfie holding the national ID card (JPG/PNG, max 1024 KB).'
+              required:
+                - nin
+                - birth_date
+                - phone
+                - new_email
+                - selfie_with_id
       security: []
   /api/v1/auth/verify-otp:
     post:
@@ -4040,7 +4238,7 @@ paths:
                 id_type:
                   type: string
                   description: ''
-                  example: ID_CARD
+                  example: LICENSE
                   enum:
                     - ID_CARD
                     - PASSPORT
@@ -4110,6 +4308,93 @@ paths:
         required: true
         schema:
           type: string
+  /api/v1/preferences/notifications:
+    get:
+      summary: 'Get preferences'
+      operationId: getPreferences
+      description: 'Current preferences plus every category to choose from, in one call.'
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - 'Notification preferences'
+      security: []
+    put:
+      summary: 'Save preferences'
+      operationId: savePreferences
+      description: ''
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - 'Notification preferences'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                channels:
+                  type: object
+                  description: '{push, email, sms} booleans.'
+                  example: []
+                  properties:
+                    push:
+                      type: boolean
+                      description: ''
+                      example: false
+                    email:
+                      type: boolean
+                      description: ''
+                      example: true
+                    sms:
+                      type: boolean
+                      description: ''
+                      example: true
+                  required:
+                    - push
+                    - email
+                    - sms
+                auction_categories:
+                  type: array
+                  description: 'Category ids to follow; empty = all.'
+                  example:
+                    - 17
+                  items:
+                    type: integer
+                new_auction_alerts:
+                  type: boolean
+                  description: ''
+                  example: false
+              required:
+                - channels
+                - new_auction_alerts
+      security: []
   /api/v1/notifications:
     get:
       summary: 'List notifications'
@@ -4394,6 +4679,80 @@ paths:
         required: true
         schema:
           type: string
+  /api/v1/subscription:
+    get:
+      summary: 'My subscription + plans'
+      operationId: mySubscription+Plans
+      description: "The current subscription (null if never subscribed) and every active plan,\nin one call. `is_premium` is the authoritative flag for unlocking features."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses:
+        401:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: 'يلزم تسجيل الدخول.'
+                properties:
+                  message:
+                    type: string
+                    example: 'يلزم تسجيل الدخول.'
+      tags:
+        - 'Premium subscription'
+      security: []
+    post:
+      summary: Subscribe
+      operationId: subscribe
+      description: "Starts the checkout for a plan. Same response shape as every other payment.\nA 422 carries a `code`: `plan_unavailable` or `staff_not_allowed`."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - 'Premium subscription'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plan_code:
+                  type: string
+                  description: 'The plan code.'
+                  example: YEARLY
+              required:
+                - plan_code
+      security: []
+    delete:
+      summary: 'Stop auto-renew'
+      operationId: stopAutoRenew
+      description: "Turns auto-renew off; the paid period stays active until `expires_at`.\nReturns the same payload as GET."
+      parameters:
+        -
+          in: header
+          name: Accept-Language
+          description: ''
+          example: ar
+          schema:
+            type: string
+      responses: {  }
+      tags:
+        - 'Premium subscription'
+      security: []
   /api/v1/profile:
     get:
       summary: 'Get profile'
@@ -4476,7 +4835,7 @@ paths:
                 locale:
                   type: string
                   description: ''
-                  example: fr
+                  example: en
                   enum:
                     - ar
                     - fr

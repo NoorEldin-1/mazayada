@@ -33,6 +33,9 @@ php artisan migrate --force
 # ────────────────────────────────────────────────
 echo "🔐 Seeding roles & permissions..."
 php artisan db:seed --class=RolesPermissionsSeeder --force
+# Runtime settings + starter Premium plans / publication packages (both idempotent).
+php artisan db:seed --class=SystemSettingsSeeder --force
+php artisan db:seed --class=PremiumAndPublicationSeeder --force
 php artisan permission:cache-reset || true
 
 # ────────────────────────────────────────────────

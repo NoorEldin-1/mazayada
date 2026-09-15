@@ -52,6 +52,10 @@ return [
 
     // ===== Auctions management (index + create/edit form) =====
     'auctions' => [
+        'f_min_increment_percent' => 'Minimum raise (%)',
+        'min_increment_override_hint' => 'Leave empty to use the sector (category) percentage.',
+        'th_session' => 'Session',
+        'sec_sessions' => 'Sessions & rescheduling',
         'manage_title' => 'Manage Auctions',
         'create_title' => 'Create New Auction',
         'edit_title' => 'Edit Auction',
@@ -397,6 +401,9 @@ return [
 
     // ===== Categories management =====
     'categories' => [
+        'f_min_increment_percent' => 'Sector minimum raise (%)',
+        'min_increment_hint' => 'Lowest raise allowed above the current price in this sector\'s auctions (0 = any raise).',
+        'th_min_increment' => 'Minimum raise',
         'title' => 'Categories',
         'add' => 'Add category',
         'edit_title' => 'Edit category',
@@ -418,6 +425,15 @@ return [
 
     // ===== System settings =====
     'settings' => [
+        'group_auctions' => 'Auctions & sessions',
+        'group_publication' => 'Publication rights',
+        'group_subscriptions' => 'Premium & alerts',
+        'key_auctions_reschedule_reduction_percent' => 'Opening-price reduction on reschedule (%)',
+        'key_publication_require_payment_before_publish' => 'Require the publication fee to be paid before publishing',
+        'key_subscriptions_non_premium_alert_delay_minutes' => 'New-auction alert delay for non-subscribers (minutes)',
+        'key_subscriptions_email_requires_premium' => 'Email alerts for Premium members only',
+        'key_subscriptions_expiry_reminder_days' => 'Reminder before subscription expiry (days)',
+        'key_notifications_sms_enabled' => 'Enable SMS (requires an SMS provider)',
         'title' => 'System settings',
         'intro' => 'Tune platform parameters. Applied immediately.',
         'enabled' => 'Enabled',
@@ -497,4 +513,8 @@ return [
         'submit_create' => 'Create staff member',
         'submit_update' => 'Save changes',
     ],
+    // Edits 16 · 24 · 25 — sidebar entries.
+    'nav_publication_packages' => 'Publication packages',
+    'nav_subscription_plans' => 'Premium plans',
+    'nav_subscriptions' => 'Premium subscriptions',
 ];

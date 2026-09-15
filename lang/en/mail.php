@@ -135,5 +135,21 @@ return [
             'subject' => 'Auction report referred to you — Mazayada',
             'line' => 'A report on the auction “:auction” has been referred to you; it is now available in the auction reports section.',
         ],
+        'new_auction_match' => [
+            'subject' => 'New auction in :category',
+            'line' => 'A new auction “:auction” matching your interests has been published, opening price :price.',
+        ],
+        'subscription_activated' => [
+            'subject' => 'Premium subscription activated',
+            'line' => 'Your “:plan” subscription has been activated and is valid until :date.',
+        ],
+        'subscription_expiring' => [
+            'subject' => 'Your Premium is ending soon',
+            'line' => 'Your “:plan” subscription ends in :days day(s) (:date). Renew it to keep enjoying your benefits.',
+        ],
+        'subscription_expired' => [
+            'subject' => 'Premium subscription expired',
+            'line' => 'Your “:plan” subscription has ended. You can renew it at any time from the Premium page.',
+        ],
     ],
 ];

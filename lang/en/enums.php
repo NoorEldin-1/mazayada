@@ -86,6 +86,7 @@ return [
         'ENTRY_FEE' => 'Entry fee',
         'BOOK_PURCHASE' => 'Specifications booklet',
         'FINAL_PAYMENT' => 'Final payment',
+        'SUBSCRIPTION' => 'Premium subscription',
     ],
 
     'payment_status' => [
@@ -128,6 +129,8 @@ return [
         'PAYMENT_RECEIPT' => 'Payment receipt',
         'DELIVERY_REPORT' => 'Delivery report',
         'AUCTION_REPORT' => 'Auction report',
+        'PARTICIPATION_RECEIPT' => 'Participation receipt',
+        'AUCTION_RESULT' => 'Auction result receipt',
     ],
 
     'notification_channel' => [
@@ -135,5 +138,27 @@ return [
         'SMS' => 'SMS',
         'EMAIL' => 'Email',
         'IN_APP' => 'In-app',
+    ],
+    'publication_priority' => [
+        'NORMAL' => 'Normal publication',
+        'PRIORITY' => 'Priority publication',
+    ],
+
+    'publication_area' => [
+        'LISTING' => 'General auctions listing',
+        'CATEGORY_TOP' => 'Top of its sector',
+        'HOMEPAGE' => 'Home page',
+    ],
+
+    'subscription_status' => [
+        'PENDING' => 'Payment pending',
+        'ACTIVE' => 'Active',
+        'EXPIRED' => 'Expired',
+        'CANCELLED' => 'Cancelled',
+    ],
+
+    'subscription_period' => [
+        'MONTHLY' => 'Monthly',
+        'YEARLY' => 'Yearly',
     ],
 ];

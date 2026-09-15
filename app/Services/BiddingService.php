@@ -101,6 +101,16 @@ class BiddingService
                         throw new RuntimeException(__('auctions.bid.too_low'));
                     }
 
+                    // Sector rule (القطاع): the bid must clear the sector's minimum
+                    // increment over the current price, not merely exceed it.
+                    $minBid = $freshAuction->minBidFor($currentPrice);
+                    if ($amountCentimes < $minBid) {
+                        throw new RuntimeException(__('auctions.bid.below_sector_minimum', [
+                            'percent' => format_percent($freshAuction->minIncrementPercent()),
+                            'amount' => dzd_text($minBid),
+                        ]));
+                    }
+
                     if ($previousTop && $previousTop->user_id !== $user->id) {
                         $outbidUserId = $previousTop->user_id;
                     }

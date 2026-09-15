@@ -8,6 +8,8 @@ enum PaymentType: string
     case ENTRY_FEE = 'ENTRY_FEE';
     case BOOK_PURCHASE = 'BOOK_PURCHASE';
     case FINAL_PAYMENT = 'FINAL_PAYMENT';
+    // Premium subscription purchase (edit 24) — not tied to an auction.
+    case SUBSCRIPTION = 'SUBSCRIPTION';
 
     public function label(): string
     {

@@ -175,6 +175,18 @@ class User extends Authenticatable implements HasLocalePreference
         return $this->hasMany(Document::class);
     }
 
+    /** Premium subscription purchases (edits 24-25). */
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    /** Notification preferences (edits 27-30); absent row = defaults. */
+    public function notificationPreference(): HasOne
+    {
+        return $this->hasOne(NotificationPreference::class);
+    }
+
     public function wonAuctions(): HasMany
     {
         return $this->hasMany(Auction::class, 'winner_user_id');

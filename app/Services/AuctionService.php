@@ -164,6 +164,25 @@ class AuctionService
             $this->notifications->finalPaymentDue($auction->winner, $auction);
         }
 
+        // وصل نتيجة المزايدة (edit 23) — one per registered participant, winner
+        // included. Best-effort: a PDF failure must never undo or block the close.
+        $auction->participants()
+            ->with('user')
+            ->where('deposit_paid', true)
+            ->get()
+            ->each(function ($participant) use ($auction) {
+                if (! $participant->user) {
+                    return;
+                }
+                try {
+                    $this->documents->generateAuctionResult($auction, $participant->user);
+                } catch (\Throwable $e) {
+                    Log::warning('Auction result document failed', [
+                        'auction_id' => $auction->id, 'user_id' => $participant->user_id, 'error' => $e->getMessage(),
+                    ]);
+                }
+            });
+
         // Notify the non-winning participants that the auction ended.
         $auction->participants()
             ->with('user')

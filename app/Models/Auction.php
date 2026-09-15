@@ -8,6 +8,7 @@ use App\Enums\AuctionStatus;
 use App\Enums\AuctionType;
 use App\Enums\PaymentStatus;
 use App\Enums\PaymentType;
+use App\Enums\PublicationPriority;
 use App\Models\Concerns\BelongsToEntity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -30,7 +31,7 @@ class Auction extends Model
         'condition_terms_ar', 'condition_terms_fr',
         'award_terms_ar', 'award_terms_fr', 'condition', 'unit_count',
         'asset_location', 'latitude', 'longitude',
-        'opening_price', 'deposit_amount', 'deposit_percent', 'entry_fee', 'book_price',
+        'opening_price', 'deposit_amount', 'deposit_percent', 'min_increment_percent', 'entry_fee', 'book_price',
         'start_time', 'end_time', 'extension_trigger_seconds', 'extension_duration_minutes',
         'status', 'winner_user_id', 'final_price',
         'auction_type', 'asset_class', 'lease_duration_years', 'lease_renewals',
@@ -41,11 +42,36 @@ class Auction extends Model
         'created_by', 'appraiser_id',
         'wilaya_id', 'commune_id', 'mayor_name', 'photos', 'video',
         'entity_user_id',
+        // Sessions (edits 5-10).
+        'session_code', 'session_round', 'parent_auction_id', 'root_auction_id',
+        'reduction_percent', 'original_opening_price',
+        // Publication rights (edits 13-17) + new-auction alert waves (edit 26).
+        'publication_priority', 'publication_package_id', 'publication_fee',
+        'publication_fee_paid_at', 'publication_fee_ref',
+        'premium_alerted_at', 'public_alerted_at',
     ];
+
+    protected static function booted(): void
+    {
+        // Every session gets a stable reference number the moment it exists.
+        static::creating(function (Auction $auction): void {
+            if (empty($auction->session_code)) {
+                $auction->session_code = \App\Support\SessionCode::next();
+            }
+        });
+    }
 
     protected function casts(): array
     {
         return [
+            'session_round' => 'integer',
+            'reduction_percent' => 'decimal:2',
+            'original_opening_price' => 'integer',
+            'publication_priority' => PublicationPriority::class,
+            'publication_fee' => 'integer',
+            'publication_fee_paid_at' => 'datetime',
+            'premium_alerted_at' => 'datetime',
+            'public_alerted_at' => 'datetime',
             'status' => AuctionStatus::class,
             'auction_type' => AuctionType::class,
             'asset_class' => AssetClass::class,
@@ -154,6 +180,81 @@ class Auction extends Model
         return $this->hasOne(Delivery::class);
     }
 
+    /** The publication package the organising entity bought (edits 14-17). */
+    public function publicationPackage(): BelongsTo
+    {
+        return $this->belongsTo(PublicationPackage::class);
+    }
+
+    /** The session this one re-runs (null on the original session). */
+    public function parentSession(): BelongsTo
+    {
+        return $this->belongsTo(Auction::class, 'parent_auction_id')->withoutGlobalScopes();
+    }
+
+    // ===== Sessions (edits 5-10) =====
+
+    public function rescheduleCount(): int
+    {
+        return max(0, (int) ($this->session_round ?? 1) - 1);
+    }
+
+    /**
+     * Earlier sessions of the same chain, newest first — the reschedule history.
+     *
+     * @return \Illuminate\Support\Collection<int, Auction>
+     */
+    public function sessionHistory(): \Illuminate\Support\Collection
+    {
+        $root = $this->root_auction_id ?? ($this->rescheduleCount() > 0 ? $this->parent_auction_id : null);
+
+        if ($root === null) {
+            return collect();
+        }
+
+        return Auction::withoutGlobalScopes()
+            ->where(fn (Builder $q) => $q->where('id', $root)->orWhere('root_auction_id', $root))
+            ->where('session_round', '<', (int) $this->session_round)
+            ->orderByDesc('session_round')
+            ->get();
+    }
+
+    /** Server-translated outcome of a finished session (history rows). */
+    public function sessionResultLabel(): string
+    {
+        return match (true) {
+            $this->status === AuctionStatus::CLOSED && $this->winner_user_id !== null => __('auctions.session.result_awarded'),
+            $this->status === AuctionStatus::CLOSED => __('auctions.session.result_no_bids'),
+            $this->status === AuctionStatus::CANCELLED => __('auctions.session.result_cancelled'),
+            default => $this->status?->label() ?? '',
+        };
+    }
+
+    // ===== Publication rights (edits 13-17) =====
+
+    public function isPriorityPublication(): bool
+    {
+        return $this->publication_priority === PublicationPriority::PRIORITY;
+    }
+
+    /**
+     * Edit 3 — the condition book can be bought only while the auction is still
+     * open: not closed/cancelled and its end time not yet reached.
+     */
+    public function isBookPurchaseOpen(): bool
+    {
+        if (in_array($this->status, [AuctionStatus::CLOSED, AuctionStatus::CANCELLED], true)) {
+            return false;
+        }
+
+        return $this->end_time === null || $this->end_time->isFuture();
+    }
+
+    public function publicationFeeDue(): bool
+    {
+        return (int) $this->publication_fee > 0 && $this->publication_fee_paid_at === null;
+    }
+
     /** Citizens who added this auction to their watchlist (notification targets). */
     public function watchers(): BelongsToMany
     {
@@ -182,6 +283,39 @@ class Auction extends Model
     }
 
     // Helpers
+
+    /**
+     * Sector rule (القطاع): the minimum increment, as a percentage of the current
+     * price, that every new bid must clear. The auction's own value wins; null
+     * inherits the sector (category) default; 0 = the legacy "any amount above".
+     */
+    public function minIncrementPercent(): float
+    {
+        if ($this->min_increment_percent !== null) {
+            return (float) $this->min_increment_percent;
+        }
+
+        return (float) ($this->category?->min_increment_percent ?? 0);
+    }
+
+    /**
+     * The lowest acceptable next bid (centimes) given a current price: the price
+     * plus the sector increment, rounded UP to a whole dinar (bids are entered in
+     * dinars), and always at least one dinar above the price.
+     */
+    public function minBidFor(int $currentPriceCentimes): int
+    {
+        $increment = (int) ceil($currentPriceCentimes * $this->minIncrementPercent() / 100 / 100) * 100;
+
+        return $currentPriceCentimes + max(100, $increment);
+    }
+
+    /** The minimum next bid against the live current price (centimes). */
+    public function minBid(): int
+    {
+        return $this->minBidFor($this->currentPrice());
+    }
+
     public function currentPrice(): int
     {
         return Cache::remember(

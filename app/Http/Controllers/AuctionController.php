@@ -79,7 +79,8 @@ class AuctionController extends Controller
         $query->when($request->filled('price_min'), fn ($q) => $q->where('opening_price', '>=', (int) $request->price_min * 100));
         $query->when($request->filled('price_max'), fn ($q) => $q->where('opening_price', '<=', (int) $request->price_max * 100));
 
-        // Sort.
+        // Sort — paid priority publications (edit 15) always head the list.
+        \App\Support\AuctionFilters::priorityFirst($query);
         match ($request->input('sort')) {
             'price_asc' => $query->orderBy('opening_price'),
             'price_desc' => $query->orderByDesc('opening_price'),
@@ -282,7 +283,11 @@ class AuctionController extends Controller
         }
 
         $auction = $payment?->auction;
-        $route = $auction ? redirect()->route('auctions.show', $auction) : redirect()->route('citizen.dashboard');
+        $route = match (true) {
+            $payment?->payment_type === \App\Enums\PaymentType::SUBSCRIPTION => redirect()->route('citizen.subscription'),
+            $auction !== null => redirect()->route('auctions.show', $auction),
+            default => redirect()->route('citizen.dashboard'),
+        };
 
         // Report the ACTUAL outcome, not just the gateway's decision hint —
         // handleCallback re-verifies the order with the gateway before confirming.

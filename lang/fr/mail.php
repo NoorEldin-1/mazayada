@@ -135,5 +135,21 @@ return [
             'subject' => 'Rapport de vente transmis — Mazayada',
             'line' => 'Un rapport concernant l’enchère « :auction » vous a été transmis ; il est disponible dans la rubrique des rapports de ventes.',
         ],
+        'new_auction_match' => [
+            'subject' => 'Nouvelle enchère dans le secteur :category',
+            'line' => 'Une nouvelle enchère « :auction » correspondant à vos intérêts vient d\'être publiée, mise à prix :price.',
+        ],
+        'subscription_activated' => [
+            'subject' => 'Abonnement Premium activé',
+            'line' => 'Votre abonnement « :plan » a bien été activé ; il est valable jusqu\'au :date.',
+        ],
+        'subscription_expiring' => [
+            'subject' => 'Votre Premium arrive à échéance',
+            'line' => 'Votre abonnement « :plan » expire dans :days jour(s) (:date). Renouvelez-le pour continuer à profiter de vos avantages.',
+        ],
+        'subscription_expired' => [
+            'subject' => 'Abonnement Premium expiré',
+            'line' => 'Votre abonnement « :plan » a expiré. Vous pouvez le renouveler à tout moment depuis la page Premium.',
+        ],
     ],
 ];

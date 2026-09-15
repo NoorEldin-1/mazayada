@@ -78,6 +78,8 @@ deploy() {
   echo "🔐 [4/8] Syncing roles, permissions & reference data..."
   php artisan db:seed --class=RolesPermissionsSeeder --force
   php artisan db:seed --class=SystemSettingsSeeder --force
+  # Starter Premium plans + publication packages (idempotent, never overwrites edits).
+  php artisan db:seed --class=PremiumAndPublicationSeeder --force
   php artisan db:seed --class=CommuneSeeder --force
   php artisan permission:cache-reset || true
 

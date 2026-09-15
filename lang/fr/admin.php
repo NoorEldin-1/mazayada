@@ -52,6 +52,10 @@ return [
 
     // ===== Auctions management (index + create/edit form) =====
     'auctions' => [
+        'f_min_increment_percent' => 'Hausse minimale (%)',
+        'min_increment_override_hint' => 'Laisser vide pour appliquer le pourcentage du secteur (catégorie).',
+        'th_session' => 'Séance',
+        'sec_sessions' => 'Séances et reprogrammation',
         'manage_title' => 'Gérer les enchères',
         'create_title' => 'Créer une nouvelle enchère',
         'edit_title' => 'Modifier l’enchère',
@@ -396,6 +400,9 @@ return [
 
     // ===== Categories management =====
     'categories' => [
+        'f_min_increment_percent' => 'Hausse minimale du secteur (%)',
+        'min_increment_hint' => 'Hausse minimale autorisée au-dessus du prix actuel pour les enchères de ce secteur (0 = toute hausse).',
+        'th_min_increment' => 'Hausse minimale',
         'title' => 'Catégories',
         'add' => 'Ajouter une catégorie',
         'edit_title' => 'Modifier la catégorie',
@@ -417,6 +424,15 @@ return [
 
     // ===== System settings =====
     'settings' => [
+        'group_auctions' => 'Enchères et séances',
+        'group_publication' => 'Droits de publication',
+        'group_subscriptions' => 'Premium et alertes',
+        'key_auctions_reschedule_reduction_percent' => 'Réduction de la mise à prix à la reprogrammation (%)',
+        'key_publication_require_payment_before_publish' => 'Exiger le paiement des droits de publication avant publication',
+        'key_subscriptions_non_premium_alert_delay_minutes' => 'Délai des alertes de nouvelles enchères pour les non-abonnés (minutes)',
+        'key_subscriptions_email_requires_premium' => 'Alertes e-mail réservées aux abonnés Premium',
+        'key_subscriptions_expiry_reminder_days' => 'Rappel avant expiration de l\'abonnement (jours)',
+        'key_notifications_sms_enabled' => 'Activer les SMS (nécessite un fournisseur SMS)',
         'title' => 'Paramètres système',
         'intro' => 'Réglez les paramètres de la plateforme. Appliqués immédiatement.',
         'enabled' => 'Activé',
@@ -496,4 +512,8 @@ return [
         'submit_create' => 'Créer le membre',
         'submit_update' => 'Enregistrer',
     ],
+    // Edits 16 · 24 · 25 — sidebar entries.
+    'nav_publication_packages' => 'Formules de publication',
+    'nav_subscription_plans' => 'Formules Premium',
+    'nav_subscriptions' => 'Abonnements Premium',
 ];

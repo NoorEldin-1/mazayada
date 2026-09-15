@@ -61,7 +61,7 @@ return [
     'f_opening_price' => 'سعر الافتتاح',
     'f_deposit' => 'مبلغ التأمين',
     'f_entry_fee' => 'رسم الدخول',
-    'f_book_price' => 'ثمن كراسة الشروط',
+    'f_book_price' => 'ثمن دفتر الشروط',
     'f_current_price' => 'السعر الحالي',
     'f_final_price' => 'السعر النهائي',
 

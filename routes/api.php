@@ -8,9 +8,12 @@ use App\Http\Controllers\Api\V1\CommercialRegisterController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\DocumentController;
+use App\Http\Controllers\Api\V1\EmailRecoveryController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\KycController;
 use App\Http\Controllers\Api\V1\NotificationController;
+use App\Http\Controllers\Api\V1\NotificationPreferenceController;
+use App\Http\Controllers\Api\V1\SubscriptionController;
 use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\QuestionController;
@@ -66,7 +69,13 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
             Route::post('/password/verify', [AuthController::class, 'verifyPasswordReset'])->name('password.verify');
             Route::post('/recover/reveal', [AuthController::class, 'revealSecretQuestion'])->name('recover.reveal');
             Route::post('/recover/verify', [AuthController::class, 'recoverBySecret'])->name('recover.verify');
+            Route::post('/email-recovery/status', [EmailRecoveryController::class, 'status'])->name('email-recovery.status');
         });
+
+        // Lost-email recovery request (multipart) — 3/hour per NIN, 10/hour per IP.
+        Route::post('/email-recovery', [EmailRecoveryController::class, 'store'])
+            ->middleware('throttle:email-recovery')
+            ->name('email-recovery.store');
 
         // OTP endpoints — the strictest limiter (per IP + identifier).
         Route::middleware('throttle:api-otp')->group(function (): void {
@@ -167,6 +176,15 @@ Route::prefix('v1')->name('api.v1.')->group(function (): void {
             // Binary download (csv | pdf) — NOT the JSON envelope. Same filters.
             Route::get('/export/{format}', [ReportController::class, 'export'])->name('export');
         });
+
+        // Premium subscription (edits 24 · 25) — current + plans, checkout, stop auto-renew.
+        Route::get('/subscription', [SubscriptionController::class, 'show'])->name('subscription.show');
+        Route::post('/subscription', [SubscriptionController::class, 'store'])->name('subscription.store');
+        Route::delete('/subscription', [SubscriptionController::class, 'destroy'])->name('subscription.destroy');
+
+        // Notification preferences (edits 27 · 30) — full replace on PUT.
+        Route::get('/preferences/notifications', [NotificationPreferenceController::class, 'show'])->name('preferences.notifications.show');
+        Route::put('/preferences/notifications', [NotificationPreferenceController::class, 'update'])->name('preferences.notifications.update');
 
         // Notifications.
         Route::prefix('notifications')->name('notifications.')->group(function (): void {

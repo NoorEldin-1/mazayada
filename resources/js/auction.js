@@ -212,7 +212,12 @@ import './echo';
     // Reflect the new minimum next bid (current price + 1 dinar) in the hint.
     function updateMinHint() {
         if (!minHintEl || !i18n.min_bid) return;
-        const minNext = currentPriceDinars() + 1;
+        // Sector rule (edit 12): current price + the sector's minimum increment,
+        // rounded up to a whole dinar and never less than +1 dinar. Mirrors
+        // Auction::minBidFor() — the server still enforces it.
+        const pct = Number(cfg.minIncrementPercent) || 0;
+        const current = currentPriceDinars();
+        const minNext = current + Math.max(1, Math.ceil(current * pct / 100));
         // Build the price as the same .money markup the server emits so the CSS
         // places the currency on the document's reading side (AR: left) and keeps
         // the amount a coherent LTR token. The label template is our own trusted

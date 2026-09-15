@@ -82,8 +82,9 @@ return [
     'payment_type' => [
         'DEPOSIT' => 'كفالة',
         'ENTRY_FEE' => 'رسوم دخول',
-        'BOOK_PURCHASE' => 'كراسة شروط',
+        'BOOK_PURCHASE' => 'دفتر شروط',
         'FINAL_PAYMENT' => 'دفع نهائي',
+        'SUBSCRIPTION' => 'اشتراك العضوية المميزة',
     ],
 
     'payment_status' => [
@@ -121,11 +122,13 @@ return [
     ],
 
     'document_type' => [
-        'CONDITION_BOOK' => 'كراسة الشروط',
+        'CONDITION_BOOK' => 'دفتر الشروط',
         'AWARD' => 'وثيقة الترسية',
         'PAYMENT_RECEIPT' => 'إيصال دفع',
         'DELIVERY_REPORT' => 'محضر التسليم',
         'AUCTION_REPORT' => 'تقرير المزاد',
+        'PARTICIPATION_RECEIPT' => 'وصل المشاركة',
+        'AUCTION_RESULT' => 'وصل نتيجة المزايدة',
     ],
 
     'notification_channel' => [
@@ -133,5 +136,27 @@ return [
         'SMS' => 'رسالة نصية',
         'EMAIL' => 'بريد إلكتروني',
         'IN_APP' => 'داخل التطبيق',
+    ],
+    'publication_priority' => [
+        'NORMAL' => 'نشر عادي',
+        'PRIORITY' => 'نشر بأولوية',
+    ],
+
+    'publication_area' => [
+        'LISTING' => 'القائمة العامة للمزايدات',
+        'CATEGORY_TOP' => 'أعلى قسم القطاع',
+        'HOMEPAGE' => 'الصفحة الرئيسية',
+    ],
+
+    'subscription_status' => [
+        'PENDING' => 'قيد الدفع',
+        'ACTIVE' => 'فعّال',
+        'EXPIRED' => 'منتهٍ',
+        'CANCELLED' => 'ملغى',
+    ],
+
+    'subscription_period' => [
+        'MONTHLY' => 'شهري',
+        'YEARLY' => 'سنوي',
     ],
 ];

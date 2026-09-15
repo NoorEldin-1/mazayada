@@ -57,7 +57,11 @@ class DocumentLibraryService
             'books' => $count(DocumentType::CONDITION_BOOK),
             'awards' => $count(DocumentType::AWARD),
             // Receipts + delivery reports share one tile ("financial / handover").
-            'receipts' => $count(DocumentType::PAYMENT_RECEIPT) + $count(DocumentType::DELIVERY_REPORT),
+            'receipts' => $count(DocumentType::PAYMENT_RECEIPT) + $count(DocumentType::DELIVERY_REPORT)
+                + $count(DocumentType::PARTICIPATION_RECEIPT) + $count(DocumentType::AUCTION_RESULT),
+            // Edits 21-23 — separate counts for the new receipts.
+            'participation_receipts' => $count(DocumentType::PARTICIPATION_RECEIPT),
+            'results' => $count(DocumentType::AUCTION_RESULT),
             'total_bytes' => (int) $rows->sum('bytes'),
         ];
     }

@@ -43,6 +43,18 @@ class SystemSettingsSeeder extends Seeder
         // Lease defaults (spec §2.4).
         'lease.default_duration_years' => ['3', 'int', 'lease'],
         'lease.max_renewals' => ['2', 'int', 'lease'],
+
+        // Session rescheduling (edits 8-9): default opening-price reduction, in %.
+        'auctions.reschedule_reduction_percent' => ['10', 'float', 'auctions'],
+
+        // Publication rights (edit 13): the fee must be settled before publishing.
+        'publication.require_payment_before_publish' => ['1', 'bool', 'publication'],
+
+        // Premium + alerts (edits 26 · 29).
+        'subscriptions.non_premium_alert_delay_minutes' => ['30', 'int', 'subscriptions'],
+        'subscriptions.email_requires_premium' => ['1', 'bool', 'subscriptions'],
+        'subscriptions.expiry_reminder_days' => ['7', 'int', 'subscriptions'],
+        'notifications.sms_enabled' => ['0', 'bool', 'subscriptions'],
     ];
 
     public function run(): void

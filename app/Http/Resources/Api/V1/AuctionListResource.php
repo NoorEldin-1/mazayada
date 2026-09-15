@@ -27,6 +27,10 @@ class AuctionListResource extends JsonResource
             'title' => $this->localizedTitle(),
             'cover_photo_url' => $this->coverPhotoUrl(),
             'status' => $this->status?->value,
+            // Session badge ("الجلسة رقم ٢") and the "featured" tag (edits 7 · 15).
+            'session_round' => (int) ($this->session_round ?? 1),
+            'session_code' => $this->session_code,
+            'publication_priority' => $this->publication_priority?->value ?? 'NORMAL',
             'auction_type' => $this->auction_type?->value,
             'asset_class' => $this->asset_class?->value,
             'category' => $this->whenLoaded('category', fn () => [

@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\EmailRecoveryController;
+use App\Http\Controllers\Admin\AdminEmailRecoveryController;
 use App\Http\Controllers\AuctionController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\ChargilyWebhookController;
@@ -27,6 +29,10 @@ use App\Http\Controllers\Admin\AdminInspectionController;
 use App\Http\Controllers\Admin\AdminDeliveryController;
 use App\Http\Controllers\Admin\AdminReportController;
 use App\Http\Controllers\Admin\AuctionReportController;
+use App\Http\Controllers\Admin\AdminPublicationPackageController;
+use App\Http\Controllers\Admin\AdminSubscriptionPlanController;
+use App\Http\Controllers\Admin\AdminSubscriptionController;
+use App\Http\Controllers\Citizen\SubscriptionController as CitizenSubscriptionController;
 use App\Http\Controllers\Api\GeoController;
 
 // Public
@@ -70,6 +76,11 @@ Route::middleware('guest')->group(function () {
     // lost access to their email (spec §8.4 option 3, biometric step deferred).
     Route::get('/recover', [AuthController::class, 'showRecoverBySecret'])->name('password.recover');
     Route::post('/recover', [AuthController::class, 'recoverBySecret'])->middleware('throttle:3,1');
+    // Lost-email recovery — identity data + selfie with ID, reviewed by an admin
+    // who then replaces the account email (throttled inside the controller).
+    Route::get('/recover-email', [EmailRecoveryController::class, 'create'])->name('email-recovery.create');
+    Route::post('/recover-email', [EmailRecoveryController::class, 'store'])->name('email-recovery.store');
+    Route::post('/recover-email/status', [EmailRecoveryController::class, 'status'])->middleware('throttle:10,1')->name('email-recovery.status');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
@@ -103,6 +114,11 @@ Route::middleware('auth')->prefix('dashboard')->name('citizen.')->group(function
     Route::get('/notifications', [CitizenController::class, 'notifications'])->name('notifications');
     Route::post('/notifications/{notification}/read', [CitizenController::class, 'markNotificationRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [CitizenController::class, 'markAllNotificationsRead'])->name('notifications.read-all');
+    // Premium subscription + notification preferences (edits 24-30).
+    Route::get('/subscription', [CitizenSubscriptionController::class, 'index'])->name('subscription');
+    Route::post('/subscription', [CitizenSubscriptionController::class, 'store'])->name('subscription.store');
+    Route::delete('/subscription/auto-renew', [CitizenSubscriptionController::class, 'cancelAutoRenew'])->name('subscription.cancel-auto-renew');
+    Route::put('/subscription/preferences', [CitizenSubscriptionController::class, 'updatePreferences'])->name('subscription.preferences');
     Route::get('/profile', [CitizenController::class, 'profile'])->name('profile');
     Route::put('/profile', [CitizenController::class, 'updateProfile'])->name('profile.update');
 });
@@ -160,6 +176,27 @@ Route::middleware(['auth', 'admin.2fa', 'role:'.implode(',', \App\Enums\UserRole
     Route::post('/auctions/{auction}/cancel', [AdminAuctionController::class, 'cancel'])->name('auctions.cancel');
     // §4 step 2 — generate the signed condition book.
     Route::post('/auctions/{auction}/condition-book', [AdminAuctionController::class, 'publishConditionBook'])->name('auctions.condition-book');
+    // Edits 6-10 — re-run a finished session as a new, reduced-price session.
+    Route::post('/auctions/{auction}/reschedule', [AdminAuctionController::class, 'reschedule'])->name('auctions.reschedule');
+    // Edit 13 — record the organising entity's publication-rights payment.
+    Route::post('/auctions/{auction}/publication-fee', [AdminAuctionController::class, 'markPublicationFeePaid'])->name('auctions.publication-fee');
+
+    // Edit 16 — publication packages / display spaces.
+    Route::get('/publication-packages', [AdminPublicationPackageController::class, 'index'])->name('publication-packages.index');
+    Route::get('/publication-packages/create', [AdminPublicationPackageController::class, 'create'])->name('publication-packages.create');
+    Route::post('/publication-packages', [AdminPublicationPackageController::class, 'store'])->name('publication-packages.store');
+    Route::get('/publication-packages/{publicationPackage}/edit', [AdminPublicationPackageController::class, 'edit'])->name('publication-packages.edit');
+    Route::put('/publication-packages/{publicationPackage}', [AdminPublicationPackageController::class, 'update'])->name('publication-packages.update');
+    Route::post('/publication-packages/{publicationPackage}/toggle', [AdminPublicationPackageController::class, 'toggle'])->name('publication-packages.toggle');
+
+    // Edits 24-25 — Premium plans + subscriptions overview.
+    Route::get('/subscription-plans', [AdminSubscriptionPlanController::class, 'index'])->name('subscription-plans.index');
+    Route::get('/subscription-plans/create', [AdminSubscriptionPlanController::class, 'create'])->name('subscription-plans.create');
+    Route::post('/subscription-plans', [AdminSubscriptionPlanController::class, 'store'])->name('subscription-plans.store');
+    Route::get('/subscription-plans/{subscriptionPlan}/edit', [AdminSubscriptionPlanController::class, 'edit'])->name('subscription-plans.edit');
+    Route::put('/subscription-plans/{subscriptionPlan}', [AdminSubscriptionPlanController::class, 'update'])->name('subscription-plans.update');
+    Route::post('/subscription-plans/{subscriptionPlan}/toggle', [AdminSubscriptionPlanController::class, 'toggle'])->name('subscription-plans.toggle');
+    Route::get('/subscriptions', [AdminSubscriptionController::class, 'index'])->name('subscriptions.index');
 
     // §4 step 4 — inspection Q&A moderation.
     Route::get('/inspections', [AdminInspectionController::class, 'index'])->name('inspections.index');
@@ -223,6 +260,14 @@ Route::middleware(['auth', 'admin.2fa', 'role:'.implode(',', \App\Enums\UserRole
     Route::get('/commercial-registers/{commercialRegister}/document/{type}', [AdminCommercialRegisterController::class, 'document'])->name('commercial-registers.document');
     Route::post('/commercial-registers/{commercialRegister}/approve', [AdminCommercialRegisterController::class, 'approve'])->name('commercial-registers.approve');
     Route::post('/commercial-registers/{commercialRegister}/reject', [AdminCommercialRegisterController::class, 'reject'])->name('commercial-registers.reject');
+
+    // Lost-email recovery requests — identity review (kyc.* permissions).
+    Route::get('/email-recovery', [AdminEmailRecoveryController::class, 'index'])->name('email-recovery.index');
+    Route::get('/email-recovery/{emailRecovery}', [AdminEmailRecoveryController::class, 'show'])->name('email-recovery.show');
+    Route::get('/email-recovery/{emailRecovery}/selfie', [AdminEmailRecoveryController::class, 'selfie'])->name('email-recovery.selfie');
+    Route::post('/email-recovery/{emailRecovery}/start-review', [AdminEmailRecoveryController::class, 'startReview'])->name('email-recovery.start-review');
+    Route::post('/email-recovery/{emailRecovery}/approve', [AdminEmailRecoveryController::class, 'approve'])->name('email-recovery.approve');
+    Route::post('/email-recovery/{emailRecovery}/reject', [AdminEmailRecoveryController::class, 'reject'])->name('email-recovery.reject');
     Route::get('/appeals', [AdminAppealController::class, 'index'])->name('appeals.index');
     // Appeals workflow: admin forward / reject-at-intake / confirm; entity decide.
     Route::post('/appeals/{appeal}/forward', [AdminAppealController::class, 'forward'])->name('appeals.forward');

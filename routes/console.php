@@ -9,3 +9,7 @@ Schedule::command('auctions:close')->everyMinute();
 Schedule::command('auctions:settle-deposits')->hourly();
 Schedule::command('auctions:remind-final-payment')->daily();
 Schedule::command('kyc:suspend-stale')->daily();
+// Edits 26 · 28 — new-auction alerts (Premium wave first, others after a delay).
+Schedule::command('auctions:dispatch-alerts')->everyMinute()->withoutOverlapping();
+// Edits 24-25 — expire ended Premium subscriptions + expiry reminders.
+Schedule::command('subscriptions:sweep')->hourly();

@@ -62,7 +62,7 @@
     "isDynamicEntry": true
   },
   "resources/css/app.css": {
-    "file": "assets/app-U74ttkjL.css",
+    "file": "assets/app-DHubOUXE.css",
     "name": "app",
     "names": [
       "app.css"
@@ -71,7 +71,7 @@
     "isEntry": true
   },
   "resources/css/dashboard.css": {
-    "file": "assets/dashboard--BcsCL1J.css",
+    "file": "assets/dashboard-A2NQV5bZ.css",
     "name": "dashboard",
     "names": [
       "dashboard.css"
@@ -89,7 +89,7 @@
     ]
   },
   "resources/js/auction.js": {
-    "file": "assets/auction-DJpWV_Z-.js",
+    "file": "assets/auction-ZbgwAZ60.js",
     "name": "auction",
     "src": "resources/js/auction.js",
     "isEntry": true,

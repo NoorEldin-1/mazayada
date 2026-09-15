@@ -144,6 +144,37 @@ if (! function_exists('mask_nin')) {
     }
 }
 
+if (! function_exists('mask_email')) {
+    /**
+     * Mask an email for display to a caller whose ownership of it is unproven
+     * (email-recovery status): first character + *** + the full domain,
+     * e.g. "m***@gmail.com".
+     */
+    function mask_email(?string $email): string
+    {
+        $email = (string) $email;
+
+        if (! str_contains($email, '@')) {
+            return $email === '' ? '' : mb_substr($email, 0, 1).'***';
+        }
+
+        [$local, $domain] = explode('@', $email, 2);
+
+        return mb_substr($local, 0, 1).'***@'.$domain;
+    }
+}
+
+if (! function_exists('format_percent')) {
+    /**
+     * A percentage without trailing zeros ("5", "7.5", "12.25") for copy such as
+     * "at least :percent% above the current price".
+     */
+    function format_percent(float|int|string|null $value): string
+    {
+        return rtrim(rtrim(number_format((float) $value, 2, '.', ''), '0'), '.');
+    }
+}
+
 if (! function_exists('dinars')) {
     /**
      * Whole dinars from an integer-centimes amount. The money boundary for the

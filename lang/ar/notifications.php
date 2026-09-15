@@ -49,8 +49,8 @@ return [
             'body' => 'تمت الإجابة على سؤالك بخصوص مزايدة «:auction».',
         ],
         'condition_book_published' => [
-            'title' => 'نُشرت كراسة الشروط',
-            'body' => 'كراسة شروط مزايدة «:auction» متاحة الآن.',
+            'title' => 'نُشر دفتر الشروط',
+            'body' => 'دفتر شروط مزايدة «:auction» متاح الآن.',
         ],
         'delivery_update' => [
             'title' => 'تحديث التسليم',
@@ -75,6 +75,22 @@ return [
         'auction_report_referred' => [
             'title' => 'تقرير مزاد محال إليكم',
             'body' => 'تمت إحالة تقرير عن مزايدة «:auction» إليكم.',
+        ],
+        'new_auction_match' => [
+            'title' => 'مزايدة جديدة تهمّك',
+            'body' => 'نُشرت مزايدة جديدة «:auction» في قطاع :category بسعر افتتاحي :price.',
+        ],
+        'subscription_activated' => [
+            'title' => 'تم تفعيل العضوية المميزة',
+            'body' => 'تم تفعيل اشتراكك «:plan» وهو ساري حتى :date.',
+        ],
+        'subscription_expiring' => [
+            'title' => 'عضويتك المميزة تقترب من الانتهاء',
+            'body' => 'ينتهي اشتراكك «:plan» خلال :days يوم (:date). جدّده للاستمرار في المزايا.',
+        ],
+        'subscription_expired' => [
+            'title' => 'انتهت العضوية المميزة',
+            'body' => 'انتهى اشتراكك «:plan». يمكنك التجديد في أي وقت.',
         ],
     ],
 ];

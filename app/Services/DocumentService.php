@@ -4,9 +4,11 @@ namespace App\Services;
 
 use App\Enums\DocumentType;
 use App\Models\Auction;
+use App\Models\AuctionParticipant;
 use App\Models\Delivery;
 use App\Models\Document;
 use App\Models\Payment;
+use App\Models\User;
 use App\Support\FeeBreakdown;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -74,6 +76,111 @@ class DocumentService
             data: ['payment' => $payment],
             meta: ['payment_id' => $payment->id, 'amount' => (int) $payment->amount],
         );
+    }
+
+    /**
+     * وصل المشاركة (edits 21 · 22) — issued once the participation deposit is
+     * confirmed. Carries the auction, the citizen, and the participation facts
+     * (registration date, deposit, book price, gateway reference, participant
+     * number). Signed + QR like every platform document.
+     */
+    public function generateParticipationReceipt(AuctionParticipant $participant, ?Payment $payment = null): Document
+    {
+        $participant->loadMissing(['auction.entity', 'auction.wilaya', 'auction.category', 'user']);
+        $auction = $participant->auction;
+        $user = $participant->user;
+
+        $meta = [
+            'participant_id' => $participant->id,
+            'payment_id' => $payment?->id,
+            'session_code' => $auction->session_code,
+            'session_round' => (int) $auction->session_round,
+            'participant_no' => $this->participantNumber($participant),
+            'nin_masked' => mask_nin($user?->nin),
+            'deposit' => (int) ($payment?->amount ?? $auction->deposit_amount),
+            'book_price' => (int) $auction->book_price,
+            'gateway_ref' => $payment?->gateway_ref,
+            'registered_at' => $participant->registered_at?->toIso8601String(),
+        ];
+
+        return $this->make(
+            type: DocumentType::PARTICIPATION_RECEIPT,
+            auction: $auction,
+            userId: $user?->id,
+            isPublic: false,
+            title: __('documents.participation_receipt.title', ['ref' => $auction->session_code]),
+            view: 'documents.participation-receipt',
+            data: ['auction' => $auction, 'participant' => $participant, 'user' => $user, 'receipt' => $meta],
+            meta: $meta,
+        );
+    }
+
+    /**
+     * وصل نتيجة المزايدة (edit 23) — issued at close for EVERY registered
+     * participant (the award document stays the winner's). Shows the outcome
+     * (winner alias, hammer price, bid count) and the citizen's own standing.
+     */
+    public function generateAuctionResult(Auction $auction, User $user): Document
+    {
+        $auction->loadMissing(['entity', 'wilaya', 'category']);
+        $meta = $this->resultFacts($auction, $user);
+
+        return $this->make(
+            type: DocumentType::AUCTION_RESULT,
+            auction: $auction,
+            userId: $user->id,
+            isPublic: false,
+            title: __('documents.auction_result.title', ['ref' => $auction->session_code]),
+            view: 'documents.auction-result',
+            data: ['auction' => $auction, 'user' => $user, 'result' => $meta],
+            meta: $meta,
+        );
+    }
+
+    /** Order of confirmed registration within the auction (1-based). */
+    private function participantNumber(AuctionParticipant $participant): int
+    {
+        return (int) AuctionParticipant::where('auction_id', $participant->auction_id)
+            ->where('deposit_paid', true)
+            ->where(fn ($q) => $q->where('registered_at', '<', $participant->registered_at)
+                ->orWhere(fn ($w) => $w->where('registered_at', $participant->registered_at)->where('id', '<=', $participant->id)))
+            ->count() ?: 1;
+    }
+
+    /**
+     * Frozen result facts for one participant — stored in meta (and therefore
+     * signed), so a re-render never recomputes them.
+     *
+     * @return array<string, mixed>
+     */
+    private function resultFacts(Auction $auction, User $user): array
+    {
+        // Each bidder's best valid bid, highest first → the citizen's rank.
+        $ranking = $auction->bids()->where('is_valid', true)
+            ->selectRaw('user_id, MAX(amount) as best')
+            ->groupBy('user_id')
+            ->orderByDesc('best')
+            ->pluck('best', 'user_id');
+
+        $position = array_search($user->id, $ranking->keys()->all(), true);
+
+        return [
+            'session_code' => $auction->session_code,
+            'session_round' => (int) $auction->session_round,
+            'status' => $auction->status?->value,
+            'has_winner' => $auction->winner_user_id !== null,
+            'winner_alias' => $auction->winner_user_id
+                ? app(BidderAliasService::class)->aliasFor($auction->winner_user_id, $auction->id)
+                : null,
+            'is_winner' => $auction->winner_user_id === $user->id,
+            'final_price' => $auction->winner_user_id ? (int) $auction->final_price : null,
+            'bid_count' => $auction->bidCount(),
+            'bidder_count' => $ranking->count(),
+            'my_best_bid' => $position === false ? null : (int) $ranking->values()[$position],
+            'my_rank' => $position === false ? null : $position + 1,
+            'nin_masked' => mask_nin($user->nin),
+            'closed_at' => $auction->closed_at?->toIso8601String(),
+        ];
     }
 
     public function generateDeliveryReport(Delivery $delivery): Document
@@ -256,6 +363,30 @@ class DocumentService
                     ->find($document->meta['delivery_id'] ?? null);
 
                 return $delivery ? ['documents.delivery-report', ['delivery' => $delivery]] : [null, []];
+            })(),
+
+            DocumentType::PARTICIPATION_RECEIPT => (function () use ($document) {
+                $participant = AuctionParticipant::with(['auction.entity', 'auction.wilaya', 'user'])
+                    ->find($document->meta['participant_id'] ?? null);
+
+                return $participant ? ['documents.participation-receipt', [
+                    'auction' => $participant->auction,
+                    'participant' => $participant,
+                    'user' => $participant->user,
+                    'receipt' => (array) $document->meta,
+                ]] : [null, []];
+            })(),
+
+            DocumentType::AUCTION_RESULT => (function () use ($document) {
+                $auction = $document->auction;
+                $user = $document->user;
+                if (! $auction || ! $user) {
+                    return [null, []];
+                }
+                $auction->loadMissing(['entity', 'wilaya', 'category']);
+
+                // Frozen result facts — never recomputed.
+                return ['documents.auction-result', ['auction' => $auction, 'user' => $user, 'result' => (array) $document->meta]];
             })(),
 
             default => [null, []],
@@ -456,20 +587,19 @@ class DocumentService
     }
 
     /**
-     * Platform logo as a base64 SVG data-URI for the document header. mpdf
-     * renders an <img> with a data:image/svg+xml source (the same channel the
-     * QR uses). Reads the shipped favicon.svg; returns '' if it is unreadable so
-     * the header degrades to text only.
+     * Platform logo emblem as a base64 PNG data-URI for the document header
+     * (the on-light variant, so it reads on white paper). Returns '' if it is
+     * unreadable so the header degrades to text only.
      */
     private function logoDataUri(): string
     {
         try {
-            $path = public_path('favicon.svg');
+            $path = public_path('images/brand/mark-light.png');
             if (! is_readable($path)) {
                 return '';
             }
 
-            return 'data:image/svg+xml;base64,'.base64_encode((string) file_get_contents($path));
+            return 'data:image/png;base64,'.base64_encode((string) file_get_contents($path));
         } catch (\Throwable $e) {
             Log::warning('Logo embedding failed', ['error' => $e->getMessage()]);
 

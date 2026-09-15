@@ -181,7 +181,7 @@ class AdminAuctionController extends Controller
             'description_ar' => ['required', 'string'],
             'description_fr' => ['nullable', 'string'],
             // Admin-authored condition-book terms — rendered verbatim in the
-            // generated كراسة الشروط PDF (ar primary, fr optional).
+            // generated دفتر الشروط PDF (ar primary, fr optional).
             'condition_terms_ar' => ['nullable', 'string', 'max:5000'],
             'condition_terms_fr' => ['nullable', 'string', 'max:5000'],
             // Admin-authored award-document clauses — rendered in the وثيقة الترسية
@@ -227,7 +227,10 @@ class AdminAuctionController extends Controller
             // Asset photos + short video (spec §4 step 1) — bounds derived from
             // the effective PHP upload limits. See mediaRules().
             ...$this->mediaRules(),
+            ...$this->sectorAndPublicationRules(),
         ]);
+
+        $validated = $this->applyPublication($validated);
 
         // Convert DZD to centimes
         $validated['opening_price'] = (int) ($validated['opening_price'] * 100);
@@ -365,7 +368,10 @@ class AdminAuctionController extends Controller
             // service enforces the total cap, which the per-request `max` rule
             // alone could not (ten more were accepted on every save).
             ...$this->mediaRules(),
+            ...$this->sectorAndPublicationRules(),
         ]);
+
+        $validated = $this->applyPublication($validated, $auction);
 
         if (isset($validated['opening_price'])) {
             $validated['opening_price'] = (int) ($validated['opening_price'] * 100);
@@ -517,9 +523,22 @@ class AdminAuctionController extends Controller
             return back()->withErrors(['status' => __('admin.flash.auction_publish_only_draft')]);
         }
 
+        // Edit 13 — publication & display rights are paid BEFORE publishing.
+        if ($auction->publicationFeeDue() && (bool) setting('publication.require_payment_before_publish', true)) {
+            return back()->withErrors(['status' => __('publication.publish_blocked_unpaid')]);
+        }
+
         $auction->update(['status' => AuctionStatus::PUBLISHED]);
 
         AuditLog::log('AUCTION_PUBLISHED', 'Auction', $auction->id);
+
+        // Edits 26 · 28 — first alert wave goes to Premium subscribers right away;
+        // the scheduler sends everyone else after the configured delay.
+        try {
+            app(\App\Services\NewAuctionAlertService::class)->dispatchPremiumWave($auction);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Premium alert wave failed', ['auction_id' => $auction->id, 'error' => $e->getMessage()]);
+        }
 
         return back()->with('success', __('admin.flash.auction_published'));
     }
@@ -559,6 +578,116 @@ class AdminAuctionController extends Controller
         ]);
 
         return back()->with('success', __('admin.flash.auction_extended'));
+    }
+
+    /**
+     * Edits 6-10 — re-run a finished session (closed without an award, or
+     * cancelled) as a NEW session: new dates, round + 1, and the opening price
+     * reduced by the given percentage of the previous session's price.
+     */
+    public function reschedule(Request $request, Auction $auction, \App\Services\AuctionSessionService $sessions): RedirectResponse
+    {
+        $this->authorize('create', Auction::class);
+        $this->authorize('update', $auction);
+
+        $validated = $request->validate([
+            'start_time' => ['required', 'date', 'after:now'],
+            'end_time' => ['required', 'date', 'after:start_time'],
+            'reduction_percent' => ['nullable', 'numeric', 'min:0', 'max:90'],
+        ]);
+
+        try {
+            $session = $sessions->reschedule(
+                $auction,
+                \Illuminate\Support\Carbon::parse($validated['start_time']),
+                \Illuminate\Support\Carbon::parse($validated['end_time']),
+                isset($validated['reduction_percent']) ? (float) $validated['reduction_percent'] : null,
+                $request->boolean('publish'),
+                $request->user(),
+            );
+        } catch (\RuntimeException $e) {
+            return back()->withErrors(['reschedule' => $e->getMessage()])->with('open_modal', 'reschedule-'.$auction->id);
+        }
+
+        return redirect()->route('admin.auctions.show', $session)
+            ->with('success', __('auctions.session.flash_rescheduled', ['round' => $session->session_round]));
+    }
+
+    /**
+     * Edit 13 — record that the organising entity settled the publication &
+     * display rights (paid offline to the platform owner), unlocking publishing.
+     */
+    public function markPublicationFeePaid(Request $request, Auction $auction): RedirectResponse
+    {
+        $this->authorize('publication.manage');
+
+        $validated = $request->validate([
+            'reference' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $auction->update([
+            'publication_fee_paid_at' => now(),
+            'publication_fee_ref' => $validated['reference'] ?? null,
+        ]);
+
+        AuditLog::log('PUBLICATION_FEE_PAID', 'Auction', $auction->id, null, null, [
+            'amount' => (int) $auction->publication_fee,
+            'reference' => $validated['reference'] ?? null,
+        ]);
+
+        return back()->with('success', __('publication.flash_fee_paid'));
+    }
+
+    /**
+     * Sector minimum-increment override (edit 11) + publication package and
+     * priority (edits 14-17). The fee itself is always computed server-side.
+     *
+     * @return array<string, array<int, mixed>>
+     */
+    private function sectorAndPublicationRules(): array
+    {
+        $packagesExist = \App\Models\PublicationPackage::where('is_active', true)->exists();
+
+        return [
+            'min_increment_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            // A package is mandatory as soon as the platform offers any.
+            'publication_package_id' => [$packagesExist ? 'required' : 'nullable', Rule::exists('publication_packages', 'id')->where('is_active', true)],
+            'publication_priority' => ['nullable', Rule::enum(\App\Enums\PublicationPriority::class)],
+        ];
+    }
+
+    /**
+     * Compute and stamp the publication fee from the chosen package + priority.
+     * A fee change after it was paid is not possible: the auction is only
+     * editable while DRAFT, and a paid fee is kept as-is.
+     *
+     * @param  array<string, mixed>  $validated
+     * @return array<string, mixed>
+     */
+    private function applyPublication(array $validated, ?Auction $auction = null): array
+    {
+        $priority = \App\Enums\PublicationPriority::tryFrom((string) ($validated['publication_priority'] ?? ''))
+            ?? $auction?->publication_priority
+            ?? \App\Enums\PublicationPriority::NORMAL;
+
+        $packageId = array_key_exists('publication_package_id', $validated)
+            ? $validated['publication_package_id']
+            : $auction?->publication_package_id;
+
+        $package = $packageId ? \App\Models\PublicationPackage::find($packageId) : null;
+
+        $validated['publication_priority'] = $priority;
+        $validated['publication_package_id'] = $package?->id;
+
+        if (! $auction?->publication_fee_paid_at) {
+            $validated['publication_fee'] = app(\App\Services\PublicationFeeCalculator::class)->total($package, $priority);
+        }
+
+        if (array_key_exists('min_increment_percent', $validated) && $validated['min_increment_percent'] === '') {
+            $validated['min_increment_percent'] = null;
+        }
+
+        return $validated;
     }
 
     /**

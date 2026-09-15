@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', __('common.app_name')) — {{ __('auth.left_badge') }}</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="alternate icon" href="/favicon.ico">
+    <x-favicons />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -45,20 +44,14 @@
 
             {{-- Brand --}}
             <a href="{{ route('home') }}" class="brand" style="text-decoration:none">
-                <div class="brand-mark">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 17.5 3 3 3-3"/><path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
-                </div>
-                <div>
-                    <div class="brand-name">{{ __('common.app_name') }}</div>
-                    <div class="brand-sub">{{ __('common.app_subtitle') }}</div>
-                </div>
+                <img class="brand-logo" src="/images/brand/logo-light.png" width="982" height="320" alt="{{ __('common.app_name') }}">
             </a>
 
             {{-- Navigation (desktop dropdowns ⇄ mobile drawer) --}}
             <nav class="nav" id="primaryNav" data-nav aria-label="{{ __('nav.menu') }}">
                 {{-- Drawer header (mobile only) --}}
                 <div class="nav-head">
-                    <span class="brand-name">{{ __('common.app_name') }}</span>
+                    <img class="brand-logo" src="/images/brand/logo-light.png" width="982" height="320" alt="{{ __('common.app_name') }}">
                     <button class="nav-close" type="button" aria-label="{{ __('common.close') }}" data-nav-close>
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                     </button>
@@ -207,10 +200,7 @@
         <div class="foot-grid">
             <div class="foot-brand">
                 <div class="brand" style="margin-bottom:4px">
-                    <div class="brand-mark">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 17.5 3 3 3-3"/><path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
-                    </div>
-                    <div class="brand-name">{{ __('common.app_name') }}</div>
+                    <img class="brand-logo" src="/images/brand/logo-dark.png" width="982" height="320" alt="{{ __('common.app_name') }}" loading="lazy">
                 </div>
                 <p>{{ __('footer.about_text') }}</p>
                 <div class="foot-soc">

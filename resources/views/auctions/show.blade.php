@@ -32,8 +32,11 @@
     @endif
 
     <div class="mzd-grid">
-        {{-- Left Column (Main) --}}
-        <div>
+        {{-- Left Column (Main). On single-column screens (≤1100px) .mzd-main and
+             .mzd-side dissolve (display:contents) so the bid panel + costs card
+             sit right under the gallery/title (.mzd-head), above the tabs. --}}
+        <div class="mzd-main">
+            <div class="mzd-head">
             {{-- Gallery — swipeable media carousel (photos + one short video), placeholder otherwise (spec §4 step 1) --}}
             @php
                 $photoUrls = $auction->photoUrls();
@@ -127,7 +130,20 @@
                     <span class="dot"></span>
                     {{ $auction->status->label() }}
                 </span>
+                {{-- Edits 5 · 7 — session number (+ stable reference) and the paid "featured" tag (edit 15). --}}
+                <span class="chip chip-info" title="{{ __('auctions.session.code') }}: {{ $auction->session_code }}">
+                    {{ __('auctions.session.badge', ['round' => (int) $auction->session_round]) }}
+                    <span class="num" dir="ltr" style="opacity:.75">· {{ $auction->session_code }}</span>
+                </span>
+                @if($auction->isPriorityPublication())
+                    <span class="chip chip-warn">★ {{ __('auctions.featured') }}</span>
+                @endif
             </div>
+            @if($auction->rescheduleCount() > 0)
+                <div style="font-size:12.5px;color:var(--muted);margin:-2px 0 10px">
+                    {{ __('auctions.session.rescheduled_note', ['count' => $auction->rescheduleCount(), 'percent' => format_percent($auction->reduction_percent)]) }}
+                </div>
+            @endif
 
             {{-- Meta Info --}}
             <div style="display:flex;flex-wrap:wrap;gap:18px;margin-bottom:24px;font-size:13px;color:var(--muted)">
@@ -145,7 +161,9 @@
                     <span>{{ __('common.status') }}: {{ $auction->condition->label() }}</span>
                 @endif
             </div>
+            </div>{{-- /.mzd-head --}}
 
+            <div class="mzd-body">
             {{-- Tab bar (segmented control) — shows one section at a time so the page
                  stays compact. "Details + specifications" are merged into one tab.
                  Toggle + deep-link logic live in @push('scripts'); the live bid IDs
@@ -492,6 +510,7 @@
                 @endif
             </section>
             @endif
+            </div>{{-- /.mzd-body --}}
         </div>
 
         {{-- Right Column (Sidebar) --}}
@@ -557,7 +576,12 @@
                             $participant = $auction->participants()->where('user_id', $u->id)->first();
                         @endphp
 
-                        @if($u->isBlacklisted())
+                        @if($u->isStaff())
+                            {{-- Edit 4 — admin / entity accounts never buy the book or register --}}
+                            <div style="margin-top:14px;padding:14px 16px;background:rgba(212,168,67,.15);border:1px solid rgba(212,168,67,.3);border-radius:12px;text-align:center;font-size:13px;color:rgba(255,255,255,.85)">
+                                {{ __('auctions.staff_no_participation') }}
+                            </div>
+                        @elseif($u->isBlacklisted())
                             {{-- Blacklisted — cannot participate --}}
                             <div style="margin-top:14px;padding:14px 16px;background:rgba(217,84,78,.18);border:1px solid rgba(217,84,78,.45);border-radius:12px;text-align:center;font-size:13px;color:#FCD9D6">
                                 {{ __('auctions.show.cta_blocked') }}
@@ -618,7 +642,8 @@
                             {{-- The bid amount is entered in DINARS (the unit shown everywhere on
                                  this page). The min-next-bid below mirrors the live current price;
                                  the controller converts dinars→centimes on submit. --}}
-                            @php $minNextDinars = intdiv($auction->currentPrice(), 100) + 1; @endphp
+                            {{-- Sector rule (edit 12): the minimum is current price + the sector increment. --}}
+                            @php $minNextDinars = intdiv($auction->minBid(), 100); @endphp
                             <form method="POST" action="{{ route('auctions.bid', $auction) }}" id="bidForm" style="margin-top:14px">
                                 @csrf
                                 <div class="bid-quick">
@@ -757,6 +782,14 @@
                             @else
                                 <div style="font-size:12px;color:var(--ink-2);text-align:center">{{ __('auctions.show.book_pending') }}</div>
                             @endif
+                        @elseif($auction->book_price && auth()->user()->isStaff())
+                            {{-- Edit 4 — the purchase option is citizen-only; staff never see it. --}}
+                        @elseif($auction->book_price && ! $auction->isBookPurchaseOpen())
+                            {{-- Edit 3 — purchase disabled once the auction's time is over. --}}
+                            <button type="button" class="doc-dl" disabled aria-disabled="true" style="width:100%;border:0;opacity:.55;cursor:not-allowed;font:inherit">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                {{ __('auctions.purchase_closed') }}
+                            </button>
                         @elseif($auction->book_price)
                             @if(auth()->user()->isKycComplete() && auth()->user()->canBid() && !auth()->user()->isBlacklisted() && !auth()->user()->isLocked())
                                 <form method="POST" action="{{ route('auctions.buy-book', $auction) }}">
@@ -784,7 +817,7 @@
             </div>
 
             {{-- Bid History (Sidebar) --}}
-            <div class="card">
+            <div class="card mzd-side-bids">
                 <div class="card-h">
                     <h3>{{ __('auctions.show.recent_bids') }}</h3>
                 </div>
@@ -894,6 +927,8 @@
     $auctionRealtimeConfig = [
         'auctionId' => $auction->id,
         'currentPrice' => $auction->currentPrice(),
+        // Sector rule (edit 12) — the live min-bid hint adds this % over the price.
+        'minIncrementPercent' => $auction->minIncrementPercent(),
         'endTime' => $auction->isLive() ? $auction->end_time?->toIso8601String() : null,
         // Lifecycle state THIS page was rendered from. The client polls (and may
         // reload on a close) only when it started live — otherwise a terminal

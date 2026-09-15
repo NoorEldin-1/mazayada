@@ -14,6 +14,8 @@
         DocumentType::AWARD->value          => 'accent',
         DocumentType::PAYMENT_RECEIPT->value => 'ok',
         DocumentType::DELIVERY_REPORT->value => 'primary',
+        DocumentType::PARTICIPATION_RECEIPT->value => 'ok',
+        DocumentType::AUCTION_RESULT->value => 'accent',
     ][$doc->type?->value] ?? 'muted';
 @endphp
 
@@ -25,6 +27,12 @@
                 @break
             @case(DocumentType::AWARD)
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+                @break
+            @case(DocumentType::PARTICIPATION_RECEIPT)
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/></svg>
+                @break
+            @case(DocumentType::AUCTION_RESULT)
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
                 @break
             @case(DocumentType::PAYMENT_RECEIPT)
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>

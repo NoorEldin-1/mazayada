@@ -42,6 +42,11 @@ class PaymentService
      */
     public function initiateRegistration(Auction $auction, User $user, string $channel = 'web'): array
     {
+        // Edit 4 — staff accounts never take part in auctions.
+        if ($user->isStaff()) {
+            throw PaymentException::staffNotAllowed();
+        }
+
         if (! $user->canBid()) {
             throw PaymentException::notEligible();
         }
@@ -99,12 +104,22 @@ class PaymentService
      */
     public function initiateBookPurchase(Auction $auction, User $user, string $channel = 'web'): array
     {
+        // Edit 4 — buying the book is a citizen action; staff never participate.
+        if ($user->isStaff()) {
+            throw PaymentException::staffNotAllowed();
+        }
+
         if (! $user->canBid()) {
             throw PaymentException::notEligible();
         }
 
         if ((int) $auction->book_price <= 0) {
             throw PaymentException::bookFree();
+        }
+
+        // Edit 3 — the book is sold only while the auction is still open.
+        if (! $auction->isBookPurchaseOpen()) {
+            throw PaymentException::bookSalesClosed();
         }
 
         // §2.3 — a Commercial Register-gated auction blocks paying ANY fee (the
@@ -253,8 +268,13 @@ class PaymentService
         $user = $first->user;
         $auction = $first->auction;
 
+        $purpose = $first->payable_meta['purpose'] ?? ($this->isRegistration($payments) ? 'registration' : 'final_payment');
+
         if (! $confirmed) {
             AuditLog::log('PAYMENT_FAILED', 'Auction', $auction?->id ?? $ref, $user?->id);
+            if ($purpose === 'subscription') {
+                app(SubscriptionService::class)->failFromPayment($first);
+            }
             if ($user) {
                 $this->notifications->paymentFailed($user, $first);
             }
@@ -262,14 +282,17 @@ class PaymentService
             return;
         }
 
-        $purpose = $first->payable_meta['purpose'] ?? ($this->isRegistration($payments) ? 'registration' : 'final_payment');
-
         if ($auction && $user) {
             match ($purpose) {
                 'registration' => $this->completeRegistration($auction, $user, $payments),
                 'book_purchase' => $this->completeBookPurchase($auction, $user),
                 default => null,
             };
+        }
+
+        // Premium subscription checkout (edit 24) — no auction involved.
+        if ($purpose === 'subscription') {
+            app(SubscriptionService::class)->activateFromPayment($first);
         }
 
         // Receipt + notification for the (anchor of the) confirmed set.
@@ -347,6 +370,21 @@ class PaymentService
         $participant->save();
 
         AuditLog::log('PARTICIPANT_REGISTERED', 'Auction', $auction->id, $user->id, $user->role?->value);
+
+        // وصل المشاركة (edits 21 · 22) — issued once, when the deposit is confirmed.
+        // Best-effort: a PDF failure must never undo a confirmed registration.
+        if ($participant->deposit_paid && ! $auction->documents()
+            ->where('type', \App\Enums\DocumentType::PARTICIPATION_RECEIPT)
+            ->where('user_id', $user->id)->exists()) {
+            try {
+                $deposit = $payments->first(fn (Payment $p) => $p->payment_type === PaymentType::DEPOSIT);
+                $this->documents->generateParticipationReceipt($participant, $deposit);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Participation receipt generation failed', [
+                    'auction_id' => $auction->id, 'user_id' => $user->id, 'error' => $e->getMessage(),
+                ]);
+            }
+        }
     }
 
     /**

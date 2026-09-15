@@ -156,6 +156,12 @@
                                                                                 <li class="tocify-item level-2" data-unique="authentication-POSTapi-v1-auth-recover-verify">
                                 <a href="#authentication-POSTapi-v1-auth-recover-verify">Recover by secret answer</a>
                             </li>
+                                                                                <li class="tocify-item level-2" data-unique="authentication-POSTapi-v1-auth-email-recovery-status">
+                                <a href="#authentication-POSTapi-v1-auth-email-recovery-status">Email recovery status</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="authentication-POSTapi-v1-auth-email-recovery">
+                                <a href="#authentication-POSTapi-v1-auth-email-recovery">Submit an email recovery request</a>
+                            </li>
                                                                                 <li class="tocify-item level-2" data-unique="authentication-POSTapi-v1-auth-verify-otp">
                                 <a href="#authentication-POSTapi-v1-auth-verify-otp">Verify OTP</a>
                             </li>
@@ -298,6 +304,19 @@
                             </li>
                                                                         </ul>
                             </ul>
+                    <ul id="tocify-header-notification-preferences" class="tocify-header">
+                <li class="tocify-item level-1" data-unique="notification-preferences">
+                    <a href="#notification-preferences">Notification preferences</a>
+                </li>
+                                    <ul id="tocify-subheader-notification-preferences" class="tocify-subheader">
+                                                    <li class="tocify-item level-2" data-unique="notification-preferences-GETapi-v1-preferences-notifications">
+                                <a href="#notification-preferences-GETapi-v1-preferences-notifications">Get preferences</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="notification-preferences-PUTapi-v1-preferences-notifications">
+                                <a href="#notification-preferences-PUTapi-v1-preferences-notifications">Save preferences</a>
+                            </li>
+                                                                        </ul>
+                            </ul>
                     <ul id="tocify-header-notifications" class="tocify-header">
                 <li class="tocify-item level-1" data-unique="notifications">
                     <a href="#notifications">Notifications</a>
@@ -336,6 +355,22 @@
                             </li>
                                                                         </ul>
                             </ul>
+                    <ul id="tocify-header-premium-subscription" class="tocify-header">
+                <li class="tocify-item level-1" data-unique="premium-subscription">
+                    <a href="#premium-subscription">Premium subscription</a>
+                </li>
+                                    <ul id="tocify-subheader-premium-subscription" class="tocify-subheader">
+                                                    <li class="tocify-item level-2" data-unique="premium-subscription-GETapi-v1-subscription">
+                                <a href="#premium-subscription-GETapi-v1-subscription">My subscription + plans</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="premium-subscription-POSTapi-v1-subscription">
+                                <a href="#premium-subscription-POSTapi-v1-subscription">Subscribe</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="premium-subscription-DELETEapi-v1-subscription">
+                                <a href="#premium-subscription-DELETEapi-v1-subscription">Stop auto-renew</a>
+                            </li>
+                                                                        </ul>
+                            </ul>
                     <ul id="tocify-header-profile" class="tocify-header">
                 <li class="tocify-item level-1" data-unique="profile">
                     <a href="#profile">Profile</a>
@@ -371,7 +406,7 @@
     </ul>
 
     <ul class="toc-footer" id="last-updated">
-        <li>Last updated: July 30, 2026</li>
+        <li>Last updated: September 15, 2026</li>
     </ul>
 </div>
 
@@ -1104,7 +1139,7 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;لقد اشتريت كراسة الشروط بالفعل.&quot;,
+    &quot;message&quot;: &quot;لقد اشتريت دفتر الشروط بالفعل.&quot;,
     &quot;code&quot;: &quot;already_bought_book&quot;
 }</code>
  </pre>
@@ -1258,7 +1293,7 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;يجب شراء كراسة الشروط أولاً قبل التسجيل في المزايدة.&quot;,
+    &quot;message&quot;: &quot;يجب شراء دفتر الشروط أولاً قبل التسجيل في المزايدة.&quot;,
     &quot;code&quot;: &quot;must_purchase_book&quot;
 }</code>
  </pre>
@@ -2707,6 +2742,16 @@ access-control-allow-origin: *
             &quot;id&quot;: 2,
             &quot;name&quot;: &quot;عقارات&quot;
         },
+        &quot;sector&quot;: {
+            &quot;id&quot;: &quot;2&quot;,
+            &quot;name&quot;: &quot;عقارات&quot;,
+            &quot;min_increment_percent&quot;: 0
+        },
+        &quot;min_bid&quot;: {
+            &quot;amount&quot;: 6100001,
+            &quot;formatted&quot;: &quot;6 100 001 دج&quot;
+        },
+        &quot;min_increment_percent&quot;: 0,
         &quot;wilaya&quot;: {
             &quot;id&quot;: 2,
             &quot;code&quot;: &quot;02&quot;,
@@ -2779,7 +2824,7 @@ access-control-allow-origin: *
         &quot;condition_book&quot;: {
             &quot;id&quot;: &quot;f5cea43f-df52-4942-89bf-716077671467&quot;,
             &quot;type&quot;: &quot;CONDITION_BOOK&quot;,
-            &quot;type_label&quot;: &quot;كراسة الشروط&quot;,
+            &quot;type_label&quot;: &quot;دفتر الشروط&quot;,
             &quot;title&quot;: &quot;كراسة شروط &mdash; new one&quot;,
             &quot;is_public&quot;: false,
             &quot;file_size&quot;: 56144,
@@ -2788,7 +2833,26 @@ access-control-allow-origin: *
             &quot;download_url&quot;: &quot;http://mazayada.findosystem.com/api/v1/documents/f5cea43f-df52-4942-89bf-716077671467/download&quot;,
             &quot;verify_url&quot;: &quot;http://mazayada.findosystem.com/verify?doc=f5cea43f-df52-4942-89bf-716077671467&amp;sig=8a080d731cbc88a58981e64e0cb855eeafb200d24fa8e9caecddfdec8c02bd8c&quot;
         },
-        &quot;award_document&quot;: null
+        &quot;award_document&quot;: null,
+        &quot;book_purchase_open&quot;: false,
+        &quot;publication_priority&quot;: &quot;NORMAL&quot;,
+        &quot;session&quot;: {
+            &quot;round&quot;: 1,
+            &quot;code&quot;: &quot;SES-2026-0001&quot;,
+            &quot;start_time&quot;: &quot;2026-06-14T11:10:00+01:00&quot;,
+            &quot;end_time&quot;: &quot;2026-06-14T12:00:00+01:00&quot;,
+            &quot;opening_price&quot;: {
+                &quot;amount&quot;: 1000000,
+                &quot;formatted&quot;: &quot;1 000 000 دج&quot;
+            },
+            &quot;reduction_percent&quot;: 0,
+            &quot;reschedule_count&quot;: 0,
+            &quot;original_opening_price&quot;: {
+                &quot;amount&quot;: 1000000,
+                &quot;formatted&quot;: &quot;1 000 000 دج&quot;
+            },
+            &quot;history&quot;: []
+        }
     },
     &quot;message&quot;: null,
     &quot;meta&quot;: {
@@ -3212,6 +3276,11 @@ access-control-allow-origin: *
     &quot;data&quot;: {
         &quot;current_price&quot;: 6100000,
         &quot;current_price_formatted&quot;: &quot;6 100 000 دج&quot;,
+        &quot;min_bid&quot;: {
+            &quot;amount&quot;: 6100001,
+            &quot;formatted&quot;: &quot;6 100 001 دج&quot;
+        },
+        &quot;min_increment_percent&quot;: 0,
         &quot;bid_count&quot;: 15,
         &quot;status&quot;: &quot;CLOSED&quot;,
         &quot;end_time&quot;: &quot;2026-06-14T12:00:00+01:00&quot;,
@@ -3517,7 +3586,7 @@ the user in — call verify-otp with the returned user_id to obtain tokens.</p>
     \"last_name_ar\": \"mniihfqcoynlazghdtqtq\",
     \"phone\": \"consequatur\",
     \"email\": \"carolyne.luettgen@example.org\",
-    \"birth_date\": \"2006-04-22\",
+    \"birth_date\": \"2006-06-08\",
     \"password\": \"O[2UZ5ij-e\\/dl4m{o,\",
     \"device_name\": \"dqamniihfqcoynlazghdt\"
 }"
@@ -3541,7 +3610,7 @@ let body = {
     "last_name_ar": "mniihfqcoynlazghdtqtq",
     "phone": "consequatur",
     "email": "carolyne.luettgen@example.org",
-    "birth_date": "2006-04-22",
+    "birth_date": "2006-06-08",
     "password": "O[2UZ5ij-e\/dl4m{o,",
     "device_name": "dqamniihfqcoynlazghdt"
 };
@@ -3707,10 +3776,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="birth_date"                data-endpoint="POSTapi-v1-auth-register"
-               value="2006-04-22"
+               value="2006-06-08"
                data-component="body">
     <br>
-<p>يجب أن يكون value تاريخاً صحيحاً. يجب أن يكون value تاريخاً قبل <code>2008-07-30</code>. Example: <code>2006-04-22</code></p>
+<p>يجب أن يكون value تاريخاً صحيحاً. يجب أن يكون value تاريخاً قبل <code>2008-09-15</code>. Example: <code>2006-06-08</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>password</code></b>&nbsp;&nbsp;
@@ -4609,6 +4678,351 @@ You can check the Dev Tools console for debugging information.</code></pre>
                data-component="body">
     <br>
 <p>Example: <code>O[2UZ5ij-e/dl4m{o,</code></p>
+        </div>
+        </form>
+
+                    <h2 id="authentication-POSTapi-v1-auth-email-recovery-status">Email recovery status</h2>
+
+<p>
+</p>
+
+<p>The latest recovery request filed for a NIN. <code>data</code> is null when none exists.</p>
+
+<span id="example-requests-POSTapi-v1-auth-email-recovery-status">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request POST \
+    "https://mazayada.findosystem.com/api/v1/auth/email-recovery/status" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar" \
+    --data "{
+    \"nin\": \"109823041175663801\"
+}"
+</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/auth/email-recovery/status"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+let body = {
+    "nin": "109823041175663801"
+};
+
+fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-POSTapi-v1-auth-email-recovery-status">
+</span>
+<span id="execution-results-POSTapi-v1-auth-email-recovery-status" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-POSTapi-v1-auth-email-recovery-status"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-POSTapi-v1-auth-email-recovery-status"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-POSTapi-v1-auth-email-recovery-status" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-POSTapi-v1-auth-email-recovery-status">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-POSTapi-v1-auth-email-recovery-status" data-method="POST"
+      data-path="api/v1/auth/email-recovery/status"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('POSTapi-v1-auth-email-recovery-status', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-POSTapi-v1-auth-email-recovery-status"
+                    onclick="tryItOut('POSTapi-v1-auth-email-recovery-status');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-POSTapi-v1-auth-email-recovery-status"
+                    onclick="cancelTryOut('POSTapi-v1-auth-email-recovery-status');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-POSTapi-v1-auth-email-recovery-status"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-black">POST</small>
+            <b><code>api/v1/auth/email-recovery/status</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="POSTapi-v1-auth-email-recovery-status"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="POSTapi-v1-auth-email-recovery-status"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="POSTapi-v1-auth-email-recovery-status"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                                <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
+        <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>nin</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="nin"                data-endpoint="POSTapi-v1-auth-email-recovery-status"
+               value="109823041175663801"
+               data-component="body">
+    <br>
+<p>The 18-digit NIN. Example: <code>109823041175663801</code></p>
+        </div>
+        </form>
+
+                    <h2 id="authentication-POSTapi-v1-auth-email-recovery">Submit an email recovery request</h2>
+
+<p>
+</p>
+
+<p>Multipart. NIN, birth date and phone must match the account. Only one open
+request per account; throttled to 3 per NIN and 10 per IP per hour.</p>
+
+<span id="example-requests-POSTapi-v1-auth-email-recovery">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request POST \
+    "https://mazayada.findosystem.com/api/v1/auth/email-recovery" \
+    --header "Content-Type: multipart/form-data" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar" \
+    --form "nin=109823041175663801"\
+    --form "birth_date=1990-01-01"\
+    --form "phone=0555123456"\
+    --form "new_email=new.me@gmail.com"\
+    --form "selfie_with_id=@C:\Users\hp\AppData\Local\Temp\phpF1F6.tmp" </code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/auth/email-recovery"
+);
+
+const headers = {
+    "Content-Type": "multipart/form-data",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+const body = new FormData();
+body.append('nin', '109823041175663801');
+body.append('birth_date', '1990-01-01');
+body.append('phone', '0555123456');
+body.append('new_email', 'new.me@gmail.com');
+body.append('selfie_with_id', document.querySelector('input[name="selfie_with_id"]').files[0]);
+
+fetch(url, {
+    method: "POST",
+    headers,
+    body,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-POSTapi-v1-auth-email-recovery">
+</span>
+<span id="execution-results-POSTapi-v1-auth-email-recovery" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-POSTapi-v1-auth-email-recovery"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-POSTapi-v1-auth-email-recovery"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-POSTapi-v1-auth-email-recovery" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-POSTapi-v1-auth-email-recovery">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-POSTapi-v1-auth-email-recovery" data-method="POST"
+      data-path="api/v1/auth/email-recovery"
+      data-authed="0"
+      data-hasfiles="1"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('POSTapi-v1-auth-email-recovery', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-POSTapi-v1-auth-email-recovery"
+                    onclick="tryItOut('POSTapi-v1-auth-email-recovery');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-POSTapi-v1-auth-email-recovery"
+                    onclick="cancelTryOut('POSTapi-v1-auth-email-recovery');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-POSTapi-v1-auth-email-recovery"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-black">POST</small>
+            <b><code>api/v1/auth/email-recovery</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="POSTapi-v1-auth-email-recovery"
+               value="multipart/form-data"
+               data-component="header">
+    <br>
+<p>Example: <code>multipart/form-data</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="POSTapi-v1-auth-email-recovery"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="POSTapi-v1-auth-email-recovery"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                                <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
+        <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>nin</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="nin"                data-endpoint="POSTapi-v1-auth-email-recovery"
+               value="109823041175663801"
+               data-component="body">
+    <br>
+<p>The 18-digit NIN of the account. Example: <code>109823041175663801</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>birth_date</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="birth_date"                data-endpoint="POSTapi-v1-auth-email-recovery"
+               value="1990-01-01"
+               data-component="body">
+    <br>
+<p>Birth date on the account (Y-m-d). Example: <code>1990-01-01</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>phone</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="phone"                data-endpoint="POSTapi-v1-auth-email-recovery"
+               value="0555123456"
+               data-component="body">
+    <br>
+<p>Phone on the account (10 digits starting with 0). Example: <code>0555123456</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>new_email</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="new_email"                data-endpoint="POSTapi-v1-auth-email-recovery"
+               value="new.me@gmail.com"
+               data-component="body">
+    <br>
+<p>The new email address (not used by another account). Example: <code>new.me@gmail.com</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>selfie_with_id</code></b>&nbsp;&nbsp;
+<small>file</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="file" style="display: none"
+                              name="selfie_with_id"                data-endpoint="POSTapi-v1-auth-email-recovery"
+               value=""
+               data-component="body">
+    <br>
+<p>A selfie holding the national ID card (JPG/PNG, max 1024 KB). Example: <code>C:\Users\hp\AppData\Local\Temp\phpF1F6.tmp</code></p>
         </div>
         </form>
 
@@ -5667,8 +6081,8 @@ re-upload. A PENDING-under-review or APPROVED record is locked (403).</p>
     --form "tax_number=000116001234567"\
     --form "activity_type=تجارة السيارات"\
     --form "start_date=2022-01-15"\
-    --form "register_document=@C:\Users\hp\AppData\Local\Temp\phpFBED.tmp" \
-    --form "tax_card_document=@C:\Users\hp\AppData\Local\Temp\phpFBEE.tmp" </code></pre></div>
+    --form "register_document=@C:\Users\hp\AppData\Local\Temp\phpF49B.tmp" \
+    --form "tax_card_document=@C:\Users\hp\AppData\Local\Temp\phpF4AB.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -5855,7 +6269,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>The commercial register scan (PDF/JPG/PNG). Required on first submission. Example: <code>C:\Users\hp\AppData\Local\Temp\phpFBED.tmp</code></p>
+<p>The commercial register scan (PDF/JPG/PNG). Required on first submission. Example: <code>C:\Users\hp\AppData\Local\Temp\phpF49B.tmp</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>tax_card_document</code></b>&nbsp;&nbsp;
@@ -5867,7 +6281,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>The tax card scan (PDF/JPG/PNG). Required on first submission. Example: <code>C:\Users\hp\AppData\Local\Temp\phpFBEE.tmp</code></p>
+<p>The tax card scan (PDF/JPG/PNG). Required on first submission. Example: <code>C:\Users\hp\AppData\Local\Temp\phpF4AB.tmp</code></p>
         </div>
         </form>
 
@@ -7750,7 +8164,7 @@ fetch(url, {
             <pre><code class="language-http">cache-control: max-age=3600, public, s-maxage=3600
 content-type: application/json
 access-control-allow-origin: *
-set-cookie: XSRF-TOKEN=eyJpdiI6IklTMU80VlZudlVuNXlkQmptcXUvQ2c9PSIsInZhbHVlIjoiQVFlbGxLMnBhZmlMTzl1NloxeXR4dFdiaW1FYWdnT2dtQTJrM3ZnMGphTnlGZnE2Y2VZem9QS29yK0RqTjk5ODZ4QW1WYlJSNTlXczVJR0VPcHBVWGZLTXFuQkpGdUNXRWIwVXdmZ0ZvRmhnMi9IUVNFeHRNQVU4bS9ob0ptSWoiLCJtYWMiOiIwM2VkMDdiZWFlMjU2NjZkZjAyOWMxMWZiYjg5MmYwZjBkZDUwZWFjMjI3YjRmOWYzMjIwYmNkZTc4N2JiZjkzIiwidGFnIjoiIn0%3D; expires=Thu, 30 Jul 2026 11:06:23 GMT; Max-Age=7200; path=/; samesite=lax; mazayada-session=eyJpdiI6IlhTSzlaWmVjallIcUNhQk1sUTN5YlE9PSIsInZhbHVlIjoiZm9TRjYxNDVSak9nUmxCNTgrM3VqOXlEYUdISld4d2VkL094ZjJtcHF0L0p4Nlg2Rnd1WDByWXk2U0YyaTdPbUVhbXk2YWltQWZ6UVBUOUhFai95QzUrcGdUazNlWjVjbjBDR2Ruc2V4VlNQTUFrMFR2dGZXaU95RCsvL0wwdWoiLCJtYWMiOiIwOGY2YzBhMDQ4ZjkxOTE4NzZlMTEzNTM5MTVhNWRlN2VlYzE5NmI0NjM5MjI2MTk5NWViMzk0OTFjZmY1M2ZiIiwidGFnIjoiIn0%3D; expires=Thu, 30 Jul 2026 11:06:23 GMT; Max-Age=7200; path=/; httponly; samesite=lax
+set-cookie: XSRF-TOKEN=eyJpdiI6IjAxbU9ybVhYQk8yS1NQQkZuU2lLcUE9PSIsInZhbHVlIjoiYTVvWHA5d1BNdTVpaHhEaWlVc3VXNWlXcFRhU0t2VVI0am5UR05hL3ZodzB2Wjk0TDRkUEY1SGZZdCtPcjBKOVZaYlgyQWxRY1l0cW1MZEFxRC93VjExczFXNENjN2ZKTDlOd0N3UDM2TVF6ZGxSQW8rb2NPcXlHYzgxRUJnb2siLCJtYWMiOiJhMjMyMzY5MzFhZGM1YzA3MmZhMDdjOTNhOTQ3M2FhY2UwMDdmNGFkMWJiNTJjZjMyZDZhM2FlNTFkMGUzOTgzIiwidGFnIjoiIn0%3D; expires=Tue, 15 Sep 2026 17:39:14 GMT; Max-Age=7200; path=/; samesite=lax; mazayada-session=eyJpdiI6InlsS28yNmNRRk81emlQdEpPZEZHT1E9PSIsInZhbHVlIjoieXFmb1VNcnBJVUJwYkRHNXRuYlZvQXRPK0lHalVqUVluUW0zYU1yZzJOTmwvQzhTR0VncllQN3dlTnlzckxzS0M5T3pab0xsMGtZVDJML1pvRkl2Nm1zM0txK3NEeGdIdmNqamRKM09XSzByQVd5eXhPbmlCNHFUeVJUdlBPVEsiLCJtYWMiOiJlNTY5YmNjOTU3MWYxYzBmM2RiZThjMjYwZWYzOWVkYWY3MmU4YzVhZWQ0MDAyY2RiN2I5N2YwZDY1OGZiYjUxIiwidGFnIjoiIn0%3D; expires=Tue, 15 Sep 2026 17:39:14 GMT; Max-Age=7200; path=/; httponly; samesite=lax
  </code></pre></details>         <pre>
 
 <code class="language-json" style="max-height: 300px;">[
@@ -8239,7 +8653,7 @@ fetch(url, {
             <pre><code class="language-http">cache-control: max-age=3600, public, s-maxage=3600
 content-type: application/json
 access-control-allow-origin: *
-set-cookie: XSRF-TOKEN=eyJpdiI6ImRaSlIyQnBuMS9wMUgvdE12dDZiY1E9PSIsInZhbHVlIjoidCtGRHZaZjVrL1JLNVBpNE5TbkN2akkyUjlseUVTMWxsYXVwRCtWc1RHaHlrYzkrdDAxK2ZCSmJ1M3luZXJTSFRGZGVWdThyQnBuMlZjMng2YytuZmN3M2diVU9mVVJkMGNvZHEvdjRZSVBxeVQ3OEJjMHE5MXpQUEJHbXJtd3giLCJtYWMiOiI5NjRjMjk3YjUyMTc4ZTM3NDdiNDc4YmE0NDAwMzRhMDM5NjRkZGNlYzEzYTIwZTdhMmQyYjc3YjNkMzI2OGRlIiwidGFnIjoiIn0%3D; expires=Thu, 30 Jul 2026 11:06:23 GMT; Max-Age=7200; path=/; samesite=lax; mazayada-session=eyJpdiI6InFiaFY2YS9EZ3hkRmVzQ1lWZklXeFE9PSIsInZhbHVlIjoiTElMV2NJbFpGcW1sb01YeVlVU1Q3SEdWR0dKY0MwZi9Cb1RtUDhJaUVEZy9OUUxkQXFZdmZIeTI1ZklXRGZBQ0dTa2dFQmFrdW8yV3dGS0J3NVBkbEtLZEptMkliQ1pLc0xWMys0OVdnK0RnUlM2U3EvMWNHTWdqby96U1RNRlciLCJtYWMiOiJlNzE0NzQ3ZWIxNDNjNGRmZjM0YTJkYTgzMjllMTkyZjE5YTE1ZjVmZDg2NjVjYzA1ZDI1MjA4ODlhZDkzMTNlIiwidGFnIjoiIn0%3D; expires=Thu, 30 Jul 2026 11:06:23 GMT; Max-Age=7200; path=/; httponly; samesite=lax
+set-cookie: XSRF-TOKEN=eyJpdiI6IndWUlBnYmdUMjhDR01zWmdPanpkTFE9PSIsInZhbHVlIjoiTXZsaE1kWFl3a1NTenkvMFd6RHZRYTcrMTllV1dIR0ZGU0NmQzVFN252SDU0VTVHc1o5NXRMQVgyLy9WTWpiN3R4ZEI4SXluQzFDMDdsYnk2ZjFkQWJ1bmFYYjBGRzI4dERXSWd2emhQOGRBdTFMV1lRMWhrM3VhKzkvcTZIVmEiLCJtYWMiOiJhNTA1NDE2ODMyMzEzYWFjZWVjNjZjNTg4YWMyNmM0NDVjNzYzMTBhOGRiZTdmMDNlYTM2MjhmNThlZjc5MDRiIiwidGFnIjoiIn0%3D; expires=Tue, 15 Sep 2026 17:39:14 GMT; Max-Age=7200; path=/; samesite=lax; mazayada-session=eyJpdiI6ImltaHozT3RRZkIvamZEc2RTNXBZZUE9PSIsInZhbHVlIjoiVUhnWVpRVVNkV2N3R1pnK09lVnVvK0hpUGxMbWFHUUl3N1pQYkNqTnBmWTkxcWJvRkVuMjd4T0V1S2dtTnBndHpPM1hrUXhpOXhlTUhYSjVmZ2tYeFVIbmFSeW1JbktzaVNibTR5UGh4Vmw3MVRNTi85czRlcEkrWUphb0p0UDEiLCJtYWMiOiI3NjNhNWQzNjAwNTI2ZDk0YTljMDAxY2Y3MjhkM2UwY2Q2Nzc3NDhkYjRmNmQ3OWIxMjcyYWVlMzAyYTEzZDNhIiwidGFnIjoiIn0%3D; expires=Tue, 15 Sep 2026 17:39:14 GMT; Max-Age=7200; path=/; httponly; samesite=lax
  </code></pre></details>         <pre>
 
 <code class="language-json" style="max-height: 300px;">[
@@ -9091,7 +9505,7 @@ id-front, id-back, selfie-with-id, photo-biometric.</p>
     --header "Content-Type: multipart/form-data" \
     --header "Accept: application/json" \
     --header "Accept-Language: ar" \
-    --form "file=@C:\Users\hp\AppData\Local\Temp\phpFB9B.tmp" </code></pre></div>
+    --form "file=@C:\Users\hp\AppData\Local\Temp\phpF41A.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -9225,7 +9639,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>يجب أن يكون value صورة. يجب ألا يزيد حجم value عن 1024 كيلوبايت. Example: <code>C:\Users\hp\AppData\Local\Temp\phpFB9B.tmp</code></p>
+<p>يجب أن يكون value صورة. يجب ألا يزيد حجم value عن 1024 كيلوبايت. Example: <code>C:\Users\hp\AppData\Local\Temp\phpF41A.tmp</code></p>
         </div>
         </form>
 
@@ -9259,7 +9673,7 @@ account to UNDER_REVIEW.</p>
     \"postal_code\": \"15627\",
     \"profession\": \"udtdsufvyvddqamniihfq\",
     \"expected_income\": 8,
-    \"id_type\": \"ID_CARD\",
+    \"id_type\": \"LICENSE\",
     \"id_number\": \"oynlazghdtqtqxbajwbpi\"
 }"
 </code></pre></div>
@@ -9288,7 +9702,7 @@ let body = {
     "postal_code": "15627",
     "profession": "udtdsufvyvddqamniihfq",
     "expected_income": 8,
-    "id_type": "ID_CARD",
+    "id_type": "LICENSE",
     "id_number": "oynlazghdtqtqxbajwbpi"
 };
 
@@ -9537,10 +9951,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="id_type"                data-endpoint="POSTapi-v1-kyc-submit"
-               value="ID_CARD"
+               value="LICENSE"
                data-component="body">
     <br>
-<p>Example: <code>ID_CARD</code></p>
+<p>Example: <code>LICENSE</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>ID_CARD</code></li> <li><code>PASSPORT</code></li> <li><code>LICENSE</code></li></ul>
         </div>
@@ -9736,6 +10150,417 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>Example: <code>0194a412-8132-463b-abf0-f8945f3f09a4</code></p>
             </div>
                     </form>
+
+                <h1 id="notification-preferences">Notification preferences</h1>
+
+    <p>Channels + preferred auction categories (edits 27 · 30). The PUT is a full
+replace, and its response is the SAVED state — values the user may not hold
+(e.g. email for a non-subscriber) come back corrected.</p>
+
+                                <h2 id="notification-preferences-GETapi-v1-preferences-notifications">Get preferences</h2>
+
+<p>
+</p>
+
+<p>Current preferences plus every category to choose from, in one call.</p>
+
+<span id="example-requests-GETapi-v1-preferences-notifications">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "https://mazayada.findosystem.com/api/v1/preferences/notifications" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/preferences/notifications"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-v1-preferences-notifications">
+            <blockquote>
+            <p>Example response (401):</p>
+        </blockquote>
+                <details class="annotation">
+            <summary style="cursor: pointer;">
+                <small onclick="textContent = parentElement.parentElement.open ? 'Show headers' : 'Hide headers'">Show headers</small>
+            </summary>
+            <pre><code class="language-http">cache-control: no-cache, private
+content-type: application/json
+access-control-allow-origin: *
+ </code></pre></details>         <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;يلزم تسجيل الدخول.&quot;
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-v1-preferences-notifications" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-v1-preferences-notifications"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-v1-preferences-notifications"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-v1-preferences-notifications" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-v1-preferences-notifications">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-v1-preferences-notifications" data-method="GET"
+      data-path="api/v1/preferences/notifications"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v1-preferences-notifications', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-v1-preferences-notifications"
+                    onclick="tryItOut('GETapi-v1-preferences-notifications');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-v1-preferences-notifications"
+                    onclick="cancelTryOut('GETapi-v1-preferences-notifications');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-v1-preferences-notifications"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v1/preferences/notifications</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-v1-preferences-notifications"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-v1-preferences-notifications"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="GETapi-v1-preferences-notifications"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                        </form>
+
+                    <h2 id="notification-preferences-PUTapi-v1-preferences-notifications">Save preferences</h2>
+
+<p>
+</p>
+
+
+
+<span id="example-requests-PUTapi-v1-preferences-notifications">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request PUT \
+    "https://mazayada.findosystem.com/api/v1/preferences/notifications" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar" \
+    --data "{
+    \"channels\": {
+        \"push\": false,
+        \"email\": true,
+        \"sms\": true
+    },
+    \"auction_categories\": [
+        17
+    ],
+    \"new_auction_alerts\": false
+}"
+</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/preferences/notifications"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+let body = {
+    "channels": {
+        "push": false,
+        "email": true,
+        "sms": true
+    },
+    "auction_categories": [
+        17
+    ],
+    "new_auction_alerts": false
+};
+
+fetch(url, {
+    method: "PUT",
+    headers,
+    body: JSON.stringify(body),
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-PUTapi-v1-preferences-notifications">
+</span>
+<span id="execution-results-PUTapi-v1-preferences-notifications" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-PUTapi-v1-preferences-notifications"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-PUTapi-v1-preferences-notifications"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-PUTapi-v1-preferences-notifications" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-PUTapi-v1-preferences-notifications">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-PUTapi-v1-preferences-notifications" data-method="PUT"
+      data-path="api/v1/preferences/notifications"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('PUTapi-v1-preferences-notifications', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-PUTapi-v1-preferences-notifications"
+                    onclick="tryItOut('PUTapi-v1-preferences-notifications');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-PUTapi-v1-preferences-notifications"
+                    onclick="cancelTryOut('PUTapi-v1-preferences-notifications');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-PUTapi-v1-preferences-notifications"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-darkblue">PUT</small>
+            <b><code>api/v1/preferences/notifications</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="PUTapi-v1-preferences-notifications"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="PUTapi-v1-preferences-notifications"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="PUTapi-v1-preferences-notifications"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                                <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
+        <div style=" padding-left: 28px;  clear: unset;">
+        <details>
+            <summary style="padding-bottom: 10px;">
+                <b style="line-height: 2;"><code>channels</code></b>&nbsp;&nbsp;
+<small>object</small>&nbsp;
+ &nbsp;
+ &nbsp;
+<br>
+<p>{push, email, sms} booleans.</p>
+            </summary>
+                                                <div style="margin-left: 14px; clear: unset;">
+                        <b style="line-height: 2;"><code>push</code></b>&nbsp;&nbsp;
+<small>boolean</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <label data-endpoint="PUTapi-v1-preferences-notifications" style="display: none">
+            <input type="radio" name="channels.push"
+                   value="true"
+                   data-endpoint="PUTapi-v1-preferences-notifications"
+                   data-component="body"             >
+            <code>true</code>
+        </label>
+        <label data-endpoint="PUTapi-v1-preferences-notifications" style="display: none">
+            <input type="radio" name="channels.push"
+                   value="false"
+                   data-endpoint="PUTapi-v1-preferences-notifications"
+                   data-component="body"             >
+            <code>false</code>
+        </label>
+    <br>
+<p>Example: <code>false</code></p>
+                    </div>
+                                                                <div style="margin-left: 14px; clear: unset;">
+                        <b style="line-height: 2;"><code>email</code></b>&nbsp;&nbsp;
+<small>boolean</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <label data-endpoint="PUTapi-v1-preferences-notifications" style="display: none">
+            <input type="radio" name="channels.email"
+                   value="true"
+                   data-endpoint="PUTapi-v1-preferences-notifications"
+                   data-component="body"             >
+            <code>true</code>
+        </label>
+        <label data-endpoint="PUTapi-v1-preferences-notifications" style="display: none">
+            <input type="radio" name="channels.email"
+                   value="false"
+                   data-endpoint="PUTapi-v1-preferences-notifications"
+                   data-component="body"             >
+            <code>false</code>
+        </label>
+    <br>
+<p>Example: <code>true</code></p>
+                    </div>
+                                                                <div style="margin-left: 14px; clear: unset;">
+                        <b style="line-height: 2;"><code>sms</code></b>&nbsp;&nbsp;
+<small>boolean</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <label data-endpoint="PUTapi-v1-preferences-notifications" style="display: none">
+            <input type="radio" name="channels.sms"
+                   value="true"
+                   data-endpoint="PUTapi-v1-preferences-notifications"
+                   data-component="body"             >
+            <code>true</code>
+        </label>
+        <label data-endpoint="PUTapi-v1-preferences-notifications" style="display: none">
+            <input type="radio" name="channels.sms"
+                   value="false"
+                   data-endpoint="PUTapi-v1-preferences-notifications"
+                   data-component="body"             >
+            <code>false</code>
+        </label>
+    <br>
+<p>Example: <code>true</code></p>
+                    </div>
+                                    </details>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>auction_categories</code></b>&nbsp;&nbsp;
+<small>integer[]</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="auction_categories[0]"                data-endpoint="PUTapi-v1-preferences-notifications"
+               data-component="body">
+        <input type="number" style="display: none"
+               name="auction_categories[1]"                data-endpoint="PUTapi-v1-preferences-notifications"
+               data-component="body">
+    <br>
+<p>Category ids to follow; empty = all.</p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>new_auction_alerts</code></b>&nbsp;&nbsp;
+<small>boolean</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <label data-endpoint="PUTapi-v1-preferences-notifications" style="display: none">
+            <input type="radio" name="new_auction_alerts"
+                   value="true"
+                   data-endpoint="PUTapi-v1-preferences-notifications"
+                   data-component="body"             >
+            <code>true</code>
+        </label>
+        <label data-endpoint="PUTapi-v1-preferences-notifications" style="display: none">
+            <input type="radio" name="new_auction_alerts"
+                   value="false"
+                   data-endpoint="PUTapi-v1-preferences-notifications"
+                   data-component="body"             >
+            <code>false</code>
+        </label>
+    <br>
+<p>Example: <code>false</code></p>
+        </div>
+        </form>
 
                 <h1 id="notifications">Notifications</h1>
 
@@ -10943,6 +11768,426 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </div>
                     </form>
 
+                <h1 id="premium-subscription">Premium subscription</h1>
+
+    <p>Premium membership (edits 24 · 25). The checkout reuses the payment gateway:
+open <code>redirect_url</code> in a web view, then poll <code>GET payments/{ref}/status</code>.</p>
+
+                                <h2 id="premium-subscription-GETapi-v1-subscription">My subscription + plans</h2>
+
+<p>
+</p>
+
+<p>The current subscription (null if never subscribed) and every active plan,
+in one call. <code>is_premium</code> is the authoritative flag for unlocking features.</p>
+
+<span id="example-requests-GETapi-v1-subscription">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "https://mazayada.findosystem.com/api/v1/subscription" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/subscription"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-v1-subscription">
+            <blockquote>
+            <p>Example response (401):</p>
+        </blockquote>
+                <details class="annotation">
+            <summary style="cursor: pointer;">
+                <small onclick="textContent = parentElement.parentElement.open ? 'Show headers' : 'Hide headers'">Show headers</small>
+            </summary>
+            <pre><code class="language-http">cache-control: no-cache, private
+content-type: application/json
+access-control-allow-origin: *
+ </code></pre></details>         <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;يلزم تسجيل الدخول.&quot;
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-v1-subscription" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-v1-subscription"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-v1-subscription"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-v1-subscription" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-v1-subscription">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-v1-subscription" data-method="GET"
+      data-path="api/v1/subscription"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v1-subscription', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-v1-subscription"
+                    onclick="tryItOut('GETapi-v1-subscription');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-v1-subscription"
+                    onclick="cancelTryOut('GETapi-v1-subscription');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-v1-subscription"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v1/subscription</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-v1-subscription"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-v1-subscription"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="GETapi-v1-subscription"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                        </form>
+
+                    <h2 id="premium-subscription-POSTapi-v1-subscription">Subscribe</h2>
+
+<p>
+</p>
+
+<p>Starts the checkout for a plan. Same response shape as every other payment.
+A 422 carries a <code>code</code>: <code>plan_unavailable</code> or <code>staff_not_allowed</code>.</p>
+
+<span id="example-requests-POSTapi-v1-subscription">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request POST \
+    "https://mazayada.findosystem.com/api/v1/subscription" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar" \
+    --data "{
+    \"plan_code\": \"YEARLY\"
+}"
+</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/subscription"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+let body = {
+    "plan_code": "YEARLY"
+};
+
+fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-POSTapi-v1-subscription">
+</span>
+<span id="execution-results-POSTapi-v1-subscription" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-POSTapi-v1-subscription"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-POSTapi-v1-subscription"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-POSTapi-v1-subscription" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-POSTapi-v1-subscription">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-POSTapi-v1-subscription" data-method="POST"
+      data-path="api/v1/subscription"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('POSTapi-v1-subscription', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-POSTapi-v1-subscription"
+                    onclick="tryItOut('POSTapi-v1-subscription');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-POSTapi-v1-subscription"
+                    onclick="cancelTryOut('POSTapi-v1-subscription');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-POSTapi-v1-subscription"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-black">POST</small>
+            <b><code>api/v1/subscription</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="POSTapi-v1-subscription"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="POSTapi-v1-subscription"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="POSTapi-v1-subscription"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                                <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
+        <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>plan_code</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="plan_code"                data-endpoint="POSTapi-v1-subscription"
+               value="YEARLY"
+               data-component="body">
+    <br>
+<p>The plan code. Example: <code>YEARLY</code></p>
+        </div>
+        </form>
+
+                    <h2 id="premium-subscription-DELETEapi-v1-subscription">Stop auto-renew</h2>
+
+<p>
+</p>
+
+<p>Turns auto-renew off; the paid period stays active until <code>expires_at</code>.
+Returns the same payload as GET.</p>
+
+<span id="example-requests-DELETEapi-v1-subscription">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request DELETE \
+    "https://mazayada.findosystem.com/api/v1/subscription" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --header "Accept-Language: ar"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "https://mazayada.findosystem.com/api/v1/subscription"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    "Accept-Language": "ar",
+};
+
+
+fetch(url, {
+    method: "DELETE",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-DELETEapi-v1-subscription">
+</span>
+<span id="execution-results-DELETEapi-v1-subscription" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-DELETEapi-v1-subscription"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-DELETEapi-v1-subscription"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-DELETEapi-v1-subscription" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-DELETEapi-v1-subscription">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-DELETEapi-v1-subscription" data-method="DELETE"
+      data-path="api/v1/subscription"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('DELETEapi-v1-subscription', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-DELETEapi-v1-subscription"
+                    onclick="tryItOut('DELETEapi-v1-subscription');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-DELETEapi-v1-subscription"
+                    onclick="cancelTryOut('DELETEapi-v1-subscription');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-DELETEapi-v1-subscription"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-red">DELETE</small>
+            <b><code>api/v1/subscription</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="DELETEapi-v1-subscription"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="DELETEapi-v1-subscription"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept-Language</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept-Language"                data-endpoint="DELETEapi-v1-subscription"
+               value="ar"
+               data-component="header">
+    <br>
+<p>Example: <code>ar</code></p>
+            </div>
+                        </form>
+
                 <h1 id="profile">Profile</h1>
 
     <p>View and update the authenticated citizen's editable profile fields.</p>
@@ -11114,7 +12359,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     \"address\": \"fuudtdsufvyvddqamniih\",
     \"postal_code\": \"15627\",
     \"profession\": \"udtdsufvyvddqamniihfq\",
-    \"locale\": \"fr\",
+    \"locale\": \"en\",
     \"secret_question\": \"fav_teacher\",
     \"secret_answer\": \"coynlazghdtqtqxbajwbp\"
 }"
@@ -11138,7 +12383,7 @@ let body = {
     "address": "fuudtdsufvyvddqamniih",
     "postal_code": "15627",
     "profession": "udtdsufvyvddqamniihfq",
-    "locale": "fr",
+    "locale": "en",
     "secret_question": "fav_teacher",
     "secret_answer": "coynlazghdtqtqxbajwbp"
 };
@@ -11316,10 +12561,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="locale"                data-endpoint="PUTapi-v1-profile"
-               value="fr"
+               value="en"
                data-component="body">
     <br>
-<p>Example: <code>fr</code></p>
+<p>Example: <code>en</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>ar</code></li> <li><code>fr</code></li> <li><code>en</code></li></ul>
         </div>

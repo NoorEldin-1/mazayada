@@ -84,6 +84,8 @@
     <div class="footer-link">
         <a href="{{ route('password.reset') }}">{{ __('auth.recover_use_email_instead') }}</a>
         <span style="margin:0 8px">·</span>
+        <a href="{{ route('email-recovery.create') }}">{{ __('auth.lost_email_recover') }}</a>
+        <span style="margin:0 8px">·</span>
         <a href="{{ route('login') }}">{{ __('auth.back_to_login') }}</a>
     </div>
 </form>

@@ -6,6 +6,14 @@
 
 الحالة: **16 / 16 بند منفّذ.** السؤال المفتوح عن Reverb متجاوَب معه (BE-14).
 
+> **تحديث 15 سبتمبر 2026 — تعديلات العميل (مزايدة):** الإضافات الجديدة
+> (`session` · `sector` · `min_bid` · `publication_priority` · `participation_receipt` /
+> `result_document` · `book_purchase_open` · `meta.viewer.is_staff|role` ·
+> `/auth/email-recovery` · `/subscription` · `/preferences/notifications` · أحداث
+> `new_auction_match` / `subscription_*`) موثّقة بالتفصيل في
+> [`BACKEND_REQUIREMENTS_RESPONSE.md`](../BACKEND_REQUIREMENTS_RESPONSE.md). كلها إضافات،
+> **مفيش تغيير كاسر**، و`/docs` متولّد من جديد.
+
 ---
 
 ## ملخّص التنفيذ
@@ -161,7 +169,7 @@ GET    /api/v1/devices/status                                                   
 كل رفض في مسارات الدفع/التسجيل بقى معاه `code` جنب الرسالة:
 
 ```jsonc
-{ "message": "لقد اشتريت كراسة الشروط بالفعل.", "code": "already_bought_book" }
+{ "message": "لقد اشتريت دفتر الشروط بالفعل.", "code": "already_bought_book" }
 ```
 
 الأكواد بالظبط زي ما طلبتوا: `already_bought_book` · `book_free` ·

@@ -33,7 +33,7 @@ class ConditionBookAccessTest extends TestCase
         $doc = new Document([
             'auction_id' => $auction->id,
             'type' => DocumentType::CONDITION_BOOK,
-            'title' => 'كراسة الشروط',
+            'title' => 'دفتر الشروط',
             'file_path' => 'CONDITION_BOOK/'.Str::uuid().'.pdf',
             'disk' => 'documents',
             'is_public' => false,

@@ -60,7 +60,7 @@
 
     {{-- Forgot password / lost-email recovery --}}
     <div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:18px">
-        <a href="{{ route('password.recover') }}" style="font-size:13px;color:var(--muted);font-weight:600">{{ __('auth.lost_email_recover') }}</a>
+        <a href="{{ route('email-recovery.create') }}" style="font-size:13px;color:var(--muted);font-weight:600">{{ __('auth.lost_email_recover') }}</a>
         <a href="{{ route('password.reset') }}" style="font-size:13px;color:var(--primary);font-weight:600">{{ __('auth.forgot_password') }}</a>
     </div>
 

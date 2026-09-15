@@ -18,4 +18,9 @@ return [
     'flash_confirmed' => 'Payment confirmed successfully.',
     'flash_failed' => 'The payment did not complete.',
     'forfeit_blacklist_reason' => 'Failure to complete the final payment after winning the auction.',
+    // Edits 3 · 4 · 24.
+    'book_sales_closed' => 'The condition book is no longer on sale for this auction.',
+    'staff_not_allowed' => 'Admin and entity accounts cannot buy the condition book or register for auctions.',
+    'plan_unavailable' => 'The requested plan is not available.',
+    'subscription_description' => 'Premium subscription — :plan',
 ];

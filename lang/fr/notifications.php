@@ -75,5 +75,21 @@ return [
             'title' => 'Rapport de vente transmis',
             'body' => 'Un rapport concernant l’enchère « :auction » vous a été transmis.',
         ],
+        'new_auction_match' => [
+            'title' => 'Nouvelle enchère pour vous',
+            'body' => 'Nouvelle enchère « :auction » dans le secteur :category, mise à prix :price.',
+        ],
+        'subscription_activated' => [
+            'title' => 'Premium activé',
+            'body' => 'Votre abonnement « :plan » est actif jusqu\'au :date.',
+        ],
+        'subscription_expiring' => [
+            'title' => 'Votre Premium arrive à échéance',
+            'body' => 'Votre abonnement « :plan » expire dans :days jour(s) (:date). Renouvelez-le pour garder vos avantages.',
+        ],
+        'subscription_expired' => [
+            'title' => 'Premium expiré',
+            'body' => 'Votre abonnement « :plan » a expiré. Vous pouvez le renouveler à tout moment.',
+        ],
     ],
 ];

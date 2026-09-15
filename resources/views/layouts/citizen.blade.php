@@ -6,8 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', __('dashboard.nav_dashboard')) &mdash; {{ __('common.app_name') }}</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="alternate icon" href="/favicon.ico">
+    <x-favicons />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -21,21 +20,10 @@
 <header class="sticky top-0 z-40 bg-surface/90 backdrop-blur border-b border-line">
     <div class="max-w-[1280px] mx-auto px-4 sm:px-7 flex items-center gap-4 sm:gap-6 py-3">
         {{-- Brand --}}
-        <a href="/" class="flex items-center gap-2.5 shrink-0">
-            <span class="block">
-                <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
-                    <rect width="36" height="36" rx="8" fill="url(#czBrandGrad)"/>
-                    <path d="M10 26L18 10L22 18H26L18 26H10Z" fill="white" opacity="0.9"/>
-                    <path d="M12 24L18 12L21 18" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-                    <defs>
-                        <linearGradient id="czBrandGrad" x1="0" y1="0" x2="36" y2="36">
-                            <stop stop-color="#1B4D3E"/>
-                            <stop offset="1" stop-color="#2D6A4F"/>
-                        </linearGradient>
-                    </defs>
-                </svg>
-            </span>
-            <span class="font-bold text-lg text-primary">{{ __('common.app_name') }}</span>
+        <a href="/" class="flex items-center shrink-0">
+            {{-- On-light art by default; white-lettered art under the dark theme. --}}
+            <img class="cz-logo cz-logo--light" src="/images/brand/logo-light.png" width="982" height="320" alt="{{ __('common.app_name') }}">
+            <img class="cz-logo cz-logo--dark" src="/images/brand/logo-dark.png" width="982" height="320" alt="" aria-hidden="true">
         </a>
 
         {{-- Nav --}}
@@ -127,6 +115,10 @@
             <x-ui.nav-link :href="route('citizen.appeals')" :active="request()->routeIs('citizen.appeals')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                 <span>{{ __('dashboard.nav_appeals') }}</span>
+            </x-ui.nav-link>
+            <x-ui.nav-link :href="route('citizen.subscription')" :active="request()->routeIs('citizen.subscription*')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <span>{{ __('subscriptions.nav') }}</span>
             </x-ui.nav-link>
             <x-ui.nav-link :href="route('citizen.notifications')" :active="request()->routeIs('citizen.notifications')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>

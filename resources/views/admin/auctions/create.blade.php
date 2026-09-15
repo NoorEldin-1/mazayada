@@ -68,7 +68,7 @@
     </x-ui.card>
 
     {{-- Section 1c: Condition-book terms — admin-authored text rendered verbatim
-         in the "Terms" section of the generated كراسة الشروط PDF. Left blank, the
+         in the "Terms" section of the generated دفتر الشروط PDF. Left blank, the
          document falls back to its default legal wording. --}}
     <x-ui.card :title="__('admin.auctions.sec_condition_terms')" class="mb-6">
         <p style="font-size:0.85rem;color:var(--ink-muted);margin-bottom:1rem">{{ __('admin.auctions.condition_terms_hint') }}</p>
@@ -273,6 +273,9 @@
             </div>
         </div>
     </x-ui.card>
+
+    {{-- Section 3b: Sector rule + publication rights (edits 11 · 13-17) --}}
+    @include('admin.auctions.partials.publication-fields', ['auction' => null])
 
     {{-- Section 4: Scheduling --}}
     <x-ui.card :title="__('admin.auctions.sec_scheduling')" class="mb-6">

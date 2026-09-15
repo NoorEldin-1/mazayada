@@ -52,6 +52,10 @@ return [
 
     // ===== Auctions management (index + create/edit form) =====
     'auctions' => [
+        'f_min_increment_percent' => 'نسبة الزيادة الدنيا (%)',
+        'min_increment_override_hint' => 'اتركه فارغاً لاعتماد نسبة القطاع المحددة في الفئة.',
+        'th_session' => 'الجلسة',
+        'sec_sessions' => 'الجلسات وإعادة الجدولة',
         'manage_title' => 'إدارة المزايدات',
         'create_title' => 'إنشاء مزايدة جديدة',
         'edit_title' => 'تعديل المزايدة',
@@ -109,9 +113,9 @@ return [
         'f_spec_title_fr' => 'العنوان بالفرنسية',
         'f_spec_body_ar' => 'الوصف بالعربية',
         'f_spec_body_fr' => 'الوصف بالفرنسية',
-        // Admin-authored condition-book terms (rendered in the كراسة الشروط PDF).
-        'sec_condition_terms' => 'شروط كراسة الشروط',
-        'condition_terms_hint' => 'اكتب شروط كراسة الشروط كما ستظهر في ملف الكراسة (PDF). كل سطر يظهر كفقرة مستقلة. اتركه فارغاً لاستخدام النص الافتراضي.',
+        // Admin-authored condition-book terms (rendered in the دفتر الشروط PDF).
+        'sec_condition_terms' => 'شروط دفتر الشروط',
+        'condition_terms_hint' => 'اكتب شروط دفتر الشروط كما ستظهر في ملف الدفتر (PDF). كل سطر يظهر كفقرة مستقلة. اتركه فارغاً لاستخدام النص الافتراضي.',
         'f_condition_terms_ar' => 'الشروط بالعربية',
         'f_condition_terms_fr' => 'الشروط بالفرنسية',
         // Admin-authored award-document clauses (rendered in the وثيقة الترسية PDF).
@@ -126,10 +130,10 @@ return [
         'f_inspection_end' => 'نهاية المعاينة',
         'f_inspection_location' => 'مكان المعاينة',
         'f_original_owner_nin' => 'رقم تعريف المالك الأصلي (NIN)',
-        'gen_condition_book' => 'توليد كراسة الشروط (PDF)',
-        'gen_condition_book_hint' => 'تُولَّد كراسة شروط موقّعة إلكترونياً مع رمز QR للتحقق، ويُشعَر المتابعون.',
-        'cb_generate' => 'توليد الكراسة',
-        'cb_download' => 'كراسة الشروط',
+        'gen_condition_book' => 'توليد دفتر الشروط (PDF)',
+        'gen_condition_book_hint' => 'يُولَّد دفتر شروط موقّع إلكترونياً مع رمز QR للتحقق، ويُشعَر المتابعون.',
+        'cb_generate' => 'توليد الدفتر',
+        'cb_download' => 'دفتر الشروط',
 
         'f_title_ar' => 'العنوان بالعربية',
         'f_title_fr' => 'العنوان بالفرنسية',
@@ -158,7 +162,7 @@ return [
         'f_deposit_percent' => 'نسبة التأمين (٪)',
         'deposit_percent_hint' => 'نسبة من السعر الافتتاحي تُدفع كرسوم مشاركة/تأمين (الافتراضي 10٪)، تُسترد للخاسرين وتُحتسب من مبلغ الفائز.',
         'deposit_computed_prefix' => 'قيمة التأمين ≈',
-        'book_price_hint' => 'ثمن كراسة الشروط — يدفعه المستخدم لتحميلها وقراءتها. اتركه فارغاً = مجاناً.',
+        'book_price_hint' => 'ثمن دفتر الشروط — يدفعه المستخدم لتحميلها وقراءتها. اتركه فارغاً = مجاناً.',
         'price_max_hint' => 'بالدينار — الحد الأقصى :max دج.',
         'translation_hint' => 'إن تُرك فارغاً يُعرض النص العربي في الواجهتين الفرنسية والإنجليزية.',
         'book_free' => 'مجاناً',
@@ -208,7 +212,7 @@ return [
         'col_deposit' => 'الضمان',
         'col_entry_fee' => 'رسوم المشاركة',
         'col_book' => 'دفتر الشروط',
-        'col_acknowledged' => 'الإقرار بالكراسة',
+        'col_acknowledged' => 'الإقرار بالدفتر',
         'col_registered' => 'تاريخ التسجيل',
         'col_original_owner' => 'المالك الأصلي',
         'col_type' => 'النوع',
@@ -348,7 +352,7 @@ return [
         'auction_extend_only_active' => 'لا يمكن التمديد إلا لمزاد نشط.',
         'auction_cancelled' => 'تم إلغاء المزاد.',
         'auction_cancel_invalid' => 'لا يمكن إلغاء مزاد منتهٍ أو مُلغى.',
-        'condition_book_published' => 'تم إصدار كراسة الشروط.',
+        'condition_book_published' => 'تم إصدار دفتر الشروط.',
     ],
 
     // ===== Entities management =====
@@ -397,6 +401,9 @@ return [
 
     // ===== Categories management =====
     'categories' => [
+        'f_min_increment_percent' => 'نسبة الزيادة الدنيا للقطاع (%)',
+        'min_increment_hint' => 'أقل نسبة زيادة مسموح بها فوق السعر الحالي في مزايدات هذا القطاع (0 = أي زيادة).',
+        'th_min_increment' => 'الحد الأدنى للزيادة',
         'title' => 'الفئات',
         'add' => 'إضافة فئة',
         'edit_title' => 'تعديل الفئة',
@@ -418,6 +425,15 @@ return [
 
     // ===== System settings =====
     'settings' => [
+        'group_auctions' => 'المزايدات والجلسات',
+        'group_publication' => 'حقوق النشر والعرض',
+        'group_subscriptions' => 'العضوية المميزة والتنبيهات',
+        'key_auctions_reschedule_reduction_percent' => 'نسبة خفض السعر الافتتاحي عند إعادة الجدولة (%)',
+        'key_publication_require_payment_before_publish' => 'اشتراط دفع رسوم النشر قبل نشر المزايدة',
+        'key_subscriptions_non_premium_alert_delay_minutes' => 'تأخير تنبيهات المزايدات الجديدة لغير المشتركين (دقيقة)',
+        'key_subscriptions_email_requires_premium' => 'إشعارات البريد للمشتركين المميزين فقط',
+        'key_subscriptions_expiry_reminder_days' => 'التذكير قبل انتهاء الاشتراك (يوم)',
+        'key_notifications_sms_enabled' => 'تفعيل الرسائل النصية (يتطلب مزوّد SMS)',
         'title' => 'إعدادات النظام',
         'intro' => 'ضبط معاملات المنصة. تُطبَّق فوراً.',
         'enabled' => 'مُفعّل',
@@ -497,4 +513,8 @@ return [
         'submit_create' => 'إنشاء الموظف',
         'submit_update' => 'حفظ التعديلات',
     ],
+    // Edits 16 · 24 · 25 — sidebar entries.
+    'nav_publication_packages' => 'باقات النشر',
+    'nav_subscription_plans' => 'باقات العضوية',
+    'nav_subscriptions' => 'الاشتراكات المميزة',
 ];

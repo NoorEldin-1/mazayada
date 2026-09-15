@@ -75,5 +75,21 @@ return [
             'title' => 'Auction report referred to you',
             'body' => 'A report on the auction “:auction” has been referred to you.',
         ],
+        'new_auction_match' => [
+            'title' => 'A new auction for you',
+            'body' => 'New auction “:auction” in :category, opening price :price.',
+        ],
+        'subscription_activated' => [
+            'title' => 'Premium activated',
+            'body' => 'Your “:plan” subscription is active until :date.',
+        ],
+        'subscription_expiring' => [
+            'title' => 'Your Premium is ending soon',
+            'body' => 'Your “:plan” subscription ends in :days day(s) (:date). Renew to keep your benefits.',
+        ],
+        'subscription_expired' => [
+            'title' => 'Premium expired',
+            'body' => 'Your “:plan” subscription has ended. You can renew at any time.',
+        ],
     ],
 ];

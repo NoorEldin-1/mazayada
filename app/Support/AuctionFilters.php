@@ -94,6 +94,10 @@ final class AuctionFilters
      */
     public static function sort(Builder $query, ?string $sort): Builder
     {
+        // Paid priority publications (edit 15) always head the list; the chosen
+        // sort then orders within each tier.
+        self::priorityFirst($query);
+
         return match ($sort) {
             'price_asc' => $query->orderBy('opening_price'),
             'price_desc', 'opening_price' => $query->orderByDesc('opening_price'),
@@ -103,6 +107,12 @@ final class AuctionFilters
             'ending_soon' => $query->orderByRaw('end_time IS NULL, end_time ASC'),
             default => $query->latest('start_time'),
         };
+    }
+
+    /** Order PRIORITY publications ahead of NORMAL ones. */
+    public static function priorityFirst(Builder $query): Builder
+    {
+        return $query->orderByRaw("CASE WHEN publication_priority = 'PRIORITY' THEN 0 ELSE 1 END");
     }
 
     /**

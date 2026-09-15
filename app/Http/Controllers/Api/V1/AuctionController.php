@@ -207,9 +207,15 @@ class AuctionController extends ApiController
     {
         $this->ensurePublic($auction);
 
+        $minBid = $auction->minBid();
+
         return $this->ok([
             'current_price' => dinars($auction->currentPrice()),
             'current_price_formatted' => dzd($auction->currentPrice()),
+            // Sector rule (edit 12): the lowest bid POST /bid will accept right now.
+            // Enforcement stays server-side; this only spares the client a round trip.
+            'min_bid' => ['amount' => dinars($minBid), 'formatted' => dzd($minBid)],
+            'min_increment_percent' => $auction->minIncrementPercent(),
             'bid_count' => $auction->bidCount(),
             'status' => $auction->status?->value,
             'end_time' => $auction->end_time?->toIso8601String(),
@@ -260,6 +266,11 @@ class AuctionController extends ApiController
         $appeal = $auction->appealBy($user);
 
         return [
+            // Section 7 / edit 4 — staff accounts never see participation actions;
+            // the client reads these directly instead of caching /profile.
+            'is_staff' => $user->isStaff(),
+            'role' => $user->role?->value,
+            'is_premium' => $user->isPremium(),
             'can_bid' => $user->canBid(),
             'is_participant' => $participant?->isFullyRegistered() ?? false,
             // §2.3 — a Commercial Register-gated auction blocks paying ANY fee until

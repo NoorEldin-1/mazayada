@@ -23,6 +23,13 @@
             <input type="text" id="icon" name="icon" class="input" value="{{ old('icon', $c?->icon) }}" style="direction:ltr">
             @error('icon') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
         </div>
+        <div class="field">
+            <label for="min_increment_percent">{{ __('admin.categories.f_min_increment_percent') }}</label>
+            <input type="number" id="min_increment_percent" name="min_increment_percent" class="input num" min="0" max="100" step="0.01"
+                   value="{{ old('min_increment_percent', $c ? format_percent($c->min_increment_percent) : 0) }}">
+            <small style="color:var(--ink-muted)">{{ __('admin.categories.min_increment_hint') }}</small>
+            @error('min_increment_percent') <small class="text-danger text-xs mt-1">{{ $message }}</small> @enderror
+        </div>
     </div>
 
     <div class="field" style="margin-top:0.75rem">

@@ -10,7 +10,7 @@
     ],
     "info": {
         "name": "Mazayada API Documentation",
-        "_postman_id": "8909a42e-c2a2-46fc-9943-5ffbaaf2c64c",
+        "_postman_id": "47762039-1227-4372-bfff-0988adee6c28",
         "description": "Mazayada mobile API (v1). Token-authenticated JSON API for the Flutter client covering auctions and the citizen dashboard. All responses use a unified envelope ({data, message, meta} on success; {message, errors} on error). Money is returned in dinars; send Accept-Language (ar|fr|en) to localize responses.",
         "schema": "https:\/\/schema.getpostman.com\/json\/collection\/v2.1.0\/collection.json"
     },
@@ -277,7 +277,7 @@
                         {
                             "header": [],
                             "code": 422,
-                            "body": "{\"message\":\"\u0644\u0642\u062f \u0627\u0634\u062a\u0631\u064a\u062a \u0643\u0631\u0627\u0633\u0629 \u0627\u0644\u0634\u0631\u0648\u0637 \u0628\u0627\u0644\u0641\u0639\u0644.\",\"code\":\"already_bought_book\"}",
+                            "body": "{\"message\":\"\u0644\u0642\u062f \u0627\u0634\u062a\u0631\u064a\u062a \u062f\u0641\u062a\u0631 \u0627\u0644\u0634\u0631\u0648\u0637 \u0628\u0627\u0644\u0641\u0639\u0644.\",\"code\":\"already_bought_book\"}",
                             "name": ""
                         }
                     ]
@@ -324,7 +324,7 @@
                         {
                             "header": [],
                             "code": 422,
-                            "body": "{\"message\":\"\u064a\u062c\u0628 \u0634\u0631\u0627\u0621 \u0643\u0631\u0627\u0633\u0629 \u0627\u0644\u0634\u0631\u0648\u0637 \u0623\u0648\u0644\u0627\u064b \u0642\u0628\u0644 \u0627\u0644\u062a\u0633\u062c\u064a\u0644 \u0641\u064a \u0627\u0644\u0645\u0632\u0627\u064a\u062f\u0629.\",\"code\":\"must_purchase_book\"}",
+                            "body": "{\"message\":\"\u064a\u062c\u0628 \u0634\u0631\u0627\u0621 \u062f\u0641\u062a\u0631 \u0627\u0644\u0634\u0631\u0648\u0637 \u0623\u0648\u0644\u0627\u064b \u0642\u0628\u0644 \u0627\u0644\u062a\u0633\u062c\u064a\u0644 \u0641\u064a \u0627\u0644\u0645\u0632\u0627\u064a\u062f\u0629.\",\"code\":\"must_purchase_book\"}",
                             "name": ""
                         }
                     ]
@@ -639,7 +639,7 @@
                                 }
                             ],
                             "code": 200,
-                            "body": "{\"data\":{\"id\":\"a2050443-68af-41f5-8080-20d4b878c6ca\",\"title\":\"new one\",\"titles\":{\"ar\":\"new one\",\"fr\":\"new one\",\"en\":null},\"description\":\"new one\\r\\nnew one\\r\\nnew one\\r\\nnew one\",\"descriptions\":{\"ar\":\"new one\\r\\nnew one\\r\\nnew one\\r\\nnew one\",\"fr\":\"new one\\r\\nnew one\\r\\nnew one\\r\\nnew one\"},\"specifications\":[],\"status\":\"CLOSED\",\"auction_type\":\"SALE\",\"asset_class\":\"REAL_ESTATE\",\"condition\":\"NEW\",\"unit_count\":1,\"condition_terms\":null,\"award_terms\":null,\"category\":{\"id\":2,\"name\":\"\\u0639\\u0642\\u0627\\u0631\\u0627\\u062a\"},\"wilaya\":{\"id\":2,\"code\":\"02\",\"name\":\"\\u0627\\u0644\\u0634\\u0644\\u0641\"},\"commune\":{\"id\":23,\"name\":\"\\u0628\\u0648\\u0642\\u0627\\u062f\\u064a\\u0631\"},\"entity\":{\"id\":\"a1dc9d20-adb9-4238-9c3d-a600ccd3075e\",\"name\":\"\\u0627\\u0644\\u0645\\u062c\\u0644\\u0633 \\u0627\\u0644\\u0634\\u0639\\u0628\\u064a \\u0627\\u0644\\u0628\\u0644\\u062f\\u064a \\u0644\\u062e\\u0646\\u0634\\u0644\\u0629\"},\"asset_location\":\"new site\",\"latitude\":null,\"longitude\":null,\"mayor_name\":\"new name\",\"photos\":[\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/JHBtdQWhA4LOIjXbioJHCzgG8ovifXRrNtxAjLlz.jpg\",\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/vLQTdRnwLwgvzRM53r87vWOePYcMCOHnTfVqeBJD.jpg\",\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/JcshBU0KGcgYrwxQhkikA3vDcM4fhI2V8ZQGMxSB.jpg\"],\"cover_photo_url\":\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/JHBtdQWhA4LOIjXbioJHCzgG8ovifXRrNtxAjLlz.jpg\",\"video_url\":\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/video\\\/knxMOt8C3yG3JwAnyiIPuKkDbHOWVAVTPa0mrGpD.mp4\",\"opening_price\":{\"amount\":1000000,\"formatted\":\"1 000 000 \\u062f\\u062c\"},\"current_price\":{\"amount\":6100000,\"formatted\":\"6 100 000 \\u062f\\u062c\"},\"deposit_amount\":{\"amount\":200,\"formatted\":\"200 \\u062f\\u062c\"},\"deposit_percent\":10,\"book_price\":{\"amount\":200,\"formatted\":\"200 \\u062f\\u062c\"},\"has_book_access\":false,\"bid_count\":15,\"start_time\":\"2026-06-14T11:10:00+01:00\",\"end_time\":\"2026-06-14T12:00:00+01:00\",\"seconds_remaining\":0,\"is_live\":false,\"is_biddable\":false,\"has_ended\":false,\"extension_count\":0,\"max_extensions\":10,\"inspection\":{\"start\":\"2026-06-14T11:03:00+01:00\",\"end\":\"2026-06-20T11:03:00+01:00\",\"location\":\"new site\",\"is_open\":false},\"appeal_window\":{\"days\":8,\"is_open\":false,\"deadline\":\"2026-06-23T19:27:21+01:00\"},\"requires_commerce_register\":false,\"requires_newspaper_announcement\":true,\"winner_alias\":\"Bold_Falcon_197\",\"final_price\":{\"amount\":6100000,\"formatted\":\"6 100 000 \\u062f\\u062c\"},\"condition_book\":{\"id\":\"f5cea43f-df52-4942-89bf-716077671467\",\"type\":\"CONDITION_BOOK\",\"type_label\":\"\\u0643\\u0631\\u0627\\u0633\\u0629 \\u0627\\u0644\\u0634\\u0631\\u0648\\u0637\",\"title\":\"\\u0643\\u0631\\u0627\\u0633\\u0629 \\u0634\\u0631\\u0648\\u0637 \\u2014 new one\",\"is_public\":false,\"file_size\":56144,\"file_size_human\":\"54.8 KB\",\"issued_at\":\"2026-06-14T08:05:04+01:00\",\"download_url\":\"http:\\\/\\\/mazayada.findosystem.com\\\/api\\\/v1\\\/documents\\\/f5cea43f-df52-4942-89bf-716077671467\\\/download\",\"verify_url\":\"http:\\\/\\\/mazayada.findosystem.com\\\/verify?doc=f5cea43f-df52-4942-89bf-716077671467&sig=8a080d731cbc88a58981e64e0cb855eeafb200d24fa8e9caecddfdec8c02bd8c\"},\"award_document\":null},\"message\":null,\"meta\":{\"viewer\":null}}",
+                            "body": "{\"data\":{\"id\":\"a2050443-68af-41f5-8080-20d4b878c6ca\",\"title\":\"new one\",\"titles\":{\"ar\":\"new one\",\"fr\":\"new one\",\"en\":null},\"description\":\"new one\\r\\nnew one\\r\\nnew one\\r\\nnew one\",\"descriptions\":{\"ar\":\"new one\\r\\nnew one\\r\\nnew one\\r\\nnew one\",\"fr\":\"new one\\r\\nnew one\\r\\nnew one\\r\\nnew one\"},\"specifications\":[],\"status\":\"CLOSED\",\"auction_type\":\"SALE\",\"asset_class\":\"REAL_ESTATE\",\"condition\":\"NEW\",\"unit_count\":1,\"condition_terms\":null,\"award_terms\":null,\"category\":{\"id\":2,\"name\":\"\\u0639\\u0642\\u0627\\u0631\\u0627\\u062a\"},\"sector\":{\"id\":\"2\",\"name\":\"\\u0639\\u0642\\u0627\\u0631\\u0627\\u062a\",\"min_increment_percent\":0},\"min_bid\":{\"amount\":6100001,\"formatted\":\"6 100 001 \\u062f\\u062c\"},\"min_increment_percent\":0,\"wilaya\":{\"id\":2,\"code\":\"02\",\"name\":\"\\u0627\\u0644\\u0634\\u0644\\u0641\"},\"commune\":{\"id\":23,\"name\":\"\\u0628\\u0648\\u0642\\u0627\\u062f\\u064a\\u0631\"},\"entity\":{\"id\":\"a1dc9d20-adb9-4238-9c3d-a600ccd3075e\",\"name\":\"\\u0627\\u0644\\u0645\\u062c\\u0644\\u0633 \\u0627\\u0644\\u0634\\u0639\\u0628\\u064a \\u0627\\u0644\\u0628\\u0644\\u062f\\u064a \\u0644\\u062e\\u0646\\u0634\\u0644\\u0629\"},\"asset_location\":\"new site\",\"latitude\":null,\"longitude\":null,\"mayor_name\":\"new name\",\"photos\":[\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/JHBtdQWhA4LOIjXbioJHCzgG8ovifXRrNtxAjLlz.jpg\",\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/vLQTdRnwLwgvzRM53r87vWOePYcMCOHnTfVqeBJD.jpg\",\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/JcshBU0KGcgYrwxQhkikA3vDcM4fhI2V8ZQGMxSB.jpg\"],\"cover_photo_url\":\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/JHBtdQWhA4LOIjXbioJHCzgG8ovifXRrNtxAjLlz.jpg\",\"video_url\":\"http:\\\/\\\/localhost:8000\\\/storage\\\/auctions\\\/a2050443-68af-41f5-8080-20d4b878c6ca\\\/video\\\/knxMOt8C3yG3JwAnyiIPuKkDbHOWVAVTPa0mrGpD.mp4\",\"opening_price\":{\"amount\":1000000,\"formatted\":\"1 000 000 \\u062f\\u062c\"},\"current_price\":{\"amount\":6100000,\"formatted\":\"6 100 000 \\u062f\\u062c\"},\"deposit_amount\":{\"amount\":200,\"formatted\":\"200 \\u062f\\u062c\"},\"deposit_percent\":10,\"book_price\":{\"amount\":200,\"formatted\":\"200 \\u062f\\u062c\"},\"has_book_access\":false,\"bid_count\":15,\"start_time\":\"2026-06-14T11:10:00+01:00\",\"end_time\":\"2026-06-14T12:00:00+01:00\",\"seconds_remaining\":0,\"is_live\":false,\"is_biddable\":false,\"has_ended\":false,\"extension_count\":0,\"max_extensions\":10,\"inspection\":{\"start\":\"2026-06-14T11:03:00+01:00\",\"end\":\"2026-06-20T11:03:00+01:00\",\"location\":\"new site\",\"is_open\":false},\"appeal_window\":{\"days\":8,\"is_open\":false,\"deadline\":\"2026-06-23T19:27:21+01:00\"},\"requires_commerce_register\":false,\"requires_newspaper_announcement\":true,\"winner_alias\":\"Bold_Falcon_197\",\"final_price\":{\"amount\":6100000,\"formatted\":\"6 100 000 \\u062f\\u062c\"},\"condition_book\":{\"id\":\"f5cea43f-df52-4942-89bf-716077671467\",\"type\":\"CONDITION_BOOK\",\"type_label\":\"\\u062f\\u0641\\u062a\\u0631 \\u0627\\u0644\\u0634\\u0631\\u0648\\u0637\",\"title\":\"\\u0643\\u0631\\u0627\\u0633\\u0629 \\u0634\\u0631\\u0648\\u0637 \\u2014 new one\",\"is_public\":false,\"file_size\":56144,\"file_size_human\":\"54.8 KB\",\"issued_at\":\"2026-06-14T08:05:04+01:00\",\"download_url\":\"http:\\\/\\\/mazayada.findosystem.com\\\/api\\\/v1\\\/documents\\\/f5cea43f-df52-4942-89bf-716077671467\\\/download\",\"verify_url\":\"http:\\\/\\\/mazayada.findosystem.com\\\/verify?doc=f5cea43f-df52-4942-89bf-716077671467&sig=8a080d731cbc88a58981e64e0cb855eeafb200d24fa8e9caecddfdec8c02bd8c\"},\"award_document\":null,\"book_purchase_open\":false,\"publication_priority\":\"NORMAL\",\"session\":{\"round\":1,\"code\":\"SES-2026-0001\",\"start_time\":\"2026-06-14T11:10:00+01:00\",\"end_time\":\"2026-06-14T12:00:00+01:00\",\"opening_price\":{\"amount\":1000000,\"formatted\":\"1 000 000 \\u062f\\u062c\"},\"reduction_percent\":0,\"reschedule_count\":0,\"original_opening_price\":{\"amount\":1000000,\"formatted\":\"1 000 000 \\u062f\\u062c\"},\"history\":[]}},\"message\":null,\"meta\":{\"viewer\":null}}",
                             "name": ""
                         }
                     ]
@@ -766,7 +766,7 @@
                                 }
                             ],
                             "code": 200,
-                            "body": "{\"data\":{\"current_price\":6100000,\"current_price_formatted\":\"6 100 000 \\u062f\\u062c\",\"bid_count\":15,\"status\":\"CLOSED\",\"end_time\":\"2026-06-14T12:00:00+01:00\",\"is_biddable\":false,\"has_ended\":false},\"message\":null,\"meta\":{}}",
+                            "body": "{\"data\":{\"current_price\":6100000,\"current_price_formatted\":\"6 100 000 \\u062f\\u062c\",\"min_bid\":{\"amount\":6100001,\"formatted\":\"6 100 001 \\u062f\\u062c\"},\"min_increment_percent\":0,\"bid_count\":15,\"status\":\"CLOSED\",\"end_time\":\"2026-06-14T12:00:00+01:00\",\"is_biddable\":false,\"has_ended\":false},\"message\":null,\"meta\":{}}",
                             "name": ""
                         }
                     ]
@@ -863,7 +863,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"nin\":\"consequatur\",\"first_name_ar\":\"mqeopfuudtdsufvyvddqa\",\"last_name_ar\":\"mniihfqcoynlazghdtqtq\",\"phone\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"birth_date\":\"2006-04-22\",\"password\":\"O[2UZ5ij-e\\\/dl4m{o,\",\"device_name\":\"dqamniihfqcoynlazghdt\"}"
+                            "raw": "{\"nin\":\"consequatur\",\"first_name_ar\":\"mqeopfuudtdsufvyvddqa\",\"last_name_ar\":\"mniihfqcoynlazghdtqtq\",\"phone\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"birth_date\":\"2006-06-08\",\"password\":\"O[2UZ5ij-e\\\/dl4m{o,\",\"device_name\":\"dqamniihfqcoynlazghdt\"}"
                         },
                         "description": "Create a CITIZEN account and email a 6-digit verification code. Does NOT log\nthe user in \u2014 call verify-otp with the returned user_id to obtain tokens.",
                         "auth": {
@@ -1041,6 +1041,106 @@
                             "raw": "{\"nin\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"secret_answer\":\"consequatur\",\"password\":\"O[2UZ5ij-e\\\/dl4m{o,\"}"
                         },
                         "description": "Step 2 of account recovery \u2014 verify the secret answer and set a new\npassword. All existing tokens and sessions are revoked.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Email recovery status",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/email-recovery\/status",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/email-recovery\/status"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"nin\":\"109823041175663801\"}"
+                        },
+                        "description": "The latest recovery request filed for a NIN. `data` is null when none exists.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Submit an email recovery request",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/email-recovery",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/email-recovery"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "multipart\/form-data"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "nin",
+                                    "value": "109823041175663801",
+                                    "type": "text",
+                                    "description": "The 18-digit NIN of the account."
+                                },
+                                {
+                                    "key": "birth_date",
+                                    "value": "1990-01-01",
+                                    "type": "text",
+                                    "description": "Birth date on the account (Y-m-d)."
+                                },
+                                {
+                                    "key": "phone",
+                                    "value": "0555123456",
+                                    "type": "text",
+                                    "description": "Phone on the account (10 digits starting with 0)."
+                                },
+                                {
+                                    "key": "new_email",
+                                    "value": "new.me@gmail.com",
+                                    "type": "text",
+                                    "description": "The new email address (not used by another account)."
+                                },
+                                {
+                                    "key": "selfie_with_id",
+                                    "src": [],
+                                    "type": "file"
+                                }
+                            ]
+                        },
+                        "description": "Multipart. NIN, birth date and phone must match the account. Only one open\nrequest per account; throttled to 3 per NIN and 10 per IP per hour.",
                         "auth": {
                             "type": "noauth"
                         }
@@ -2117,7 +2217,7 @@
                                 },
                                 {
                                     "key": "set-cookie",
-                                    "value": "XSRF-TOKEN=eyJpdiI6IklTMU80VlZudlVuNXlkQmptcXUvQ2c9PSIsInZhbHVlIjoiQVFlbGxLMnBhZmlMTzl1NloxeXR4dFdiaW1FYWdnT2dtQTJrM3ZnMGphTnlGZnE2Y2VZem9QS29yK0RqTjk5ODZ4QW1WYlJSNTlXczVJR0VPcHBVWGZLTXFuQkpGdUNXRWIwVXdmZ0ZvRmhnMi9IUVNFeHRNQVU4bS9ob0ptSWoiLCJtYWMiOiIwM2VkMDdiZWFlMjU2NjZkZjAyOWMxMWZiYjg5MmYwZjBkZDUwZWFjMjI3YjRmOWYzMjIwYmNkZTc4N2JiZjkzIiwidGFnIjoiIn0%3D; expires=Thu, 30 Jul 2026 11:06:23 GMT; Max-Age=7200; path=\/; samesite=lax; mazayada-session=eyJpdiI6IlhTSzlaWmVjallIcUNhQk1sUTN5YlE9PSIsInZhbHVlIjoiZm9TRjYxNDVSak9nUmxCNTgrM3VqOXlEYUdISld4d2VkL094ZjJtcHF0L0p4Nlg2Rnd1WDByWXk2U0YyaTdPbUVhbXk2YWltQWZ6UVBUOUhFai95QzUrcGdUazNlWjVjbjBDR2Ruc2V4VlNQTUFrMFR2dGZXaU95RCsvL0wwdWoiLCJtYWMiOiIwOGY2YzBhMDQ4ZjkxOTE4NzZlMTEzNTM5MTVhNWRlN2VlYzE5NmI0NjM5MjI2MTk5NWViMzk0OTFjZmY1M2ZiIiwidGFnIjoiIn0%3D; expires=Thu, 30 Jul 2026 11:06:23 GMT; Max-Age=7200; path=\/; httponly; samesite=lax"
+                                    "value": "XSRF-TOKEN=eyJpdiI6IjAxbU9ybVhYQk8yS1NQQkZuU2lLcUE9PSIsInZhbHVlIjoiYTVvWHA5d1BNdTVpaHhEaWlVc3VXNWlXcFRhU0t2VVI0am5UR05hL3ZodzB2Wjk0TDRkUEY1SGZZdCtPcjBKOVZaYlgyQWxRY1l0cW1MZEFxRC93VjExczFXNENjN2ZKTDlOd0N3UDM2TVF6ZGxSQW8rb2NPcXlHYzgxRUJnb2siLCJtYWMiOiJhMjMyMzY5MzFhZGM1YzA3MmZhMDdjOTNhOTQ3M2FhY2UwMDdmNGFkMWJiNTJjZjMyZDZhM2FlNTFkMGUzOTgzIiwidGFnIjoiIn0%3D; expires=Tue, 15 Sep 2026 17:39:14 GMT; Max-Age=7200; path=\/; samesite=lax; mazayada-session=eyJpdiI6InlsS28yNmNRRk81emlQdEpPZEZHT1E9PSIsInZhbHVlIjoieXFmb1VNcnBJVUJwYkRHNXRuYlZvQXRPK0lHalVqUVluUW0zYU1yZzJOTmwvQzhTR0VncllQN3dlTnlzckxzS0M5T3pab0xsMGtZVDJML1pvRkl2Nm1zM0txK3NEeGdIdmNqamRKM09XSzByQVd5eXhPbmlCNHFUeVJUdlBPVEsiLCJtYWMiOiJlNTY5YmNjOTU3MWYxYzBmM2RiZThjMjYwZWYzOWVkYWY3MmU4YzVhZWQ0MDAyY2RiN2I5N2YwZDY1OGZiYjUxIiwidGFnIjoiIn0%3D; expires=Tue, 15 Sep 2026 17:39:14 GMT; Max-Age=7200; path=\/; httponly; samesite=lax"
                                 }
                             ],
                             "code": 200,
@@ -2181,7 +2281,7 @@
                                 },
                                 {
                                     "key": "set-cookie",
-                                    "value": "XSRF-TOKEN=eyJpdiI6ImRaSlIyQnBuMS9wMUgvdE12dDZiY1E9PSIsInZhbHVlIjoidCtGRHZaZjVrL1JLNVBpNE5TbkN2akkyUjlseUVTMWxsYXVwRCtWc1RHaHlrYzkrdDAxK2ZCSmJ1M3luZXJTSFRGZGVWdThyQnBuMlZjMng2YytuZmN3M2diVU9mVVJkMGNvZHEvdjRZSVBxeVQ3OEJjMHE5MXpQUEJHbXJtd3giLCJtYWMiOiI5NjRjMjk3YjUyMTc4ZTM3NDdiNDc4YmE0NDAwMzRhMDM5NjRkZGNlYzEzYTIwZTdhMmQyYjc3YjNkMzI2OGRlIiwidGFnIjoiIn0%3D; expires=Thu, 30 Jul 2026 11:06:23 GMT; Max-Age=7200; path=\/; samesite=lax; mazayada-session=eyJpdiI6InFiaFY2YS9EZ3hkRmVzQ1lWZklXeFE9PSIsInZhbHVlIjoiTElMV2NJbFpGcW1sb01YeVlVU1Q3SEdWR0dKY0MwZi9Cb1RtUDhJaUVEZy9OUUxkQXFZdmZIeTI1ZklXRGZBQ0dTa2dFQmFrdW8yV3dGS0J3NVBkbEtLZEptMkliQ1pLc0xWMys0OVdnK0RnUlM2U3EvMWNHTWdqby96U1RNRlciLCJtYWMiOiJlNzE0NzQ3ZWIxNDNjNGRmZjM0YTJkYTgzMjllMTkyZjE5YTE1ZjVmZDg2NjVjYzA1ZDI1MjA4ODlhZDkzMTNlIiwidGFnIjoiIn0%3D; expires=Thu, 30 Jul 2026 11:06:23 GMT; Max-Age=7200; path=\/; httponly; samesite=lax"
+                                    "value": "XSRF-TOKEN=eyJpdiI6IndWUlBnYmdUMjhDR01zWmdPanpkTFE9PSIsInZhbHVlIjoiTXZsaE1kWFl3a1NTenkvMFd6RHZRYTcrMTllV1dIR0ZGU0NmQzVFN252SDU0VTVHc1o5NXRMQVgyLy9WTWpiN3R4ZEI4SXluQzFDMDdsYnk2ZjFkQWJ1bmFYYjBGRzI4dERXSWd2emhQOGRBdTFMV1lRMWhrM3VhKzkvcTZIVmEiLCJtYWMiOiJhNTA1NDE2ODMyMzEzYWFjZWVjNjZjNTg4YWMyNmM0NDVjNzYzMTBhOGRiZTdmMDNlYTM2MjhmNThlZjc5MDRiIiwidGFnIjoiIn0%3D; expires=Tue, 15 Sep 2026 17:39:14 GMT; Max-Age=7200; path=\/; samesite=lax; mazayada-session=eyJpdiI6ImltaHozT3RRZkIvamZEc2RTNXBZZUE9PSIsInZhbHVlIjoiVUhnWVpRVVNkV2N3R1pnK09lVnVvK0hpUGxMbWFHUUl3N1pQYkNqTnBmWTkxcWJvRkVuMjd4T0V1S2dtTnBndHpPM1hrUXhpOXhlTUhYSjVmZ2tYeFVIbmFSeW1JbktzaVNibTR5UGh4Vmw3MVRNTi85czRlcEkrWUphb0p0UDEiLCJtYWMiOiI3NjNhNWQzNjAwNTI2ZDk0YTljMDAxY2Y3MjhkM2UwY2Q2Nzc3NDhkYjRmNmQ3OWIxMjcyYWVlMzAyYTEzZDNhIiwidGFnIjoiIn0%3D; expires=Tue, 15 Sep 2026 17:39:14 GMT; Max-Age=7200; path=\/; httponly; samesite=lax"
                                 }
                             ],
                             "code": 200,
@@ -2474,7 +2574,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"first_name_fr\":\"vmqeopfuudtdsufvyvddq\",\"last_name_fr\":\"amniihfqcoynlazghdtqt\",\"father_name\":\"qxbajwbpilpmufinllwlo\",\"mother_name\":\"auydlsmsjuryvojcybzvr\",\"mother_surname\":\"byickznkygloigmkwxphl\",\"address\":\"vazjrcnfbaqywuxhgjjmz\",\"wilaya_id\":17,\"commune_id\":17,\"postal_code\":\"15627\",\"profession\":\"udtdsufvyvddqamniihfq\",\"expected_income\":8,\"id_type\":\"ID_CARD\",\"id_number\":\"oynlazghdtqtqxbajwbpi\"}"
+                            "raw": "{\"first_name_fr\":\"vmqeopfuudtdsufvyvddq\",\"last_name_fr\":\"amniihfqcoynlazghdtqt\",\"father_name\":\"qxbajwbpilpmufinllwlo\",\"mother_name\":\"auydlsmsjuryvojcybzvr\",\"mother_surname\":\"byickznkygloigmkwxphl\",\"address\":\"vazjrcnfbaqywuxhgjjmz\",\"wilaya_id\":17,\"commune_id\":17,\"postal_code\":\"15627\",\"profession\":\"udtdsufvyvddqamniihfq\",\"expected_income\":8,\"id_type\":\"LICENSE\",\"id_number\":\"oynlazghdtqtqxbajwbpi\"}"
                         },
                         "description": "Validates the profile, requires all three identity documents, and moves the\naccount to UNDER_REVIEW.",
                         "auth": {
@@ -2542,6 +2642,99 @@
                             "name": ""
                         }
                     ]
+                }
+            ]
+        },
+        {
+            "name": "Notification preferences",
+            "description": "\nChannels + preferred auction categories (edits 27 \u00b7 30). The PUT is a full\nreplace, and its response is the SAVED state \u2014 values the user may not hold\n(e.g. email for a non-subscriber) come back corrected.",
+            "item": [
+                {
+                    "name": "Get preferences",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/preferences\/notifications",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/preferences\/notifications"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Current preferences plus every category to choose from, in one call.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Save preferences",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/preferences\/notifications",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/preferences\/notifications"
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"channels\":{\"push\":false,\"email\":true,\"sms\":true},\"auction_categories\":[17],\"new_auction_alerts\":false}"
+                        },
+                        "description": "",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
                 }
             ]
         },
@@ -2966,6 +3159,131 @@
             ]
         },
         {
+            "name": "Premium subscription",
+            "description": "\nPremium membership (edits 24 \u00b7 25). The checkout reuses the payment gateway:\nopen `redirect_url` in a web view, then poll `GET payments\/{ref}\/status`.",
+            "item": [
+                {
+                    "name": "My subscription + plans",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/subscription",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/subscription"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "The current subscription (null if never subscribed) and every active plan,\nin one call. `is_premium` is the authoritative flag for unlocking features.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 401,
+                            "body": "{\"message\":\"\\u064a\\u0644\\u0632\\u0645 \\u062a\\u0633\\u062c\\u064a\\u0644 \\u0627\\u0644\\u062f\\u062e\\u0648\\u0644.\"}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Subscribe",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/subscription",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/subscription"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"plan_code\":\"YEARLY\"}"
+                        },
+                        "description": "Starts the checkout for a plan. Same response shape as every other payment.\nA 422 carries a `code`: `plan_unavailable` or `staff_not_allowed`.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Stop auto-renew",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/subscription",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/subscription"
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept-Language",
+                                "value": "ar"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Turns auto-renew off; the paid period stays active until `expires_at`.\nReturns the same payload as GET.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
             "name": "Profile",
             "description": "\nView and update the authenticated citizen's editable profile fields.",
             "item": [
@@ -3047,7 +3365,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\"phone\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"address\":\"fuudtdsufvyvddqamniih\",\"postal_code\":\"15627\",\"profession\":\"udtdsufvyvddqamniihfq\",\"locale\":\"fr\",\"secret_question\":\"fav_teacher\",\"secret_answer\":\"coynlazghdtqtqxbajwbp\"}"
+                            "raw": "{\"phone\":\"consequatur\",\"email\":\"carolyne.luettgen@example.org\",\"address\":\"fuudtdsufvyvddqamniih\",\"postal_code\":\"15627\",\"profession\":\"udtdsufvyvddqamniihfq\",\"locale\":\"en\",\"secret_question\":\"fav_teacher\",\"secret_answer\":\"coynlazghdtqtqxbajwbp\"}"
                         },
                         "description": "Updates contact details, address and the security question. Identity fields\n(NIN, names) are not editable here.",
                         "auth": {

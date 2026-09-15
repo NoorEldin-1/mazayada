@@ -7,8 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', __('admin.panel')) — {{ __('common.app_name') }}</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="alternate icon" href="/favicon.ico">
+    <x-favicons />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -37,12 +36,12 @@
 
     <div class="dash-side__head flex items-center gap-3 px-4 py-[1.15rem] border-b border-white/10">
         <a href="{{ url('/') }}" class="dash-side__brand flex items-center gap-3 min-w-0 flex-1 rounded-xl -mx-1 px-1 py-1 hover:bg-white/5 transition" title="{{ __('nav.home') }}">
-            <span class="dash-side__logo grid place-items-center size-10 rounded-xl bg-white/15 shrink-0">
-                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 17.5 3 3 3-3"/><path d="m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
+            <span class="dash-side__logo shrink-0">
+                <img class="dash-side__logo-full" src="/images/brand/logo-dark.png" width="982" height="320" alt="{{ __('common.app_name') }}">
+                <img class="dash-side__logo-mark" src="/images/brand/mark-dark.png" width="321" height="321" alt="" aria-hidden="true">
             </span>
-            <span class="dash-side__brand-text min-w-0">
-                <span class="block text-lg font-bold leading-none truncate">{{ __('common.app_name') }}</span>
-                <span class="block text-[11px] opacity-60 mt-1 truncate">{{ __('admin.panel') }}</span>
+            <span class="dash-side__brand-text min-w-0 ps-3 border-s border-white/15">
+                <span class="block text-[11px] opacity-70 leading-tight truncate">{{ __('admin.panel') }}</span>
             </span>
         </a>
     </div>
@@ -77,6 +76,13 @@
             <span>{{ __('admin.nav_kyc') }}</span>
             @if(($kycPendingCount ?? 0) > 0)
                 <span class="ms-auto min-w-[20px] h-5 px-1.5 grid place-items-center rounded-full bg-danger text-white text-[11px] font-bold leading-none">{{ $kycPendingCount }}</span>
+            @endif
+        </x-ui.nav-link>
+        <x-ui.nav-link tone="onPrimary" :href="route('admin.email-recovery.index')" :active="request()->routeIs('admin.email-recovery.*')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+            <span>{{ __('email_recovery.nav') }}</span>
+            @if(($emailRecoveryPendingCount ?? 0) > 0)
+                <span class="ms-auto min-w-[20px] h-5 px-1.5 grid place-items-center rounded-full bg-danger text-white text-[11px] font-bold leading-none">{{ $emailRecoveryPendingCount }}</span>
             @endif
         </x-ui.nav-link>
         @endcan
@@ -130,6 +136,20 @@
         <x-ui.nav-link tone="onPrimary" :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             <span>{{ __('admin.nav_categories') }}</span>
+        </x-ui.nav-link>
+        @endcan
+
+        @can('publication.manage')
+        <x-ui.nav-link tone="onPrimary" :href="route('admin.publication-packages.index')" :active="request()->routeIs('admin.publication-packages.*')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 18v3"/></svg>
+            <span>{{ __('admin.nav_publication_packages') }}</span>
+        </x-ui.nav-link>
+        @endcan
+
+        @can('subscriptions.manage')
+        <x-ui.nav-link tone="onPrimary" :href="route('admin.subscriptions.index')" :active="request()->routeIs('admin.subscriptions.*', 'admin.subscription-plans.*')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            <span>{{ __('admin.nav_subscriptions') }}</span>
         </x-ui.nav-link>
         @endcan
 

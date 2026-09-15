@@ -398,6 +398,17 @@ html[data-theme="dark"] .ui-table tbody tr:hover { background: var(--bg-2); }
 html.sidebar-collapsed .dash-side__toggle-icon { transform: scaleX(-1); }
 html.sidebar-collapsed [dir="rtl"] .dash-side__toggle-icon { transform: none; }
 
+/* Brand logo. Sized with plain class rules (not Tailwind utilities) because
+   mazayada.css ships an unlayered img reset that outranks layered utilities. */
+.dash-side__logo-full { display: block; height: 2.75rem; width: auto; max-width: none; }
+.dash-side__logo-mark { display: none; width: 2.5rem; height: 2.5rem; max-width: none; }
+
+.cz-logo { display: block; height: 2.25rem; width: auto; max-width: none; }
+.cz-logo--dark { display: none; }
+html[data-theme="dark"] .cz-logo--light { display: none; }
+html[data-theme="dark"] .cz-logo--dark { display: block; }
+@media (min-width: 640px) { .cz-logo { height: 2.5rem; } }
+
 @media (min-width: 1024px) {
   .dash-main { transition: margin-inline-start .22s ease; }
 
@@ -406,7 +417,9 @@ html.sidebar-collapsed [dir="rtl"] .dash-side__toggle-icon { transform: none; }
 
   /* Brand: keep the logo tile centred, drop the wordmark. */
   html.sidebar-collapsed .dash-side__head { padding-inline: 0; justify-content: center; }
-  html.sidebar-collapsed .dash-side__brand-text { display: none; }
+  html.sidebar-collapsed .dash-side__brand-text,
+  html.sidebar-collapsed .dash-side__logo-full { display: none; }
+  html.sidebar-collapsed .dash-side__logo-mark { display: block; }
   html.sidebar-collapsed .dash-side__brand { flex: 0 0 auto; justify-content: center; margin: 0; }
 
   /* Nav rows collapse to centred icons. Label spans carry no class

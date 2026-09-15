@@ -18,4 +18,9 @@ return [
     'flash_confirmed' => 'Paiement confirmé avec succès.',
     'flash_failed' => 'Le paiement n’a pas abouti.',
     'forfeit_blacklist_reason' => 'Non-paiement du montant final après avoir remporté l’enchère.',
+    // Edits 3 · 4 · 24.
+    'book_sales_closed' => 'La vente du cahier des charges est close pour cette enchère.',
+    'staff_not_allowed' => 'Les comptes d\'administration et des organismes ne peuvent ni acheter le cahier des charges ni s\'inscrire aux enchères.',
+    'plan_unavailable' => 'La formule demandée n\'est pas disponible.',
+    'subscription_description' => 'Abonnement Premium — :plan',
 ];

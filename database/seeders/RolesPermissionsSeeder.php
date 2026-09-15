@@ -93,6 +93,13 @@ class RolesPermissionsSeeder extends Seeder
         'auction-reports.generate',
         'auction-reports.refer',
 
+        // Publication rights (edits 13-17) — packages/prices + recording the
+        // organising entity's payment. Platform-only (SUPER_ADMIN via '*').
+        'publication.manage',
+
+        // Premium subscriptions (edits 24-25) — plans + subscriptions overview.
+        'subscriptions.manage',
+
         // Appeals
         'appeals.viewAny',
         'appeals.respond', // platform admin: forward / confirm / reject-at-intake

@@ -56,6 +56,96 @@
     @endif
 </x-ui.card>
 
+{{-- ===== Sessions & rescheduling (edits 5-10) ===== --}}
+@php
+    $sessionHistory = $auction->sessionHistory();
+    $sessionService = app(\App\Services\AuctionSessionService::class);
+@endphp
+<x-ui.card :title="__('admin.auctions.sec_sessions')" class="mb-6">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem" class="mb-4">
+        <div><div class="text-xs text-muted mb-1">{{ __('auctions.session.code') }}</div><div class="font-medium num" dir="ltr">{{ $auction->session_code }}</div></div>
+        <div><div class="text-xs text-muted mb-1">{{ __('auctions.session.round') }}</div><div class="font-medium">{{ __('auctions.session.badge', ['round' => $auction->session_round]) }}</div></div>
+        <div><div class="text-xs text-muted mb-1">{{ __('auctions.session.reschedule_count') }}</div><div class="font-medium num">{{ $auction->rescheduleCount() }}</div></div>
+        <div><div class="text-xs text-muted mb-1">{{ __('auctions.session.reduction') }}</div><div class="font-medium num">{{ format_percent($auction->reduction_percent) }}%</div></div>
+        <div><div class="text-xs text-muted mb-1">{{ __('auctions.session.original_price') }}</div><div class="font-medium num">{{ dzd_html($auction->original_opening_price ?? $auction->opening_price) }}</div></div>
+        <div><div class="text-xs text-muted mb-1">{{ __('admin.auctions.f_min_increment_percent') }}</div><div class="font-medium num">{{ format_percent($auction->minIncrementPercent()) }}%</div></div>
+    </div>
+
+    @if($sessionHistory->isNotEmpty())
+        <div class="text-sm font-semibold mb-2">{{ __('auctions.session.history_title') }}</div>
+        <div class="overflow-x-auto">
+            <table class="ui-table" style="min-width:0">
+                <thead>
+                    <tr>
+                        <th>{{ __('auctions.session.round') }}</th>
+                        <th>{{ __('auctions.session.code') }}</th>
+                        <th>{{ __('auctions.session.window') }}</th>
+                        <th>{{ __('auctions.session.opening_price') }}</th>
+                        <th>{{ __('auctions.session.reduction') }}</th>
+                        <th>{{ __('auctions.session.result') }}</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($sessionHistory as $past)
+                        <tr>
+                            <td class="num">{{ $past->session_round }}</td>
+                            <td class="num" dir="ltr">{{ $past->session_code }}</td>
+                            <td class="num">{{ optional($past->start_time)->format('Y-m-d H:i') }} → {{ optional($past->end_time)->format('Y-m-d H:i') }}</td>
+                            <td class="num">{{ dzd_html($past->opening_price) }}</td>
+                            <td class="num">{{ format_percent($past->reduction_percent) }}%</td>
+                            <td>{{ $past->sessionResultLabel() }}</td>
+                            <td><a class="text-primary text-sm" href="{{ route('admin.auctions.show', $past) }}">{{ __('auctions.session.view_session') }}</a></td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @endif
+
+    @if($sessionService->canReschedule($auction))
+        @can('create', \App\Models\Auction::class)
+            <div class="mt-4">
+                <x-ui.btn variant="primary" size="sm" type="button" data-modal-target="#reschedule-{{ $auction->id }}">{{ __('auctions.session.reschedule') }}</x-ui.btn>
+            </div>
+            @include('admin.auctions.partials.reschedule-modal', ['auction' => $auction])
+        @endcan
+    @endif
+</x-ui.card>
+
+{{-- ===== Publication & display rights (edits 13-17) ===== --}}
+<x-ui.card :title="__('publication.fee_title')" class="mb-6">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem">
+        <div><div class="text-xs text-muted mb-1">{{ __('publication.f_package') }}</div><div class="font-medium">{{ $auction->publicationPackage?->name ?? '—' }}</div></div>
+        <div><div class="text-xs text-muted mb-1">{{ __('publication.f_priority') }}</div><div class="font-medium">{{ $auction->publication_priority?->label() }}</div></div>
+        <div><div class="text-xs text-muted mb-1">{{ __('publication.fee_amount') }}</div><div class="font-medium num">{{ dzd_html($auction->publication_fee) }}</div></div>
+        <div>
+            <div class="text-xs text-muted mb-1">{{ __('publication.fee_status') }}</div>
+            @if((int) $auction->publication_fee === 0)
+                <span class="chip chip-muted">{{ __('publication.fee_free') }}</span>
+            @elseif($auction->publication_fee_paid_at)
+                <span class="chip chip-ok">{{ __('publication.fee_paid') }}</span>
+                <div class="text-xs text-muted mt-1 num">{{ $auction->publication_fee_paid_at->format('Y-m-d H:i') }} @if($auction->publication_fee_ref) · <span dir="ltr">{{ $auction->publication_fee_ref }}</span>@endif</div>
+            @else
+                <span class="chip chip-warn">{{ __('publication.fee_unpaid') }}</span>
+            @endif
+        </div>
+    </div>
+
+    @if($auction->publicationFeeDue())
+        @can('publication.manage')
+            <form method="POST" action="{{ route('admin.auctions.publication-fee', $auction) }}" class="flex flex-wrap items-end gap-2 mt-4">
+                @csrf
+                <div class="field" style="margin:0">
+                    <label class="text-xs text-muted">{{ __('publication.fee_ref') }}</label>
+                    <input type="text" name="reference" class="input" maxlength="100" placeholder="{{ __('publication.fee_ref_placeholder') }}">
+                </div>
+                <x-ui.btn variant="primary" size="sm">{{ __('publication.mark_paid') }}</x-ui.btn>
+            </form>
+        @endcan
+    @endif
+</x-ui.card>
+
 {{-- ===== Asset specifications (dynamic) ===== --}}
 @if(!empty($auction->specifications))
 <x-ui.card :title="__('admin.auctions.sec_specifications')" class="mb-6">

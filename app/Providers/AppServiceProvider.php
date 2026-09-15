@@ -3,10 +3,16 @@
 namespace App\Providers;
 
 use App\Enums\CommercialRegisterStatus;
+use App\Enums\EmailRecoveryStatus;
 use App\Enums\KycStatus;
 use App\Models\AuctionReport;
 use App\Models\CommercialRegister;
+use App\Models\EmailRecoveryRequest;
 use App\Models\User;
+use App\Services\EmailRecoveryService;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use App\Services\Payments\PaymentDriver;
 use App\Services\Payments\PaymentGatewayInterface;
 use App\Services\Push\PushDriver;
@@ -51,6 +57,13 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
+        // POST /api/v1/auth/email-recovery — each request uploads a selfie and
+        // probes identity data, so it is capped per NIN and per IP.
+        RateLimiter::for('email-recovery', fn (Request $request) => [
+            Limit::perHour(EmailRecoveryService::MAX_PER_NIN_PER_HOUR)->by('nin:'.preg_replace('/\D/', '', (string) $request->input('nin'))),
+            Limit::perHour(EmailRecoveryService::MAX_PER_IP_PER_HOUR)->by('ip:'.$request->ip()),
+        ]);
+
         Paginator::defaultView('vendor.pagination.mazayada');
         Paginator::defaultSimpleView('vendor.pagination.mazayada-simple');
 
@@ -62,6 +75,11 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with('kycPendingCount', $user?->can('kyc.review')
                 ? User::where('kyc_status', KycStatus::UNDER_REVIEW)->count()
+                : 0);
+
+            // Lost-email recovery requests still awaiting a decision.
+            $view->with('emailRecoveryPendingCount', $user?->can('kyc.review')
+                ? EmailRecoveryRequest::whereIn('status', EmailRecoveryStatus::openCases())->count()
                 : 0);
 
             // Same treatment for the Commercial Register queue badge.

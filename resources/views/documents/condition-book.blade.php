@@ -1,7 +1,7 @@
 @extends('documents._layout')
 
 @section('doc-content')
-    {{-- §10.3 — Condition book (كراسة الشروط / cahier des charges). --}}
+    {{-- §10.3 — Condition book (دفتر الشروط / cahier des charges). --}}
     <div class="section">
         <h3>{{ __('documents.condition_book.asset_section') }}</h3>
         <table class="kv">

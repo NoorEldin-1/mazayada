@@ -67,6 +67,24 @@ class PaymentException extends RuntimeException
         return new self(__('payments.already_bought_book'), 'already_bought_book');
     }
 
+    /** The auction's time is over (or it is closed/cancelled) — the book is no longer sold (edit 3). */
+    public static function bookSalesClosed(): self
+    {
+        return new self(__('payments.book_sales_closed'), 'book_sales_closed');
+    }
+
+    /** Platform / entity staff never take part in auctions (edit 4). */
+    public static function staffNotAllowed(): self
+    {
+        return new self(__('payments.staff_not_allowed'), 'staff_not_allowed');
+    }
+
+    /** No active subscription plan with that code (edit 24). */
+    public static function planUnavailable(): self
+    {
+        return new self(__('payments.plan_unavailable'), 'plan_unavailable');
+    }
+
     /** Final payment is the winner's step only. */
     public static function notWinner(): self
     {

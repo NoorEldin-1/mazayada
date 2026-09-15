@@ -61,6 +61,15 @@ class AuctionResource extends JsonResource
                 'id' => $this->category->id,
                 'name' => $this->category->name,
             ]),
+            // Sector (القطاع) = the category, with the effective minimum increment
+            // for THIS auction (its own override, else the sector default).
+            'sector' => $this->whenLoaded('category', fn () => [
+                'id' => (string) $this->category->id,
+                'name' => $this->category->name,
+                'min_increment_percent' => $this->minIncrementPercent(),
+            ]),
+            'min_bid' => $this->money($this->minBid()),
+            'min_increment_percent' => $this->minIncrementPercent(),
             'wilaya' => $this->whenLoaded('wilaya', fn () => [
                 'id' => $this->wilaya->id,
                 'code' => $this->wilaya->code,
@@ -135,7 +144,72 @@ class AuctionResource extends JsonResource
             // Document references (the binary is fetched via the download endpoint).
             'condition_book' => $this->conditionBookRef(),
             'award_document' => $this->awardDocumentRef($request),
+            // Edits 21-23 — present only once the document exists for THIS user.
+            'participation_receipt' => $this->when(
+                ($ref = $this->ownDocumentRef($request, DocumentType::PARTICIPATION_RECEIPT)) !== null, fn () => $ref),
+            'result_document' => $this->when(
+                ($result = $this->ownDocumentRef($request, DocumentType::AUCTION_RESULT)) !== null, fn () => $result),
+
+            // Edit 3 — the condition book is sold only while the auction is open.
+            'book_purchase_open' => $this->isBookPurchaseOpen(),
+
+            // Edit 15 — "featured" badge; ordering is applied server-side.
+            'publication_priority' => $this->publication_priority?->value ?? 'NORMAL',
+
+            // Edits 5-10 — session numbering, reduction and reschedule history.
+            'session' => $this->sessionBlock(),
         ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function sessionBlock(): array
+    {
+        $original = $this->original_opening_price ?? $this->opening_price;
+
+        return [
+            'round' => (int) ($this->session_round ?? 1),
+            'code' => $this->session_code,
+            'start_time' => $this->start_time?->toIso8601String(),
+            'end_time' => $this->end_time?->toIso8601String(),
+            'opening_price' => $this->money($this->opening_price),
+            'reduction_percent' => (float) $this->reduction_percent,
+            'reschedule_count' => $this->rescheduleCount(),
+            'original_opening_price' => $this->money($original),
+            'history' => $this->sessionHistory()->map(fn (Auction $s) => [
+                'id' => $s->id,
+                'round' => (int) $s->session_round,
+                'code' => $s->session_code,
+                'start_time' => $s->start_time?->toIso8601String(),
+                'end_time' => $s->end_time?->toIso8601String(),
+                'opening_price' => $this->money($s->opening_price),
+                'reduction_percent' => (float) $s->reduction_percent,
+                'status' => $s->status?->value,
+                'result_label' => $s->sessionResultLabel(),
+            ])->values()->all(),
+        ];
+    }
+
+    /** The requesting user's own document of $type on this auction, as a lean reference. */
+    protected function ownDocumentRef(Request $request, DocumentType $type): ?array
+    {
+        $userId = $request->user()?->id;
+        if (! $userId) {
+            return null;
+        }
+
+        $doc = $this->documents()
+            ->where('type', $type)
+            ->where('user_id', $userId)
+            ->latest()
+            ->first();
+
+        return $doc ? [
+            'id' => $doc->id,
+            'title' => $doc->title,
+            'download_url' => route('api.v1.documents.download', $doc->id),
+        ] : null;
     }
 
     protected function secondsRemaining(): int

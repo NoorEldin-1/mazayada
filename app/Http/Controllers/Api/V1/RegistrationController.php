@@ -30,7 +30,7 @@ class RegistrationController extends ApiController
      * registration"; `commerce_register_required` and `not_eligible` mean "send the
      * user to the Commercial Register / KYC screen first".
      *
-     * @response 422 {"message":"لقد اشتريت كراسة الشروط بالفعل.","code":"already_bought_book"}
+     * @response 422 {"message":"لقد اشتريت دفتر الشروط بالفعل.","code":"already_bought_book"}
      */
     public function buyConditionBook(Auction $auction, Request $request, PaymentService $payments): JsonResponse
     {
@@ -58,7 +58,7 @@ class RegistrationController extends ApiController
      * `already_registered` (proceed to bidding), `commerce_register_required`,
      * `not_eligible`, `nothing_due`.
      *
-     * @response 422 {"message":"يجب شراء كراسة الشروط أولاً قبل التسجيل في المزايدة.","code":"must_purchase_book"}
+     * @response 422 {"message":"يجب شراء دفتر الشروط أولاً قبل التسجيل في المزايدة.","code":"must_purchase_book"}
      */
     public function startRegistration(Auction $auction, Request $request, PaymentService $payments): JsonResponse
     {

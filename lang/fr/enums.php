@@ -84,6 +84,7 @@ return [
         'ENTRY_FEE' => 'Frais de participation',
         'BOOK_PURCHASE' => 'Cahier des charges',
         'FINAL_PAYMENT' => 'Paiement final',
+        'SUBSCRIPTION' => 'Abonnement Premium',
     ],
 
     'payment_status' => [
@@ -126,6 +127,8 @@ return [
         'PAYMENT_RECEIPT' => 'Reçu de paiement',
         'DELIVERY_REPORT' => 'Procès-verbal de livraison',
         'AUCTION_REPORT' => 'Rapport de la vente',
+        'PARTICIPATION_RECEIPT' => 'Reçu de participation',
+        'AUCTION_RESULT' => 'Reçu de résultat de l\'enchère',
     ],
 
     'notification_channel' => [
@@ -133,5 +136,27 @@ return [
         'SMS' => 'SMS',
         'EMAIL' => 'E-mail',
         'IN_APP' => 'Dans l’application',
+    ],
+    'publication_priority' => [
+        'NORMAL' => 'Publication normale',
+        'PRIORITY' => 'Publication prioritaire',
+    ],
+
+    'publication_area' => [
+        'LISTING' => 'Liste générale des enchères',
+        'CATEGORY_TOP' => 'En tête du secteur',
+        'HOMEPAGE' => 'Page d\'accueil',
+    ],
+
+    'subscription_status' => [
+        'PENDING' => 'Paiement en cours',
+        'ACTIVE' => 'Actif',
+        'EXPIRED' => 'Expiré',
+        'CANCELLED' => 'Annulé',
+    ],
+
+    'subscription_period' => [
+        'MONTHLY' => 'Mensuel',
+        'YEARLY' => 'Annuel',
     ],
 ];
